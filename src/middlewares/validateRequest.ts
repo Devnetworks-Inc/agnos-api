@@ -2,7 +2,7 @@ import { NextFunction, Response } from "express";
 import { Schema, ZodError } from "zod";
 import resp from "objectify-response";
 import { Request } from "express-jwt";
-import { Auth } from "src/schemas/auth";
+import { Auth } from "src/modules/auth.schema";
 
 const validateRequest = (schema: Schema) => (req: Request<Auth>, res: Response, next: NextFunction) => {
   try {
