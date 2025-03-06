@@ -3,7 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rimraf ./dist",
+    "build": "npm run clean && tsc --project tsconfig.build.json",
+    "production": "cross-env TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/src",
+    "local": "ts-node -r tsconfig-paths/register src",
+    "start": "nodemon --ignore __test__/ -e ts,json --exec npm run local",
+    "prisma-test": "dotenv -e .env.test prisma migrate deploy",
+    "prisma-staging": "dotenv -e .env.staging prisma migrate deploy",
+    "prisma-production": "dotenv -e .env.production prisma migrate deploy",
+    "prisma-reset": "dotenv -e .env.staging prisma migrate reset",
+    "seed": "prisma db seed",
+    "test": "jest --detectOpenHandles"
   },
   "author": "",
   "license": "ISC",

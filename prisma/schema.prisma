@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model employee {
+  id Int @id @default(autoincrement())
+  firstName String
+  middleName String @default("")
+  lastName String
+  birthdate DateTime @db.Date
+  gender gender
+  contactNumber String
+  email String
+  address String
+  hiredDate DateTime? @db.Date
+  rateType String
+  rate Float @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user user?
+}
+
+enum gender {
+  male
+  female
+}
+
+enum user_role {
+  agnos_admin
+  hsk_manager
+  hsk_staff
+  hotel_manager
+}
+
+model user {
+  id Int @id @default(autoincrement())
+  employeeId Int? @unique
+  username String @unique
+  password String
+  role user_role
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  employee employee? @relation(fields: [employeeId], references: [id])
+}
+
+model DailyHousekeepingRecord {
+  id  Int @id @default(autoincrement())
+  date         DateTime @unique
+  occupancyPercentage Float
+  numberOfRoomNights  Int
+
+  // Cleaned Rooms Fields
+  departureRooms    Int
+  stayOverRooms    Int
+  dirtyRoomsLastDay  Int
+  dayUseRooms     Int
+  extraCleaningRooms  Int
+
+  // Other Entry Fields
+  noServiceRooms    Int
+  lateCheckoutRooms  Int
+  refreshRooms     Int
+  roomsCarryover    Int
+
+  // Auto Calculated Fields
+  totalCleanedRooms    Int @default(0)
+  totalRefreshRooms    Int @default(0)
+  totalHousekeepingManagerCost Decimal @db.Decimal(10,2) @default(0)
+  totalHousekeepingCleanerCost Decimal @db.Decimal(10,2) @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  services       ServiceEntry[]
+}
+
+model ServiceEntry {
+  id Int @id @default(autoincrement())
+  dailyRecordId Int
+  serviceName String
+  totalCost  Decimal @db.Decimal(10,2) @default(0)
+
+  dailyRecord  DailyHousekeepingRecord @relation(fields: [dailyRecordId], references: [id], onDelete: Cascade)
+}
