@@ -1,24 +1,18 @@
 import { NextFunction, Response } from "express";
 import resp from "objectify-response";
-import { EmployeeUpdateRequest } from "./schema";
+import { HotelUpdateRequest } from "./schema";
 import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
 
-export const employeeUpdateController = async (req: EmployeeUpdateRequest, res: Response, next: NextFunction) => {
-  const { id, hotels } = req.body
+export const hotelUpdateController = async (req: HotelUpdateRequest, res: Response, next: NextFunction) => {
+  const { id } = req.body
 
-  prisma.employee.update({
+  prisma.hotel.update({
     where: { id },
-    data: {
-      ...req.body,
-      hotels: hotels && {
-        set: [],
-        connect: hotels.map(id => ({ id }))
-      }
-    }
+    data: req.body,
   })
-  .then((employee) => {
-    resp(res, employee)
+  .then((hotel) => {
+    resp(res, hotel)
   })
   .catch(e => {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {

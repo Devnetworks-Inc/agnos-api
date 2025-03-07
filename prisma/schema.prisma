@@ -13,6 +13,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model hotel {
+  id Int @id @default(autoincrement())
+  name String
+  address String
+  roomsCleaningRate Float
+  roomsRefreshRate Float
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  employees employee[]
+  houseKeepingRecords daily_housekeeping_record[]
+  currentUsers user[]
+}
+
 model employee {
   id Int @id @default(autoincrement())
   firstName String
@@ -26,9 +41,12 @@ model employee {
   hiredDate DateTime? @db.Date
   rateType String
   rate Float @default(0)
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
   user user?
+  hotels hotel[]
 }
 
 enum gender {
@@ -49,14 +67,19 @@ model user {
   username String @unique
   password String
   role user_role
+  currentHotelId Int?
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
   employee employee? @relation(fields: [employeeId], references: [id])
+  currentHotel hotel? @relation(fields: [currentHotelId], references: [id])
 }
 
-model DailyHousekeepingRecord {
+model daily_housekeeping_record {
   id  Int @id @default(autoincrement())
-  date         DateTime @unique
+  hotelId Int
+  date         DateTime @db.Date @unique
   occupancyPercentage Float
   numberOfRoomNights  Int
 
@@ -82,14 +105,17 @@ model DailyHousekeepingRecord {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  services       ServiceEntry[]
+  services       service_entry[]
+  hotel hotel @relation(fields: [hotelId], references: [id])
 }
 
-model ServiceEntry {
+model service_entry {
   id Int @id @default(autoincrement())
   dailyRecordId Int
   serviceName String
   totalCost  Decimal @db.Decimal(10,2) @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  dailyRecord  DailyHousekeepingRecord @relation(fields: [dailyRecordId], references: [id], onDelete: Cascade)
+  dailyRecord  daily_housekeeping_record @relation(fields: [dailyRecordId], references: [id], onDelete: Cascade)
 }

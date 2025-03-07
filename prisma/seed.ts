@@ -4,6 +4,15 @@ import { encrypt } from "src/utils/crypter";
 const prisma = new PrismaClient()
 
 async function main() {
+  const hotel = await prisma.hotel.create({
+    data: {
+      name: 'Hotel 1',
+      address: 'Ozamiz City, Misamis Occidental',
+      roomsCleaningRate: 50,
+      roomsRefreshRate: 50
+    }
+  })
+
   const employee = await prisma.employee.create({
     data: {
       firstName: 'Ryan',
@@ -17,12 +26,14 @@ async function main() {
       hiredDate: new Date(),
       rateType: '',
       rate: 100,
+      hotels: {
+        connect: { id: hotel.id }
+      }
     }
   })
 
   const user = await prisma.user.create({
     data: {
-      employeeId: employee.id,
       username: 'admin',
       password: encrypt('string'),
       role: 'agnos_admin'
