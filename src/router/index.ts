@@ -1,4 +1,5 @@
 import { Router } from "express"
+import employeeRouter from "src/modules/employee/routes"
 import userRouter from "src/modules/user/routes"
 
 const router = Router()
@@ -9,5 +10,6 @@ export const base = `/${path}/${version}/`
 console.log('Base Url: ' + base)
 
 router.use(`${base}users`, userRouter)
+router.use(`${base}employees`, employeeRouter)
 
 export default router

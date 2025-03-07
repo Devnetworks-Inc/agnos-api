@@ -1,13 +1,14 @@
 import { OpenAPIRegistry, OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
 import registerAuth from "./auth";
 import { registerUserRoutes } from "src/modules/user/docs";
+import { registerEmployeeRoutes } from "src/modules/employee/docs";
 
 
 let registry = new OpenAPIRegistry()
 
 registerAuth(registry)
 registerUserRoutes(registry)
-
+registerEmployeeRoutes(registry)
 
 function getOpenApiDocumentation() {
   const generator = new OpenApiGeneratorV31(registry.definitions);
