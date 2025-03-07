@@ -24,11 +24,14 @@ export const EmployeeCreate = z.object({
   body: EmployeeCreateBody
 })
 
+export const EmployeeUpdateBody = EmployeeCreateBody.partial().extend({ id: z.number() })
+
 export const EmployeeUpdate = z.object({
-  body: Employee
+  body: EmployeeUpdateBody
 })
 
 export type Employee = TypeOf<typeof Employee>
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>
+export type EmployeeUpdateBody = TypeOf<typeof EmployeeUpdateBody>
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody>
-export type EmployeeUpdateRequest = Request<{}, {}, Employee>
+export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody>
