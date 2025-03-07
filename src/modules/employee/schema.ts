@@ -18,7 +18,9 @@ export const Employee = z.object({
   rate: z.coerce.number().default(0),
 })
 
-export const EmployeeCreateBody = Employee.omit({ id: true })
+export const EmployeeCreateBody = Employee.omit({ id: true }).extend({
+  hotels: z.array(z.number()).min(1)
+})
 
 export const EmployeeCreate = z.object({
   body: EmployeeCreateBody

@@ -2,6 +2,7 @@ import { OpenAPIRegistry, OpenApiGeneratorV31 } from "@asteasolutions/zod-to-ope
 import registerAuth from "./auth";
 import { registerUserRoutes } from "src/modules/user/docs";
 import { registerEmployeeRoutes } from "src/modules/employee/docs";
+import { registerHotelRoutes } from "src/modules/hotel/docs";
 
 
 let registry = new OpenAPIRegistry()
@@ -9,6 +10,7 @@ let registry = new OpenAPIRegistry()
 registerAuth(registry)
 registerUserRoutes(registry)
 registerEmployeeRoutes(registry)
+registerHotelRoutes(registry)
 
 function getOpenApiDocumentation() {
   const generator = new OpenApiGeneratorV31(registry.definitions);
@@ -20,7 +22,10 @@ function getOpenApiDocumentation() {
       title: 'Agnos Housekeeping Sytem',
       description: 'Agnos Housekeeping Sytem API',
     },
-    servers: [{ url: 'http://localhost:3000/api/v1' }],
+    servers: [
+      { url: 'http://localhost:3000/api/v1' },
+      { url: 'https://agnos-api.onrender.com/api/v1' }
+    ],
   });
 }
 
