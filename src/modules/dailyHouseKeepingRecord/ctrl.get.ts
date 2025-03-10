@@ -15,7 +15,7 @@ export const dailyHousekeepingRecordGetByIdController = async (req: Request<IdPa
     where: { id }
   });
   if (!dailyHousekeepingRecord) {
-    return resp(res, 'Hotel not found', 404)
+    return resp(res, 'Record not found', 404)
   }
 
   resp(res, dailyHousekeepingRecord)

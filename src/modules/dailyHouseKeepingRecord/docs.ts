@@ -10,7 +10,7 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
   registry.registerPath({
     method: "post",
     path: "/daily-housekeeping-records/",
-    summary: "create daily-housekeeping-record",
+    summary: "create daily housekeeping record",
     tags: ["DailyHousekeepingRecord"],
     request: {
       body: requestBody(DailyHousekeepingRecordCreateBody),

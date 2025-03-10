@@ -1,20 +1,20 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { DailyHousekeepingRecordCreate, DailyHousekeepingRecordUpdate } from "./schema"
-import { dailyHousekeepingRecordCreateController } from "./ctrl.post"
-import { dailyHousekeepingRecordUpdateController } from "./ctrl.patch"
-import { dailyHousekeepingRecordGetAllController, dailyHousekeepingRecordGetByIdController } from "./ctrl.get"
+import { ServiceEntryCreate, ServiceEntryUpdate } from "./schema"
+import { serviceEntryCreateController } from "./ctrl.post"
+import { serviceEntryUpdateController } from "./ctrl.patch"
+import { serviceEntryGetAllController, serviceEntryGetByIdController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
-import { dailyHousekeepingRecordDeleteController } from "./ctrl.delete"
+import { serviceEntryDeleteController } from "./ctrl.delete"
 
-const dailyHousekeepingRecordRouter = Router()
+const serviceEntryRouter = Router()
 
-dailyHousekeepingRecordRouter.use(validateToken)
-dailyHousekeepingRecordRouter.post('/', validateRequest(DailyHousekeepingRecordCreate), dailyHousekeepingRecordCreateController)
-dailyHousekeepingRecordRouter.get('/:id', validateRequest(IdParamRequest), dailyHousekeepingRecordGetByIdController)
-dailyHousekeepingRecordRouter.get('/', dailyHousekeepingRecordGetAllController)
-dailyHousekeepingRecordRouter.patch('/',  validateRequest(DailyHousekeepingRecordUpdate), dailyHousekeepingRecordUpdateController)
-dailyHousekeepingRecordRouter.delete('/:id',  validateRequest(IdParamRequest), dailyHousekeepingRecordDeleteController)
+serviceEntryRouter.use(validateToken)
+serviceEntryRouter.post('/', validateRequest(ServiceEntryCreate), serviceEntryCreateController)
+serviceEntryRouter.get('/:id', validateRequest(IdParamRequest), serviceEntryGetByIdController)
+serviceEntryRouter.get('/', serviceEntryGetAllController)
+serviceEntryRouter.patch('/',  validateRequest(ServiceEntryUpdate), serviceEntryUpdateController)
+serviceEntryRouter.delete('/:id',  validateRequest(IdParamRequest), serviceEntryDeleteController)
 
-export default dailyHousekeepingRecordRouter
+export default serviceEntryRouter
