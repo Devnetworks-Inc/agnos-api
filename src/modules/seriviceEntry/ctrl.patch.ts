@@ -23,6 +23,9 @@ export const serviceEntryUpdateController = async (req: ServiceEntryUpdateReques
           400
         )
       }
+      if (e.code === "P2003" && e.meta?.["field_name"] === "dailyRecordId") {
+        return resp(res, "Daily Record does not exist.", 400);
+      }
     }
     next(e)
   })
