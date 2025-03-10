@@ -23,6 +23,9 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
           400
         )
       }
+      if (e.code === "P2003" && e.meta?.["field_name"] === "hotelId") {
+        return resp(res, "Hotel does not exist.", 400);
+      }
     }
     next(e)
   })

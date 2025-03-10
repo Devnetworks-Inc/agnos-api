@@ -4,19 +4,19 @@ import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 
-export const dailyHousekeepingRecordGetAllController = async (req: Request & AuthRequest, res: Response) => {
-  const dailyHousekeepingRecords = await prisma.daily_housekeeping_record.findMany({});
-  return resp(res, dailyHousekeepingRecords)
+export const serviceEntryGetAllController = async (req: Request & AuthRequest, res: Response) => {
+  const serviceEntrys = await prisma.service_entry.findMany({});
+  return resp(res, serviceEntrys)
 }
 
-export const dailyHousekeepingRecordGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
+export const serviceEntryGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
   const id = +req.params.id
-  const dailyHousekeepingRecord = await prisma.daily_housekeeping_record.findUnique({
+  const serviceEntry = await prisma.service_entry.findUnique({
     where: { id }
   });
-  if (!dailyHousekeepingRecord) {
-    return resp(res, 'Hotel not found', 404)
+  if (!serviceEntry) {
+    return resp(res, 'Service Entry not found', 404)
   }
 
-  resp(res, dailyHousekeepingRecord)
+  resp(res, serviceEntry)
 }
