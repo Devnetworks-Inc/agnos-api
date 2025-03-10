@@ -3,12 +3,14 @@ import registerAuth from "./auth";
 import { registerUserRoutes } from "src/modules/user/docs";
 import { registerEmployeeRoutes } from "src/modules/employee/docs";
 import { registerHotelRoutes } from "src/modules/hotel/docs";
+import { registerDailyHousekeepingRecordRoutes } from "src/modules/dailyHouseKeepingRecord/docs";
 
 
 let registry = new OpenAPIRegistry()
 
 registerAuth(registry)
 registerUserRoutes(registry)
+registerDailyHousekeepingRecordRoutes(registry)
 registerEmployeeRoutes(registry)
 registerHotelRoutes(registry)
 

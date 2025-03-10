@@ -41,12 +41,18 @@ model employee {
   hiredDate DateTime? @db.Date
   rateType String
   rate Float @default(0)
+  status employee_status
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
   user user?
   hotels hotel[]
+}
+
+enum employee_status {
+  check_in
+  check_out
 }
 
 enum gender {
@@ -94,7 +100,7 @@ model daily_housekeeping_record {
   noServiceRooms    Int
   lateCheckoutRooms  Int
   refreshRooms     Int
-  roomsCarryover    Int
+  roomsCarryOver    Int
 
   // Auto Calculated Fields
   totalCleanedRooms    Int @default(0)

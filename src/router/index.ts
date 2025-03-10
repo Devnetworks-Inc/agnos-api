@@ -1,4 +1,5 @@
 import { Router } from "express"
+import dailyHousekeepingRecordRouter from "src/modules/dailyHouseKeepingRecord/routes"
 import employeeRouter from "src/modules/employee/routes"
 import hotelRouter from "src/modules/hotel/routes"
 import userRouter from "src/modules/user/routes"
@@ -13,5 +14,6 @@ console.log('Base Url: ' + base)
 router.use(`${base}users`, userRouter)
 router.use(`${base}employees`, employeeRouter)
 router.use(`${base}hotels`, hotelRouter)
+router.use(`${base}daily-housekeeping-record`, dailyHousekeepingRecordRouter)
 
 export default router
