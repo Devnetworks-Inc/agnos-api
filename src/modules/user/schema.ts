@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { TypeOf, z } from "zod";
+import { AuthRequest } from "../auth.schema";
 
 export const UserRole = z.enum([
   'agnos_admin',
@@ -41,5 +42,5 @@ export type UserCreateBody = TypeOf<typeof UserCreateBody>
 export type LoginBody = TypeOf<typeof LoginBody>
 export type UserUpdateBody = TypeOf<typeof UserUpdateBody>
 export type LoginRequest = Request<{}, {}, LoginBody>
-export type UserCreateRequest = Request<{}, {}, UserCreateBody>
-export type UserUpdateRequest = Request<{}, {}, UserUpdateBody>
+export type UserCreateRequest = Request<{}, {}, UserCreateBody> & AuthRequest
+export type UserUpdateRequest = Request<{}, {}, UserUpdateBody> & AuthRequest

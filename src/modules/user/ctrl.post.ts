@@ -18,11 +18,27 @@ export const userLoginController = async (req: LoginRequest, res: Response) => {
       username: true,
       password: true,
       role: true,
+      currentHotelId: true,
+      employeeId: true
     }
   })
 
   if (!user || decrypt(user.password) !== password) {
     return resp(res, 'Invalid username or password', 401)
+  }
+
+  if (user.role !== 'agnos_admin' && !user.employeeId) {
+    return resp(res, 'Unauthorized', 401)
+  }
+
+  if (user.role !== 'agnos_admin' && !user.currentHotelId && user.employeeId) {
+    const hotel = await prisma.hotel.findFirst({
+      where: { employees: { some: { id: user.employeeId } } }
+    })
+    if (!hotel) {
+      return resp(res, 'Unauthorized', 401)
+    }
+    user.currentHotelId = hotel.id
   }
 
   const { password: p, ...rest } = user
@@ -34,7 +50,11 @@ export const userLoginController = async (req: LoginRequest, res: Response) => {
 };
 
 export const userCreateController = async (req: UserCreateRequest, res: Response, next: NextFunction) => {
-  const { password } = req.body
+  const { password, employeeId, role } = req.body
+
+  if (role !== 'agnos_admin' && !employeeId) {
+    return resp(res, 'Employee Id is required', 400)
+  }
 
   prisma.user.create({
     data: {
