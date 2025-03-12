@@ -1,45 +1,45 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
-import { ServiceEntry, ServiceEntryCreateBody, ServiceEntryUpdateBody } from "./schema";
+import { Service, ServiceCreateBody, ServiceUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
-import { serviceEntryBaseUrl } from "./routes";
+import { serviceBaseUrl } from "./routes";
 
-const tags = ["ServiceEntry"]
+const tags = ["Service"]
 
-export function registerServiceEntryRoutes(registry: OpenAPIRegistry) {
-  const ServiceEntrySchema = registry.register("ServiceEntry", ServiceEntry);
+export function registerServiceRoutes(registry: OpenAPIRegistry) {
+  const ServiceSchema = registry.register("Service", Service);
 
   registry.registerPath({
     method: "post",
-    path: serviceEntryBaseUrl,
+    path: serviceBaseUrl,
     summary: "create service entry",
     tags,
     request: {
-      body: requestBody(ServiceEntryCreateBody),
+      body: requestBody(ServiceCreateBody),
     },
     security: [{ BearerAuth: []}],
 
     responses: {
-      200: successJsonResponse("ServiceEntry", ServiceEntry),
+      200: successJsonResponse("Service", Service),
     },
   });
 
   registry.registerPath({
     method: "get",
-    path: serviceEntryBaseUrl,
+    path: serviceBaseUrl,
     summary: "get service entries",
     tags,
     security: [{ BearerAuth: []}],
 
     responses: {
-      200: successJsonResponse("ServiceEntrys", z.array(ServiceEntrySchema)),
+      200: successJsonResponse("Services", z.array(ServiceSchema)),
     },
   });
 
   registry.registerPath({
     method: "get",
-    path: `${serviceEntryBaseUrl}/{id}`,
+    path: `${serviceBaseUrl}/{id}`,
     summary: "get service entry by id",
     tags,
     request: {
@@ -48,28 +48,28 @@ export function registerServiceEntryRoutes(registry: OpenAPIRegistry) {
     security: [{ BearerAuth: []}],
 
     responses: {
-      200: successJsonResponse("ServiceEntry", ServiceEntrySchema),
+      200: successJsonResponse("Service", ServiceSchema),
     },
   });
 
   registry.registerPath({
     method: "patch",
-    path: serviceEntryBaseUrl,
+    path: serviceBaseUrl,
     summary: "update service entry",
     tags,
     request: {
-      body: requestBody(ServiceEntryUpdateBody),
+      body: requestBody(ServiceUpdateBody),
     },
     security: [{ BearerAuth: []}],
 
     responses: {
-      200: successJsonResponse("ServiceEntry", ServiceEntrySchema),
+      200: successJsonResponse("Service", ServiceSchema),
     },
   });
 
   registry.registerPath({
     method: "delete",
-    path: serviceEntryBaseUrl+"/{id}",
+    path: serviceBaseUrl+"/{id}",
     summary: "delete service entry",
     tags,
     request: {

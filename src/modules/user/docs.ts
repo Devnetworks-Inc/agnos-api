@@ -3,15 +3,18 @@ import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { LoginBody, User, UserCreateBody, UserUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
+import { userBaseUrl } from "./routes";
+
+const tags = ["User"]
 
 export function registerUserRoutes(registry: OpenAPIRegistry) {
   const UserSchema = registry.register("User", User);
 
   registry.registerPath({
     method: "post",
-    path: "/users/login",
+    path: userBaseUrl+"/login",
     summary: "login user",
-    tags: ["User"],
+    tags,
     request: {
       body: requestBody(LoginBody),
     },
@@ -23,9 +26,9 @@ export function registerUserRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "post",
-    path: "/users/",
+    path: userBaseUrl,
     summary: "create user",
-    tags: ["User"],
+    tags,
     request: {
       body: requestBody(UserCreateBody),
     },
@@ -38,9 +41,9 @@ export function registerUserRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "get",
-    path: "/users",
+    path: userBaseUrl,
     summary: "get users",
-    tags: ["User"],
+    tags,
     security: [{ BearerAuth: []}],
 
     responses: {
@@ -50,9 +53,9 @@ export function registerUserRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "patch",
-    path: "/users",
+    path: userBaseUrl,
     summary: "update user",
-    tags: ["User"],
+    tags,
     request: {
       body: requestBody(UserUpdateBody),
     },
@@ -65,9 +68,9 @@ export function registerUserRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "delete",
-    path: "/users/{id}",
+    path: userBaseUrl+"/{id}",
     summary: "delete user",
-    tags: ["User"],
+    tags,
     request: {
       params: IdParam,
     },

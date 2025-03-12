@@ -24,6 +24,7 @@ async function main() {
       email: '',
       address: 'molave zds',
       hiredDate: new Date(),
+      status: 'check_out',
       rateType: '',
       rate: 100,
       hotels: {

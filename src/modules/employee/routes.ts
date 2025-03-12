@@ -11,12 +11,14 @@ import { authorizeRoles } from "src/middlewares/authorization"
 
 const employeeRouter = Router()
 
+export const employeeBaseUrl = '/employees'
+
 employeeRouter.use(validateToken)
 employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
 
-employeeRouter.post('/', validateRequest(EmployeeCreate), employeeCreateController)
-employeeRouter.get('/', validateRequest(EmployeeGet), employeeGetController)
-employeeRouter.patch('/',  validateRequest(EmployeeUpdate), employeeUpdateController)
-employeeRouter.delete('/:id',  validateRequest(IdParamRequest), employeeDeleteController)
+employeeRouter.post(employeeBaseUrl, validateRequest(EmployeeCreate), employeeCreateController)
+employeeRouter.get(employeeBaseUrl, validateRequest(EmployeeGet), employeeGetController)
+employeeRouter.patch(employeeBaseUrl,  validateRequest(EmployeeUpdate), employeeUpdateController)
+employeeRouter.delete(employeeBaseUrl+'/:id',  validateRequest(IdParamRequest), employeeDeleteController)
 
 export default employeeRouter

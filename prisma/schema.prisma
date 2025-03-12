@@ -26,6 +26,7 @@ model hotel {
   employees employee[]
   houseKeepingRecords daily_housekeeping_record[]
   currentUsers user[]
+  services hotel_service[]
 }
 
 model employee {
@@ -115,13 +116,38 @@ model daily_housekeeping_record {
   hotel hotel @relation(fields: [hotelId], references: [id])
 }
 
+model service {
+  id Int @id @default(autoincrement())
+  name String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  hotelServices hotel_service[]
+}
+
+model hotel_service {
+  id Int @id @default(autoincrement())
+  serviceId Int
+  hotelId Int
+  serviceRate Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  service service @relation(fields: [serviceId], references: [id])
+  hotel hotel @relation(fields: [hotelId], references: [id])
+  serviceEntries service_entry[]
+
+  @@unique([serviceId, hotelId])
+}
+
 model service_entry {
   id Int @id @default(autoincrement())
   dailyRecordId Int
+  hotelServiceId Int?
   serviceName String
   totalCost  Decimal @db.Decimal(10,2) @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   dailyRecord  daily_housekeeping_record @relation(fields: [dailyRecordId], references: [id], onDelete: Cascade)
+  hotelService hotel_service? @relation(fields: [hotelServiceId], references: [id])
 }

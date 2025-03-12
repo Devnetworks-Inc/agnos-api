@@ -5,6 +5,7 @@ import { registerEmployeeRoutes } from "src/modules/employee/docs";
 import { registerHotelRoutes } from "src/modules/hotel/docs";
 import { registerDailyHousekeepingRecordRoutes } from "src/modules/dailyHouseKeepingRecord/docs";
 import { registerServiceEntryRoutes } from "src/modules/seriviceEntry/docs";
+import { registerServiceRoutes } from "src/modules/service/docs";
 
 
 let registry = new OpenAPIRegistry()
@@ -14,6 +15,7 @@ registerUserRoutes(registry)
 registerDailyHousekeepingRecordRoutes(registry)
 registerEmployeeRoutes(registry)
 registerHotelRoutes(registry)
+registerServiceRoutes(registry)
 registerServiceEntryRoutes(registry)
 
 function getOpenApiDocumentation() {
