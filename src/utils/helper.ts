@@ -5,12 +5,13 @@ export type CreateJwtTokenParams = {
   id: number;
   username: string;
   role: user_role;
+  currentHotelId?: number | null;
 }
 
 export const createJwtToken = (data: CreateJwtTokenParams) => {
-  const { id, username, role } = data
+  const { id, username, role, currentHotelId } = data
   const jwtSecret = process.env.JWT_SECRET || ''
-  return jwt.sign({ id, username, role }, jwtSecret)
+  return jwt.sign({ id, username, role, currentHotelId }, jwtSecret)
 }
 
 export const decimalTypePropsToNumber = (obj: any) => {
