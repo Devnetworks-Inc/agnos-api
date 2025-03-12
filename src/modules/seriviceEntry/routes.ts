@@ -10,11 +10,13 @@ import { serviceEntryDeleteController } from "./ctrl.delete"
 
 const serviceEntryRouter = Router()
 
+export const serviceEntryBaseUrl = '/service-entries'
+
 serviceEntryRouter.use(validateToken)
-serviceEntryRouter.post('/', validateRequest(ServiceEntryCreate), serviceEntryCreateController)
-serviceEntryRouter.get('/:id', validateRequest(IdParamRequest), serviceEntryGetByIdController)
-serviceEntryRouter.get('/', serviceEntryGetAllController)
-serviceEntryRouter.patch('/',  validateRequest(ServiceEntryUpdate), serviceEntryUpdateController)
-serviceEntryRouter.delete('/:id',  validateRequest(IdParamRequest), serviceEntryDeleteController)
+serviceEntryRouter.post(serviceEntryBaseUrl, validateRequest(ServiceEntryCreate), serviceEntryCreateController)
+serviceEntryRouter.get(serviceEntryBaseUrl+'/:id', validateRequest(IdParamRequest), serviceEntryGetByIdController)
+serviceEntryRouter.get(serviceEntryBaseUrl, serviceEntryGetAllController)
+serviceEntryRouter.patch(serviceEntryBaseUrl,  validateRequest(ServiceEntryUpdate), serviceEntryUpdateController)
+serviceEntryRouter.delete(serviceEntryBaseUrl+'/:id',  validateRequest(IdParamRequest), serviceEntryDeleteController)
 
 export default serviceEntryRouter

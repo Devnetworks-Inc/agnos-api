@@ -1,17 +1,20 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
-import { Employee, EmployeeCreateBody, EmployeeUpdateBody } from "./schema";
+import { Employee, EmployeeCreateBody, EmployeeGetQuery, EmployeeUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
+import { employeeBaseUrl } from "./routes";
+
+const tags = ["Employee"]
 
 export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
   const EmployeeSchema = registry.register("Employee", Employee);
 
   registry.registerPath({
     method: "post",
-    path: "/employees/",
+    path: employeeBaseUrl,
     summary: "create employee",
-    tags: ["Employee"],
+    tags,
     request: {
       body: requestBody(EmployeeCreateBody),
     },
@@ -24,9 +27,12 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "get",
-    path: "/employees",
+    path: employeeBaseUrl,
     summary: "get employees",
-    tags: ["Employee"],
+    tags,
+    request: {
+      query: EmployeeGetQuery
+    },
     security: [{ BearerAuth: []}],
 
     responses: {
@@ -36,9 +42,9 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "patch",
-    path: "/employees",
+    path: employeeBaseUrl,
     summary: "update employee",
-    tags: ["Employee"],
+    tags,
     request: {
       body: requestBody(EmployeeUpdateBody),
     },
@@ -51,9 +57,9 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "delete",
-    path: "/employees/{id}",
+    path: employeeBaseUrl+"/{id}",
     summary: "delete employee",
-    tags: ["Employee"],
+    tags,
     request: {
       params: IdParam,
     },

@@ -1,9 +1,11 @@
 import { Request } from "express";
 import { TypeOf, z } from "zod";
+import { AuthRequest } from "../auth.schema";
 
 export const ServiceEntry = z.object({
   id: z.number(),
   dailyRecordId: z.number(),
+  hotelServiceId: z.number(),
   serviceName: z.string(),
   totalCost: z.coerce.number(),
 })
@@ -24,5 +26,5 @@ export const ServiceEntryUpdate = z.object({
 export type ServiceEntry = TypeOf<typeof ServiceEntry>
 export type ServiceEntryCreateBody = TypeOf<typeof ServiceEntryCreateBody>
 export type ServiceEntryUpdateBody = TypeOf<typeof ServiceEntryUpdateBody>
-export type ServiceEntryCreateRequest = Request<{}, {}, ServiceEntryCreateBody>
-export type ServiceEntryUpdateRequest = Request<{}, {}, ServiceEntryUpdateBody>
+export type ServiceEntryCreateRequest = Request<{}, {}, ServiceEntryCreateBody> & AuthRequest
+export type ServiceEntryUpdateRequest = Request<{}, {}, ServiceEntryUpdateBody> & AuthRequest

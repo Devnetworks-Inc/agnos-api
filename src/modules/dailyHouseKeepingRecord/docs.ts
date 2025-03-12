@@ -3,15 +3,18 @@ import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { DailyHousekeepingRecord, DailyHousekeepingRecordCreateBody, DailyHousekeepingRecordUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
+import { dailyHousekeepingRecordBaseUrl } from "./routes";
+
+const tags = ["DailyHousekeepingRecord"]
 
 export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry) {
   const DailyHousekeepingRecordSchema = registry.register("DailyHousekeepingRecord", DailyHousekeepingRecord);
 
   registry.registerPath({
     method: "post",
-    path: "/daily-housekeeping-records/",
+    path: dailyHousekeepingRecordBaseUrl,
     summary: "create daily housekeeping record",
-    tags: ["DailyHousekeepingRecord"],
+    tags,
     request: {
       body: requestBody(DailyHousekeepingRecordCreateBody),
     },
@@ -24,9 +27,9 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
 
   registry.registerPath({
     method: "get",
-    path: "/daily-housekeeping-records",
+    path: dailyHousekeepingRecordBaseUrl,
     summary: "get daily housekeeping records",
-    tags: ["DailyHousekeepingRecord"],
+    tags,
     security: [{ BearerAuth: []}],
 
     responses: {
@@ -36,9 +39,9 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
 
   registry.registerPath({
     method: "get",
-    path: "/daily-housekeeping-records/{id}",
+    path: dailyHousekeepingRecordBaseUrl+"{id}",
     summary: "get daily housekeeping record by id",
-    tags: ["DailyHousekeepingRecord"],
+    tags,
     request: {
       params: IdParam
     },
@@ -51,9 +54,9 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
 
   registry.registerPath({
     method: "patch",
-    path: "/daily-housekeeping-records",
+    path: dailyHousekeepingRecordBaseUrl,
     summary: "update daily housekeeping record",
-    tags: ["DailyHousekeepingRecord"],
+    tags,
     request: {
       body: requestBody(DailyHousekeepingRecordUpdateBody),
     },
@@ -66,9 +69,9 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
 
   registry.registerPath({
     method: "delete",
-    path: "/daily-housekeeping-records/{id}",
+    path: dailyHousekeepingRecordBaseUrl+"{id}",
     summary: "delete daily housekeeping record",
-    tags: ["DailyHousekeepingRecord"],
+    tags,
     request: {
       params: IdParam,
     },

@@ -3,15 +3,18 @@ import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { Hotel, HotelCreateBody, HotelUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
+import { hotelBaseUrl } from "./routes";
+
+const tags = ["Hotel"]
 
 export function registerHotelRoutes(registry: OpenAPIRegistry) {
   const HotelSchema = registry.register("Hotel", Hotel);
 
   registry.registerPath({
     method: "post",
-    path: "/hotels/",
+    path: hotelBaseUrl,
     summary: "create hotel",
-    tags: ["Hotel"],
+    tags,
     request: {
       body: requestBody(HotelCreateBody),
     },
@@ -24,9 +27,9 @@ export function registerHotelRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "get",
-    path: "/hotels",
+    path: hotelBaseUrl,
     summary: "get hotels",
-    tags: ["Hotel"],
+    tags,
     security: [{ BearerAuth: []}],
 
     responses: {
@@ -36,9 +39,9 @@ export function registerHotelRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "get",
-    path: "/hotels/{id}",
+    path: hotelBaseUrl+"/{id}",
     summary: "get hotel by id",
-    tags: ["Hotel"],
+    tags,
     request: {
       params: IdParam
     },
@@ -51,9 +54,9 @@ export function registerHotelRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "patch",
-    path: "/hotels",
+    path: hotelBaseUrl,
     summary: "update hotel",
-    tags: ["Hotel"],
+    tags,
     request: {
       body: requestBody(HotelUpdateBody),
     },
@@ -66,9 +69,9 @@ export function registerHotelRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "delete",
-    path: "/hotels/{id}",
+    path: hotelBaseUrl+"/{id}",
     summary: "delete hotel",
-    tags: ["Hotel"],
+    tags,
     request: {
       params: IdParam,
     },
