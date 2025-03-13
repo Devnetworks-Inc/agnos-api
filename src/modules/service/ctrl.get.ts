@@ -5,13 +5,13 @@ import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 
 export const serviceGetAllController = async (req: Request & AuthRequest, res: Response) => {
-  const services = await prisma.service_entry.findMany({});
+  const services = await prisma.service.findMany({});
   return resp(res, services)
 }
 
 export const serviceGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
   const id = +req.params.id
-  const service = await prisma.service_entry.findUnique({
+  const service = await prisma.service.findUnique({
     where: { id }
   });
   if (!service) {

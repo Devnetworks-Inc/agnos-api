@@ -5,10 +5,10 @@ import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 
-export const serviceDeleteController = (req: Request<IdParam> & AuthRequest, res: Response, next: NextFunction) => {
-  prisma.service.delete({ where: { id: +req.params.id }})
+export const hotelServiceDeleteController = (req: Request<IdParam> & AuthRequest, res: Response, next: NextFunction) => {
+  prisma.hotel_service.delete({ where: { id: +req.params.id }})
   .then(() => {
-    resp(res, 'Service Entry has been deleted')
+    resp(res, 'Service has been deleted')
   })
   .catch(e => {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
