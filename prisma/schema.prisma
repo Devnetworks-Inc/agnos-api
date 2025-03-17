@@ -48,7 +48,8 @@ model employee {
   updatedAt DateTime  @updatedAt
 
   user user?
-  hotels hotel[]
+  hotelId Int  // Employee belongs to a single hotel
+  hotel hotel @relation(fields: [hotelId], references: [id])
 }
 
 enum employee_status {

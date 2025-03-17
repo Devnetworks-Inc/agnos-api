@@ -5,16 +5,13 @@ import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
 
 export const employeeUpdateController = async (req: EmployeeUpdateRequest, res: Response, next: NextFunction) => {
-  const { id, hotels } = req.body
+  const { id, hotelId } = req.body
 
   prisma.employee.update({
     where: { id },
     data: {
       ...req.body,
-      hotels: hotels && {
-        set: [],
-        connect: hotels.map(id => ({ id }))
-      }
+      hotelId
     }
   })
   .then((employee) => {

@@ -17,7 +17,7 @@ export const employeeGetController = async (req: EmployeeGetRequest, res: Respon
   }
 
   if (hotelId) {
-    where.hotels = { some: { id: hotelId } }
+    where.hotelId = hotelId
   }
 
   const employees = await prisma.employee.findMany({ where });
