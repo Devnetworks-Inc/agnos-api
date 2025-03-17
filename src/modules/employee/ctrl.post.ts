@@ -9,7 +9,8 @@ export const employeeCreateController = async (req: EmployeeCreateRequest, res: 
   const employee = await prisma.employee.create({
     data: {
       ...req.body,
-      hotelId
+      hotelId,
+      status: "check_out",
     }
   })
 
