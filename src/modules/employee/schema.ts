@@ -15,7 +15,7 @@ export const Employee = z.object({
   email: z.string(),
   address: z.string(),
   hiredDate: z.string().datetime(),
-  rateType: z.string().datetime(),
+  rateType: z.string(),
   rate: z.coerce.number().default(0),
 })
 
