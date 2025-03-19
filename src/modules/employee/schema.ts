@@ -17,6 +17,7 @@ export const Employee = z.object({
   hiredDate: z.string().datetime(),
   rateType: z.string(),
   rate: z.coerce.number().default(0),
+  position: z.string(),
   hotelId: z.coerce.number(),  // Single hotel ID
 });
 

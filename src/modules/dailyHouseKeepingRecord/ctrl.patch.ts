@@ -5,28 +5,50 @@ import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
 
 export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekeepingRecordUpdateRequest, res: Response, next: NextFunction) => {
-  const { id } = req.body
+  const { id, hotelId } = req.body
 
-  prisma.daily_housekeeping_record.update({
+  const record = await prisma.daily_housekeeping_record.findUnique({
     where: { id },
-    data: req.body,
+    include: { hotel: { select: { roomsCleaningRate: true, roomsRefreshRate: true } } }
   })
-  .then((dailyHousekeepingRecord) => {
-    resp(res, dailyHousekeepingRecord)
-  })
-  .catch(e => {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      if (e.code === 'P2025') {
-        return resp(
-          res,
-          'Record to update does not exist.',
-          400
-        )
-      }
-      if (e.code === "P2003" && e.meta?.["field_name"] === "hotelId") {
-        return resp(res, "Hotel does not exist.", 400);
-      }
+
+  if (!record) {
+    return resp(res, 'Record to update does not exist.', 400)
+  }
+
+  let roomsCleaningRate = record.hotel.roomsCleaningRate
+  let roomsRefreshRate = record.hotel.roomsRefreshRate
+
+  if (hotelId && hotelId !== record.hotelId) {
+    const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } })
+    if (!hotel) {
+      return resp(res, "Hotel does not exist.", 400);
     }
-    next(e)
+    roomsCleaningRate = hotel.roomsCleaningRate
+    roomsRefreshRate = hotel.roomsRefreshRate
+  }
+
+  const {
+    departureRooms: dr = record.departureRooms,
+    stayOverRooms: sor = record.stayOverRooms,
+    dirtyRoomsLastDay: drld = record.dirtyRoomsLastDay,
+    dayUseRooms: dur = record.dayUseRooms,
+    extraCleaningRooms: ecr = record.extraCleaningRooms,
+    refreshRooms = record.refreshRooms
+  } = req.body
+
+  const totalCleanedRooms = dr + sor + drld + dur + ecr
+
+  const newRecord = prisma.daily_housekeeping_record.update({
+    where: { id },
+    data: {
+      ...req.body,
+      totalCleanedRooms,
+      totalRefreshRooms: refreshRooms,
+      totalCleanedRoomsCost: new Prisma.Decimal(roomsCleaningRate).times(totalCleanedRooms),
+      totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms)
+    }
   })
+
+  resp(res, newRecord)
 }
