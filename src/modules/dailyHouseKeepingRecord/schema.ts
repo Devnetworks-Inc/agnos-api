@@ -16,7 +16,7 @@ export const DailyHousekeepingRecord = z.object({
   noServiceRooms: z.number(),
   lateCheckoutRooms: z.number(),
   refreshRooms: z.number(),
-  roomsCarryover: z.number(),
+  roomsCarryOver: z.number(),
 
   // Auto Calculated Fields
   totalCleanedRooms: z.number().default(0),

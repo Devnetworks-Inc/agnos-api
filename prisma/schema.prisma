@@ -43,6 +43,7 @@ model employee {
   rateType String
   rate Float @default(0)
   status employee_status
+  position String
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -109,6 +110,8 @@ model daily_housekeeping_record {
   totalRefreshRooms    Int @default(0)
   totalHousekeepingManagerCost Decimal @db.Decimal(10,2) @default(0)
   totalHousekeepingCleanerCost Decimal @db.Decimal(10,2) @default(0)
+  totalCleanedRoomsCost Decimal @db.Decimal(10,2) @default(0) // hotel clean rate * cleaned rooms
+  totalRefreshRoomsCost Decimal @db.Decimal(10,2) @default(0) // hotel refresh rate * refresh rooms
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

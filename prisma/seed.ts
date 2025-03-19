@@ -27,9 +27,8 @@ async function main() {
       status: 'check_out',
       rateType: '',
       rate: 100,
-      hotels: {
-        connect: { id: hotel.id }
-      }
+      position: '',
+      hotelId: hotel.id
     }
   })
 
