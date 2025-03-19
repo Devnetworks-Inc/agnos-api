@@ -39,7 +39,7 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
 
   registry.registerPath({
     method: "get",
-    path: dailyHousekeepingRecordBaseUrl+"{id}",
+    path: dailyHousekeepingRecordBaseUrl+"/{id}",
     summary: "get daily housekeeping record by id",
     tags,
     request: {
@@ -69,7 +69,7 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
 
   registry.registerPath({
     method: "delete",
-    path: dailyHousekeepingRecordBaseUrl+"{id}",
+    path: dailyHousekeepingRecordBaseUrl+"/{id}",
     summary: "delete daily housekeeping record",
     tags,
     request: {

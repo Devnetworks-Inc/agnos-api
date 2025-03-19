@@ -14,7 +14,7 @@ const employeeRouter = Router()
 export const employeeBaseUrl = '/employees'
 
 employeeRouter.use(validateToken)
-employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
+employeeRouter.use(employeeBaseUrl, authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
 
 employeeRouter.post(employeeBaseUrl, validateRequest(EmployeeCreate), employeeCreateController)
 employeeRouter.get(employeeBaseUrl, validateRequest(EmployeeGet), employeeGetController)
