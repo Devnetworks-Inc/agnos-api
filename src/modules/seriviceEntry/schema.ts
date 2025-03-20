@@ -7,7 +7,7 @@ export const ServiceEntry = z.object({
   dailyRecordId: z.number(),
   hotelServiceId: z.number(),
   serviceName: z.string(),
-  totalCost: z.coerce.number(),
+  totalCost: z.coerce.number().positive().multipleOf(0.01),
 })
 
 export const ServiceEntryCreateBody = ServiceEntry.omit({ id: true })

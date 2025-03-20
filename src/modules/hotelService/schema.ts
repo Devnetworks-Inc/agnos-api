@@ -6,7 +6,7 @@ export const HotelService = z.object({
   id: z.number(),
   serviceId: z.number(),
   hotelId: z.number(),
-  serviceRate: z.coerce.number(),
+  serviceRate: z.coerce.number().positive().multipleOf(0.01),
 })
 
 export const HotelServiceCreateBody = HotelService.omit({ id: true })
