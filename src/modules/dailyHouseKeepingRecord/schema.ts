@@ -1,3 +1,4 @@
+import { isMatch } from "date-fns";
 import { Request } from "express";
 import { TypeOf, z } from "zod";
 
@@ -43,8 +44,23 @@ export const DailyHousekeepingRecordUpdate = z.object({
   body: DailyHousekeepingRecordUpdateBody
 })
 
+export const DailyHousekeepingRecordGetQuery = z.object({
+  startDate: z.string().refine((val) => isMatch(val, 'yyyy-MM-dd'), {
+    message: "Date format must be ''yyyy-MM-dd'",
+  }).openapi({ example: '2025-03-01' }).optional(),
+  endDate: z.string().refine((val) => isMatch(val, 'yyyy-MM-dd'), {
+    message: "Date format must be ''yyyy-MM-dd'",
+  }).openapi({ example: '2025-03-01' }).optional(),
+})
+
+export const DailyHousekeepingRecordGet = z.object({
+  query: DailyHousekeepingRecordGetQuery
+})
+
 export type DailyHousekeepingRecord = TypeOf<typeof DailyHousekeepingRecord>
 export type DailyHousekeepingRecordCreateBody = TypeOf<typeof DailyHousekeepingRecordCreateBody>
 export type DailyHousekeepingRecordUpdateBody = TypeOf<typeof DailyHousekeepingRecordUpdateBody>
+export type DailyHousekeepingRecordGetQuery = TypeOf<typeof DailyHousekeepingRecordGetQuery>
 export type DailyHousekeepingRecordCreateRequest = Request<{}, {}, DailyHousekeepingRecordCreateBody>
 export type DailyHousekeepingRecordUpdateRequest = Request<{}, {}, DailyHousekeepingRecordUpdateBody>
+export type DailyHousekeepingRecordGetRequest = Request<{}, {}, {}, DailyHousekeepingRecordGetQuery>
