@@ -6,7 +6,17 @@ import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 
 export const hotelServiceDeleteController = (req: Request<IdParam> & AuthRequest, res: Response, next: NextFunction) => {
-  prisma.hotel_service.delete({ where: { id: +req.params.id }})
+  const { role, currentHotelId } = req.auth!
+  const where: Prisma.hotel_serviceWhereUniqueInput = { id: +req.params.id }
+
+  if (role !== 'agnos_admin') {
+    if (!currentHotelId){
+      return resp(res, 'Unauthorized', 401)
+    }
+    where.hotelId = currentHotelId
+  }
+
+  prisma.hotel_service.delete({ where })
   .then(() => {
     resp(res, 'Service has been deleted')
   })

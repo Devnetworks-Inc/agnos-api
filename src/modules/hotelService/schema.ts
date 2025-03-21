@@ -5,7 +5,7 @@ import { AuthRequest } from "../auth.schema";
 export const HotelService = z.object({
   id: z.number(),
   serviceId: z.number(),
-  hotelId: z.number(),
+  hotelId: z.number().optional(),
   serviceRate: z.coerce.number().positive().multipleOf(0.01),
 })
 

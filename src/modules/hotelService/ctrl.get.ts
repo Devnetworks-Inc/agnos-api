@@ -3,9 +3,19 @@ import resp from "objectify-response";
 import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
+import { Prisma } from "@prisma/client";
 
 export const hotelServiceGetAllController = async (req: Request & AuthRequest, res: Response) => {
-  const services = await prisma.hotel_service.findMany({});
+  const { role, currentHotelId } = req.auth!
+  const where: Prisma.hotel_serviceWhereInput = {}
+
+  if (role !== 'agnos_admin') {
+    if (!currentHotelId){
+      return resp(res, 'Unauthorized', 401)
+    }
+    where.hotelId = currentHotelId
+  }
+  const services = await prisma.hotel_service.findMany({ where });
   return resp(res, services)
 }
 
