@@ -56,6 +56,14 @@ export const userCreateController = async (req: UserCreateRequest, res: Response
     return resp(res, 'Employee Id is required', 400)
   }
 
+  const existingUser = await prisma.user.findUnique({
+    where: { employeeId }
+  });
+  
+  if (existingUser) {
+    return resp(res, 'A user with this employee already exists', 400);
+  }  
+
   prisma.user.create({
     data: {
       ...req.body,
