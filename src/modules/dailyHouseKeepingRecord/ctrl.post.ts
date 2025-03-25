@@ -1,5 +1,5 @@
 import resp from "objectify-response";
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 import prisma from "../prisma";
 import { DailyHousekeepingRecordCreateRequest } from "./schema";
 import { Prisma } from "@prisma/client";
@@ -7,6 +7,7 @@ import { Prisma } from "@prisma/client";
 export const dailyHousekeepingRecordCreateController = async (
   req: DailyHousekeepingRecordCreateRequest,
   res: Response,
+  next: NextFunction
 ) => {
   const {
     departureRooms: dr,
@@ -26,7 +27,7 @@ export const dailyHousekeepingRecordCreateController = async (
 
   const totalCleanedRooms = dr + sor + drld + dur + ecr
 
-  const dailyHousekeepingRecord = await prisma.daily_housekeeping_record.create({
+  await prisma.daily_housekeeping_record.create({
     data: {
       ...req.body,
       totalCleanedRooms,
@@ -35,6 +36,19 @@ export const dailyHousekeepingRecordCreateController = async (
       totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms)
     }
   })
-
-  resp(res, dailyHousekeepingRecord);
+  .then((dailyHousekeepingRecord) => {
+    resp(res, dailyHousekeepingRecord)
+  })
+  .catch( e => {
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === 'P2002') {
+        return resp(
+          res,
+          'Record for the day already exist',
+          400
+        )
+      }
+    }
+    next(e)
+  })
 };
