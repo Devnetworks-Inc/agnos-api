@@ -6,6 +6,7 @@ import hotelServiceRouter from "src/modules/hotelService/routes"
 import serviceEntryRouter from "src/modules/seriviceEntry/routes"
 import serviceRouter from "src/modules/service/routes"
 import userRouter from "src/modules/user/routes"
+import webauthnRouter from "src/modules/webAuthn/routes"
 
 const router = Router()
 
@@ -21,5 +22,6 @@ router.use(base, dailyHousekeepingRecordRouter)
 router.use(base, serviceRouter)
 router.use(base, serviceEntryRouter)
 router.use(base, hotelServiceRouter)
+router.use(base, webauthnRouter)
 
 export default router
