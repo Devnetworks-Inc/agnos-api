@@ -20,6 +20,6 @@ export const employeeGetController = async (req: EmployeeGetRequest, res: Respon
     where.hotelId = hotelId
   }
 
-  const employees = await prisma.employee.findMany({ where });
+  const employees = await prisma.employee.findMany({ where, include: { hotel: {select: { name: true }} } });
   return resp(res, employees)
 }

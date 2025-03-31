@@ -14,6 +14,17 @@ export const hotelServiceGetAllController = async (req: Request & AuthRequest, r
       return resp(res, 'Unauthorized', 401)
     }
     where.hotelId = currentHotelId
+    // let count = await prisma.hotel_service.count({ where: { hotelId: currentHotelId } })
+    // if (!count) {
+    //   const services = await prisma.service.findMany({})
+    //   services.length && await prisma.hotel_service.createMany({
+    //     data: services.map((v) => ({
+    //       serviceId: v.id,
+    //       hotelId: currentHotelId,
+    //       serviceRate: 0
+    //     }))
+    //   })
+    // }
   }
   const services = await prisma.hotel_service.findMany({ where });
   return resp(res, services)

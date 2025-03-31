@@ -13,7 +13,7 @@ export function registerServiceRoutes(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
     path: serviceBaseUrl,
-    summary: "create service entry",
+    summary: "create service",
     tags,
     request: {
       body: requestBody(ServiceCreateBody),
@@ -28,7 +28,7 @@ export function registerServiceRoutes(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: serviceBaseUrl,
-    summary: "get service entries",
+    summary: "get service",
     tags,
     security: [{ BearerAuth: []}],
 
@@ -40,7 +40,7 @@ export function registerServiceRoutes(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: `${serviceBaseUrl}/{id}`,
-    summary: "get service entry by id",
+    summary: "get service by id",
     tags,
     request: {
       params: IdParam
@@ -55,7 +55,7 @@ export function registerServiceRoutes(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "patch",
     path: serviceBaseUrl,
-    summary: "update service entry",
+    summary: "update service",
     tags,
     request: {
       body: requestBody(ServiceUpdateBody),
@@ -70,7 +70,7 @@ export function registerServiceRoutes(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "delete",
     path: serviceBaseUrl+"/{id}",
-    summary: "delete service entry",
+    summary: "delete service",
     tags,
     request: {
       params: IdParam,
