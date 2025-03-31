@@ -14,7 +14,6 @@ export const hotelServiceUpdateController = async (req: HotelServiceUpdateReques
       return resp(res, 'Unauthorized', 401)
     }
     where.hotelId = currentHotelId
-    req.body.hotelId = undefined
   }
 
   prisma.hotel_service.update({

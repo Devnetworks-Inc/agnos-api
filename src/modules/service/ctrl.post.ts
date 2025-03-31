@@ -6,16 +6,21 @@ import { ServiceCreateRequest } from "./schema";
 export const serviceCreateController = async (
   req: ServiceCreateRequest,
   res: Response,
-  next: NextFunction
 ) => {
-  prisma.service
-    .create({
-      data: req.body,
-    })
-    .then((serivice) => {
-      resp(res, serivice);
-    })
-    .catch((e) => {
-      next(e);
-    });
+  const hotels = await prisma.hotel.findMany()
+  const service = await prisma.service.create({
+    data: {
+      ...req.body,
+      hotelServices: {
+        createMany: {
+          data: hotels.map(v => ({
+            hotelId: v.id,
+            serviceRate: 0
+          }))
+        }
+      }
+    }
+  })
+
+  resp(res, service)
 };

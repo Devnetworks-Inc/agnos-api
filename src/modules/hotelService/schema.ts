@@ -15,9 +15,7 @@ export const HotelServiceCreate = z.object({
   body: HotelServiceCreateBody
 })
 
-export const HotelServiceUpdateBody = z.object({
-  serviceRate: z.coerce.number().positive().multipleOf(0.01),
-})
+export const HotelServiceUpdateBody = HotelService.pick({ id: true, serviceRate: true })
 
 export const HotelServiceUpdate = z.object({
   body: HotelServiceUpdateBody
