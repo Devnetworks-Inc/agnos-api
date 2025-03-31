@@ -5,7 +5,7 @@ import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
 
 export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekeepingRecordUpdateRequest, res: Response, next: NextFunction) => {
-  const { id, hotelId } = req.body
+  const { id, hotelId, services } = req.body
 
   const record = await prisma.daily_housekeeping_record.findUnique({
     where: { id },
@@ -28,6 +28,36 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
     roomsRefreshRate = hotel.roomsRefreshRate
   }
 
+  let map: Map<number, {
+    id: number;
+    serviceRate: number;
+    service: {
+        id: number;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+    };
+  }> | undefined
+
+  if (services) {
+    const hotelServices = await prisma.hotel_service.findMany({
+      where: { id: { in: services } },
+      select: {
+        id: true,
+        serviceRate: true,
+        service: true
+      }
+    })
+    if (services.length > hotelServices.length) {
+      return resp(res, 'Some services does not exist', 401)
+    }
+  
+    map = hotelServices.reduce((acc, current) => 
+      acc.set(current.id, current),
+      new Map<number, typeof hotelServices[0]>()
+    )
+  }
+
   const {
     departureRooms: dr = record.departureRooms,
     stayOverRooms: sor = record.stayOverRooms,
@@ -46,7 +76,15 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
       totalCleanedRooms,
       totalRefreshRooms: refreshRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(roomsCleaningRate).times(totalCleanedRooms),
-      totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms)
+      totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms),
+      services: map && {
+        deleteMany: {},
+        createMany: { data: Array.from(map.values(), (v) => ({
+          hotelServiceId: v.id,
+          serviceName: v.service.name,
+          totalCost: v.serviceRate
+        }))}
+      }
     }
   })
 

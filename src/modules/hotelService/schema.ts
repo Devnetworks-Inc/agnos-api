@@ -15,7 +15,9 @@ export const HotelServiceCreate = z.object({
   body: HotelServiceCreateBody
 })
 
-export const HotelServiceUpdateBody = HotelServiceCreateBody.partial().extend({ id: z.number() })
+export const HotelServiceUpdateBody = z.object({
+  serviceRate: z.coerce.number().positive().multipleOf(0.01),
+})
 
 export const HotelServiceUpdate = z.object({
   body: HotelServiceUpdateBody

@@ -2,7 +2,7 @@ import resp from "objectify-response";
 import { NextFunction, Response } from "express";
 import prisma from "../prisma";
 import { DailyHousekeepingRecordCreateRequest } from "./schema";
-import { Prisma } from "@prisma/client";
+import { hotel_service, Prisma } from "@prisma/client";
 
 export const dailyHousekeepingRecordCreateController = async (
   req: DailyHousekeepingRecordCreateRequest,
@@ -16,14 +16,34 @@ export const dailyHousekeepingRecordCreateController = async (
     dayUseRooms: dur,
     extraCleaningRooms: ecr,
     refreshRooms,
-    hotelId
+    hotelId,
+    services,
   } = req.body
 
-  const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } })
+  const [hotel, hotelServices] = await prisma.$transaction([
+    prisma.hotel.findUnique({ where: { id: hotelId } }),
+    prisma.hotel_service.findMany({
+      where: { id: { in: services } },
+      select: {
+        id: true,
+        serviceRate: true,
+        service: true
+      }
+    })
+  ])
 
   if (!hotel) {
     return resp(res, "Hotel does not exist.", 400);
   }
+
+  if (services.length > hotelServices.length) {
+    return resp(res, 'Some services does not exist', 401)
+  }
+
+  const map = hotelServices.reduce((acc, current) => 
+    acc.set(current.id, current),
+    new Map<number, typeof hotelServices[0]>()
+  )
 
   const totalCleanedRooms = dr + sor + drld + dur + ecr
 
@@ -33,7 +53,14 @@ export const dailyHousekeepingRecordCreateController = async (
       totalCleanedRooms,
       totalRefreshRooms: refreshRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(hotel.roomsCleaningRate).times(totalCleanedRooms),
-      totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms)
+      totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms),
+      services: map.size ? {
+        createMany: { data: Array.from(map.values(), (v) => ({
+          hotelServiceId: v.id,
+          serviceName: v.service.name,
+          totalCost: v.serviceRate
+        }))}
+      } : undefined
     }
   })
   .then((dailyHousekeepingRecord) => {
