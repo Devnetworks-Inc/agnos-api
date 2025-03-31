@@ -69,7 +69,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
 
   const totalCleanedRooms = dr + sor + drld + dur + ecr
 
-  const newRecord = prisma.daily_housekeeping_record.update({
+  const newRecord = await prisma.daily_housekeeping_record.update({
     where: { id },
     data: {
       ...req.body,
