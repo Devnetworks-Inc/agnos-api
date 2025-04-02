@@ -49,7 +49,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
       }
     })
     if (services.length > hotelServices.length) {
-      return resp(res, 'Some services does not exist', 401)
+      return resp(res, 'Some services does not exist', 404)
     }
   
     map = hotelServices.reduce((acc, current) => 

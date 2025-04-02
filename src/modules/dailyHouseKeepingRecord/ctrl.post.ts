@@ -33,11 +33,11 @@ export const dailyHousekeepingRecordCreateController = async (
   ])
 
   if (!hotel) {
-    return resp(res, "Hotel does not exist.", 400);
+    return resp(res, "Hotel does not exist.", 404);
   }
 
   if (services.length > hotelServices.length) {
-    return resp(res, 'Some services does not exist', 401)
+    return resp(res, 'Some services does not exist', 404)
   }
 
   const map = hotelServices.reduce((acc, current) => 
