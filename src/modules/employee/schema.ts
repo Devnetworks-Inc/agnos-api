@@ -2,7 +2,23 @@ import { Request } from "express";
 import { TypeOf, z } from "zod";
 import { AuthRequest } from "../auth.schema";
 
+export const EmployeeWorkLog = z.object({
+  id: z.number(),
+  employeeId: z.number(),
+  checkInDate: z.string().datetime(),
+  checkOutDate: z.string().datetime().optional()
+})
+
 export const Gender = z.enum(['male', 'female']);
+
+export const EmployeeStatus = z.enum(['check_in', 'check_out'])
+
+export const EmployeeChildren = z.array(z.object({
+  firstName: z.string(),
+  middleName: z.string().optional(),
+  lastName: z.string(),
+  birthDate: z.string().datetime(),
+}))
 
 export const Employee = z.object({
   id: z.number(),
@@ -11,9 +27,20 @@ export const Employee = z.object({
   lastName: z.string(),
   birthdate: z.string().datetime(),
   gender: Gender,
-  contactNumber: z.string(),
+  religion: z.string(),
+  civilStatus: z.string(),
+  nationality: z.string(),
+  children: EmployeeChildren.optional(),
+  mobileNumber: z.string(),
+  telephoneNumber: z.string(),
   email: z.string(),
   address: z.string(),
+  emergycyContactName: z.string(),
+  emergycyContactNumber: z.string(),
+  healthInsurance: z.string(),
+  AHVNumber: z.string(),
+  bankAccount: z.string(),
+  iban: z.string(),
   hiredDate: z.string().datetime(),
   rateType: z.string(),
   rate: z.coerce.number().default(0),
@@ -45,10 +72,21 @@ export const EmployeeGet = z.object({
   query: EmployeeGetQuery
 });
 
+export const EmployeeCheckInOutBody = z.object({
+  id: z.number(),
+  status: EmployeeStatus
+});
+
+export const EmployeeCheckInOut = z.object({
+  body: EmployeeCheckInOutBody
+})
+
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;
 export type EmployeeUpdateBody = TypeOf<typeof EmployeeUpdateBody>;
 export type EmployeeGetQuery = TypeOf<typeof EmployeeGetQuery>;
+export type EmployeeCheckInOutBody = TypeOf<typeof EmployeeCheckInOutBody>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
+export type EmployeeCheckInOutRequest = Request<{}, {}, EmployeeCheckInOutBody> & AuthRequest;
