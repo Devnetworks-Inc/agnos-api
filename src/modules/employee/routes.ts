@@ -1,8 +1,8 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { EmployeeCheckInOut, EmployeeCreate, EmployeeGet, EmployeeUpdate } from "./schema"
-import { employeeCreateController } from "./ctrl.post"
+import { EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeUpdate } from "./schema"
+import { employeeCreateController, employeeCreateShareableUrlController } from "./ctrl.post"
 import { employeeCheckInOutController, employeeUpdateController } from "./ctrl.patch"
 import { employeeGetController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
@@ -23,6 +23,7 @@ employeeRouter.patch(
 
 employeeRouter.use(employeeBaseUrl, authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
 
+employeeRouter.post(employeeBaseUrl+'/shareable-url', validateRequest(EmployeeCreateShareableUrl), employeeCreateShareableUrlController)
 employeeRouter.post(employeeBaseUrl, validateRequest(EmployeeCreate), employeeCreateController)
 employeeRouter.get(employeeBaseUrl, validateRequest(EmployeeGet), employeeGetController)
 employeeRouter.patch(employeeBaseUrl+'/check-in-out/:id',  validateRequest(EmployeeCheckInOut), employeeCheckInOutController)

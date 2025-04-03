@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
-import { Employee, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeGetQuery, EmployeeUpdateBody, EmployeeWorkLog } from "./schema";
+import { Employee, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetQuery, EmployeeUpdateBody, EmployeeWorkLog } from "./schema";
 import { IdParam } from "../id/schema";
 import { employeeBaseUrl } from "./routes";
 
@@ -22,6 +22,24 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
     responses: {
       200: successJsonResponse("Employee", Employee),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
+    path: employeeBaseUrl+'/shareable-url',
+    summary: "generate employee shareable url",
+    tags,
+    request: {
+      body: requestBody(EmployeeCreateShareableUrlBody),
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Employee Shareable URL", z.object({
+        shareableUrl: z.string(),
+        urlExpiryDate: z.string().datetime()
+      })),
     },
   });
 
