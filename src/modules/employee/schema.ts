@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { TypeOf, z } from "zod";
+import { object, TypeOf, z } from "zod";
 import { AuthRequest } from "../auth.schema";
 
 export const EmployeeWorkLog = z.object({
@@ -46,9 +46,11 @@ export const Employee = z.object({
   rate: z.coerce.number().default(0),
   position: z.string(),
   hotelId: z.coerce.number(),  // Single hotel ID
+  shareableUrl: z.string().optional(),
+  urlExpiryDate: z.string().datetime().optional()
 });
 
-export const EmployeeCreateBody = Employee.omit({ id: true }).extend({
+export const EmployeeCreateBody = Employee.omit({ id: true, shareableUrl: true, urlExpiryDate: true }).extend({
   hotelId: z.coerce.number(),  // Single hotel ID for the employee
 });
 
@@ -81,12 +83,23 @@ export const EmployeeCheckInOut = z.object({
   body: EmployeeCheckInOutBody
 })
 
+export const EmployeeCreateShareableUrlBody = z.object({
+  id: z.number(),
+  expiryDate: z.string().datetime()
+})
+
+export const EmployeeCreateShareableUrl = z.object({
+  body: EmployeeCreateShareableUrlBody
+})
+
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;
 export type EmployeeUpdateBody = TypeOf<typeof EmployeeUpdateBody>;
 export type EmployeeGetQuery = TypeOf<typeof EmployeeGetQuery>;
 export type EmployeeCheckInOutBody = TypeOf<typeof EmployeeCheckInOutBody>;
+export type EmployeeCreateShareableUrlBody = TypeOf<typeof EmployeeCreateShareableUrlBody>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
 export type EmployeeCheckInOutRequest = Request<{}, {}, EmployeeCheckInOutBody> & AuthRequest;
+export type EmployeeCreateShareableUrlRequest = Request<{}, {}, EmployeeCreateShareableUrlBody> & AuthRequest;
