@@ -10,13 +10,11 @@ import { hotelServiceDeleteController } from "./ctrl.delete"
 
 const hotelServiceRouter = Router()
 
-export const hotelServiceBaseUrl = '/hotel-services'
-
 hotelServiceRouter.use(validateToken)
-hotelServiceRouter.post(hotelServiceBaseUrl, validateRequest(HotelServiceCreate), hotelServiceCreateController)
-hotelServiceRouter.get(hotelServiceBaseUrl+'/:id', validateRequest(IdParamRequest), hotelServiceGetByIdController)
-hotelServiceRouter.get(hotelServiceBaseUrl, hotelServiceGetAllController)
-hotelServiceRouter.patch(hotelServiceBaseUrl,  validateRequest(HotelServiceUpdate), hotelServiceUpdateController)
-hotelServiceRouter.delete(hotelServiceBaseUrl+'/:id',  validateRequest(IdParamRequest), hotelServiceDeleteController)
+hotelServiceRouter.post('/', validateRequest(HotelServiceCreate), hotelServiceCreateController)
+hotelServiceRouter.get('/:id', validateRequest(IdParamRequest), hotelServiceGetByIdController)
+hotelServiceRouter.get('/', hotelServiceGetAllController)
+hotelServiceRouter.patch('/',  validateRequest(HotelServiceUpdate), hotelServiceUpdateController)
+hotelServiceRouter.delete('/:id',  validateRequest(IdParamRequest), hotelServiceDeleteController)
 
 export default hotelServiceRouter

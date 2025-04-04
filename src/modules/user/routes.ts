@@ -9,14 +9,13 @@ import { IdParamRequest } from "../id/schema"
 import { userDeleteController } from "./ctrl.delete"
 
 const userRouter = Router()
-export const userBaseUrl = '/users'
 
-userRouter.post(userBaseUrl+'/login', validateRequest(Login), userLoginController)
+userRouter.post('/login', validateRequest(Login), userLoginController)
 
 userRouter.use(validateToken)
-userRouter.post(userBaseUrl, validateRequest(UserCreate), userCreateController)
-userRouter.get(userBaseUrl, userGetAllController)
-userRouter.patch(userBaseUrl,  validateRequest(UserUpdate), userUpdateController)
-userRouter.delete(userBaseUrl+'/:id',  validateRequest(IdParamRequest), userDeleteController)
+userRouter.post('/',validateRequest(UserCreate), userCreateController)
+userRouter.get('/', userGetAllController)
+userRouter.patch('/',  validateRequest(UserUpdate), userUpdateController)
+userRouter.delete('/:id',  validateRequest(IdParamRequest), userDeleteController)
 
 export default userRouter

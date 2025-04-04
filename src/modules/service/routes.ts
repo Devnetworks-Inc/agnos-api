@@ -10,13 +10,11 @@ import { serviceDeleteController } from "./ctrl.delete"
 
 const serviceRouter = Router()
 
-export const serviceBaseUrl = '/services'
-
 serviceRouter.use(validateToken)
-serviceRouter.post(serviceBaseUrl, validateRequest(ServiceCreate), serviceCreateController)
-serviceRouter.get(serviceBaseUrl+'/:id', validateRequest(IdParamRequest), serviceGetByIdController)
-serviceRouter.get(serviceBaseUrl, serviceGetAllController)
-serviceRouter.patch(serviceBaseUrl,  validateRequest(ServiceUpdate), serviceUpdateController)
-serviceRouter.delete(serviceBaseUrl+'/:id',  validateRequest(IdParamRequest), serviceDeleteController)
+serviceRouter.post('/', validateRequest(ServiceCreate), serviceCreateController)
+serviceRouter.get('/:id', validateRequest(IdParamRequest), serviceGetByIdController)
+serviceRouter.get('/', serviceGetAllController)
+serviceRouter.patch('/',  validateRequest(ServiceUpdate), serviceUpdateController)
+serviceRouter.delete('/:id',  validateRequest(IdParamRequest), serviceDeleteController)
 
 export default serviceRouter

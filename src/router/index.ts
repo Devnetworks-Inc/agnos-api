@@ -15,13 +15,28 @@ const version = process.env.VERSION
 export const base = `/${path}/${version}`
 console.log('Base Url: ' + base)
 
-router.use(base, userRouter)
-router.use(base, employeeRouter)
-router.use(base, hotelRouter)
-router.use(base, dailyHousekeepingRecordRouter)
-router.use(base, serviceRouter)
-router.use(base, serviceEntryRouter)
-router.use(base, hotelServiceRouter)
+export const userBaseUrl = '/users'
+router.use(base+userBaseUrl, userRouter)
+
+export const employeeBaseUrl = '/employees'
+router.use(base+employeeBaseUrl, employeeRouter)
+
+export const hotelBaseUrl = '/hotels'
+router.use(base+hotelBaseUrl, hotelRouter)
+
+export const dailyHousekeepingRecordBaseUrl = '/daily-housekeeping-records'
+router.use(base+dailyHousekeepingRecordBaseUrl, dailyHousekeepingRecordRouter)
+
+export const serviceBaseUrl = '/services'
+router.use(base+serviceBaseUrl, serviceRouter)
+
+export const serviceEntryBaseUrl = '/service-entries'
+router.use(base+serviceBaseUrl, serviceEntryRouter)
+
+export const hotelServiceBaseUrl = '/hotel-services'
+router.use(base+hotelServiceBaseUrl, hotelServiceRouter)
+
+
 router.use(base, webauthnRouter)
 
 export default router

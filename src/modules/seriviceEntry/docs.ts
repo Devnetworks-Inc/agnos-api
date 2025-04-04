@@ -3,7 +3,7 @@ import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { ServiceEntry, ServiceEntryCreateBody, ServiceEntryUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
-import { serviceEntryBaseUrl } from "./routes";
+import { serviceEntryBaseUrl } from "src/router";
 
 const tags = ["ServiceEntry"]
 
