@@ -3,7 +3,7 @@ import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { LoginBody, User, UserCreateBody, UserUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
-import { userBaseUrl } from "./routes";
+import { userBaseUrl } from "src/router";
 
 const tags = ["User"]
 

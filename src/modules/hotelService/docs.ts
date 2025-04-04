@@ -3,7 +3,7 @@ import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { HotelService, HotelServiceCreateBody, HotelServiceUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
-import { hotelServiceBaseUrl } from "./routes";
+import { hotelServiceBaseUrl } from "src/router";
 
 const tags = ["HotelService"]
 

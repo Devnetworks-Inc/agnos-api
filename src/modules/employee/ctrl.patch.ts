@@ -1,17 +1,16 @@
 import { NextFunction, Response } from "express";
 import resp from "objectify-response";
-import { EmployeeCheckInOutRequest, EmployeeUpdateRequest } from "./schema";
+import { EmployeeCheckInOutRequest, EmployeeUpdateRequest, EmployeeUrlSubmitRequest } from "./schema";
 import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
 
 export const employeeUpdateController = async (req: EmployeeUpdateRequest, res: Response, next: NextFunction) => {
-  const { id, hotelId } = req.body
+  const { id } = req.body
 
   prisma.employee.update({
     where: { id },
     data: {
       ...req.body,
-      hotelId
     }
   })
   .then((employee) => {
@@ -31,7 +30,7 @@ export const employeeUpdateController = async (req: EmployeeUpdateRequest, res: 
   })
 }
 
-export const employeeCheckInOutController = async (req: EmployeeCheckInOutRequest, res: Response, next: NextFunction) => {
+export const employeeCheckInOutController = async (req: EmployeeCheckInOutRequest, res: Response) => {
   const { currentHotelId } = req.auth!
   const { id, status } = req.body
 
@@ -99,4 +98,31 @@ export const employeeCheckInOutController = async (req: EmployeeCheckInOutReques
 
     return resp(res, workLog)
   }
+}
+
+export const employeeUrlSubmitController = async (req: EmployeeUrlSubmitRequest, res: Response) => {
+  const { shareableUrl, ...rest } = req.body
+
+  const employee =  await prisma.employee.findUnique({
+    where: { shareableUrl }
+  })
+
+  if (!employee || !employee.urlExpiryDate) {
+    return resp(res, 'Invalid Link', 400)
+  }
+
+  if (employee.urlExpiryDate < new Date()) {
+    return resp(res, 'Link already expired')
+  }
+
+  const updatedEmployee = await prisma.employee.update({
+    where: { shareableUrl },
+    data: {
+      ...rest,
+      shareableUrl: null,
+      urlExpiryDate: null
+    }
+  })
+  
+  resp(res, updatedEmployee)
 }

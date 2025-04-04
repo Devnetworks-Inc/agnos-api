@@ -10,13 +10,11 @@ import { dailyHousekeepingRecordDeleteController } from "./ctrl.delete"
 
 const dailyHousekeepingRecordRouter = Router()
 
-export const dailyHousekeepingRecordBaseUrl = '/daily-housekeeping-records'
-
-dailyHousekeepingRecordRouter.use(validateToken)
-dailyHousekeepingRecordRouter.post(dailyHousekeepingRecordBaseUrl, validateRequest(DailyHousekeepingRecordCreate), dailyHousekeepingRecordCreateController)
-dailyHousekeepingRecordRouter.get(dailyHousekeepingRecordBaseUrl+'/:id', validateRequest(IdParamRequest), dailyHousekeepingRecordGetByIdController)
-dailyHousekeepingRecordRouter.get(dailyHousekeepingRecordBaseUrl, validateRequest(DailyHousekeepingRecordGet), dailyHousekeepingRecordGetController)
-dailyHousekeepingRecordRouter.patch(dailyHousekeepingRecordBaseUrl,  validateRequest(DailyHousekeepingRecordUpdate), dailyHousekeepingRecordUpdateController)
-dailyHousekeepingRecordRouter.delete(dailyHousekeepingRecordBaseUrl+'/:id',  validateRequest(IdParamRequest), dailyHousekeepingRecordDeleteController)
+dailyHousekeepingRecordRouter.use('/', validateToken)
+dailyHousekeepingRecordRouter.post('/', validateRequest(DailyHousekeepingRecordCreate), dailyHousekeepingRecordCreateController)
+dailyHousekeepingRecordRouter.get('/:id', validateRequest(IdParamRequest), dailyHousekeepingRecordGetByIdController)
+dailyHousekeepingRecordRouter.get('/', validateRequest(DailyHousekeepingRecordGet), dailyHousekeepingRecordGetController)
+dailyHousekeepingRecordRouter.patch('/',  validateRequest(DailyHousekeepingRecordUpdate), dailyHousekeepingRecordUpdateController)
+dailyHousekeepingRecordRouter.delete('/:id',  validateRequest(IdParamRequest), dailyHousekeepingRecordDeleteController)
 
 export default dailyHousekeepingRecordRouter

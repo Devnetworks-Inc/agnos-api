@@ -3,7 +3,7 @@ import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { DailyHousekeepingRecord, DailyHousekeepingRecordCreateBody, DailyHousekeepingRecordGetQuery, DailyHousekeepingRecordUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
-import { dailyHousekeepingRecordBaseUrl } from "./routes";
+import { dailyHousekeepingRecordBaseUrl } from "src/router";
 
 const tags = ["DailyHousekeepingRecord"]
 

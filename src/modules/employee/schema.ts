@@ -27,24 +27,24 @@ export const Employee = z.object({
   lastName: z.string(),
   birthdate: z.string().datetime(),
   gender: Gender,
-  religion: z.string(),
-  civilStatus: z.string(),
-  nationality: z.string(),
+  religion: z.string().optional(),
+  civilStatus: z.string().default(''),
+  nationality: z.string().optional(),
   children: EmployeeChildren.optional(),
-  mobileNumber: z.string(),
-  telephoneNumber: z.string(),
-  email: z.string(),
+  mobileNumber: z.string().optional(),
+  telephoneNumber: z.string().optional(),
+  email: z.string().optional(),
   address: z.string(),
-  emergencyContactName: z.string(),
-  emergencyContactNumber: z.string(),
-  healthInsurance: z.string(),
-  AHVNumber: z.string(),
-  bankAccount: z.string(),
-  iban: z.string(),
-  hiredDate: z.string().datetime(),
-  rateType: z.string(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactNumber: z.string().optional(),
+  healthInsurance: z.string().optional(),
+  AHVNumber: z.string().optional(),
+  bankAccount: z.string().optional(),
+  iban: z.string().optional(),
+  hiredDate: z.string().datetime().optional(),
+  rateType: z.string().optional(),
   rate: z.coerce.number().default(0),
-  position: z.string(),
+  position: z.string().optional(),
   hotelId: z.coerce.number(),  // Single hotel ID
   shareableUrl: z.string().optional(),
   urlExpiryDate: z.string().datetime().optional()
@@ -92,14 +92,24 @@ export const EmployeeCreateShareableUrl = z.object({
   body: EmployeeCreateShareableUrlBody
 })
 
+export const EmployeeUrlSubmitBody = EmployeeCreateBody.omit({ hotelId: true }).extend({
+  shareableUrl: z.string()  
+})
+
+export const EmployeeUrlSubmit = z.object({
+  body: EmployeeUrlSubmitBody
+})
+
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;
 export type EmployeeUpdateBody = TypeOf<typeof EmployeeUpdateBody>;
 export type EmployeeGetQuery = TypeOf<typeof EmployeeGetQuery>;
 export type EmployeeCheckInOutBody = TypeOf<typeof EmployeeCheckInOutBody>;
 export type EmployeeCreateShareableUrlBody = TypeOf<typeof EmployeeCreateShareableUrlBody>;
+export type EmployeeUrlSubmitBody = TypeOf<typeof EmployeeUrlSubmitBody>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
 export type EmployeeCheckInOutRequest = Request<{}, {}, EmployeeCheckInOutBody> & AuthRequest;
 export type EmployeeCreateShareableUrlRequest = Request<{}, {}, EmployeeCreateShareableUrlBody> & AuthRequest;
+export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;
