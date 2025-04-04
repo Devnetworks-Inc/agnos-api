@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { object, TypeOf, z } from "zod";
+import { TypeOf, z } from "zod";
 import { AuthRequest } from "../auth.schema";
 
 export const EmployeeWorkLog = z.object({
@@ -35,8 +35,8 @@ export const Employee = z.object({
   telephoneNumber: z.string(),
   email: z.string(),
   address: z.string(),
-  emergycyContactName: z.string(),
-  emergycyContactNumber: z.string(),
+  emergencyContactName: z.string(),
+  emergencyContactNumber: z.string(),
   healthInsurance: z.string(),
   AHVNumber: z.string(),
   bankAccount: z.string(),

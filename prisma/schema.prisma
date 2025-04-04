@@ -44,8 +44,8 @@ model employee {
   telephoneNumber String @default("") // Telefon
   email String @default("")
   address String // Addresse
-  emergycyContactName String @default("") // Notfallkontakt Name
-  emergycyContactNumber String @default("") // Notfallkontakt Telefon
+  emergencyContactName String @default("") // Notfallkontakt Name
+  emergencyContactNumber String @default("") // Notfallkontakt Telefon
   healthInsurance String @default("") // Krankenkasse
   AHVNumber String @default("")
   bankAccount String @default("")
