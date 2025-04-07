@@ -6,12 +6,21 @@ export const EmployeeWorkLog = z.object({
   id: z.number(),
   employeeId: z.number(),
   checkInDate: z.string().datetime(),
-  checkOutDate: z.string().datetime().optional()
+  checkOutDate: z.string().datetime().optional(),
+  totalSeconds: z.number().optional(),
+})
+
+export const EmployeeBreakLog = z.object({
+  id: z.number(),
+  workLogId: z.number(),
+  breakStartDate: z.string().datetime(),
+  breakEndDate: z.string().datetime().optional(),
+  totalSeconds: z.number().optional(),
 })
 
 export const Gender = z.enum(['male', 'female']);
 
-export const EmployeeStatus = z.enum(['check_in', 'check_out'])
+export const EmployeeStatus = z.enum(['check_in', 'check_out', 'on_break'])
 
 export const EmployeeChildren = z.array(z.object({
   firstName: z.string(),
@@ -76,11 +85,22 @@ export const EmployeeGet = z.object({
 
 export const EmployeeCheckInOutBody = z.object({
   id: z.number(),
-  status: EmployeeStatus
+  status: z.enum(['check_in', 'check_out']),
+  date: z.string().datetime(),
 });
 
 export const EmployeeCheckInOut = z.object({
   body: EmployeeCheckInOutBody
+})
+
+export const EmployeeBreakStartEndBody = z.object({
+  id: z.number(),
+  status: z.enum(['start_break', 'end_break']),
+  date: z.string().datetime(),
+});
+
+export const EmployeeBreakStartEnd = z.object({
+  body: EmployeeBreakStartEndBody
 })
 
 export const EmployeeCreateShareableUrlBody = z.object({
@@ -107,9 +127,11 @@ export type EmployeeGetQuery = TypeOf<typeof EmployeeGetQuery>;
 export type EmployeeCheckInOutBody = TypeOf<typeof EmployeeCheckInOutBody>;
 export type EmployeeCreateShareableUrlBody = TypeOf<typeof EmployeeCreateShareableUrlBody>;
 export type EmployeeUrlSubmitBody = TypeOf<typeof EmployeeUrlSubmitBody>;
+export type EmployeeBreakStartEndBody = TypeOf<typeof EmployeeBreakStartEndBody>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
 export type EmployeeCheckInOutRequest = Request<{}, {}, EmployeeCheckInOutBody> & AuthRequest;
 export type EmployeeCreateShareableUrlRequest = Request<{}, {}, EmployeeCreateShareableUrlBody> & AuthRequest;
+export type EmployeeBreakStartEndRequest = Request<{}, {}, EmployeeBreakStartEndBody> & AuthRequest;
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;

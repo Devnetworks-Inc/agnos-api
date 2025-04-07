@@ -78,12 +78,24 @@ model employee_work_log {
   employeeId Int
   checkInDate DateTime
   checkOutDate DateTime?
+  totalSeconds Int?
   employee employee @relation(fields: [employeeId], references: [id])
+  breaks employee_break_log[]
+}
+
+model employee_break_log {
+  id Int @id @default(autoincrement())
+  workLogId Int
+  breakStartDate DateTime
+  breakEndDate DateTime?
+  totalSeconds Int?
+  workLog employee_work_log @relation(fields: [workLogId], references: [id])
 }
 
 enum employee_status {
   check_in
   check_out
+  on_break
 }
 
 enum gender {

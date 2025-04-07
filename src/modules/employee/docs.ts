@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetQuery, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetQuery, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -70,6 +70,21 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
     responses: {
       200: successJsonResponse("Employee Work Log", EmployeeWorkLog),
+    },
+  });
+
+  registry.registerPath({
+    method: "patch",
+    path: employeeBaseUrl+'/break-start-end/{id}',
+    summary: "break-start/break-end employee",
+    tags,
+    request: {
+      body: requestBody(EmployeeBreakStartEndBody),
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Employee Break Log", EmployeeBreakLog),
     },
   });
 
