@@ -32,15 +32,17 @@ export const employeeUpdateController = async (req: EmployeeUpdateRequest, res: 
 }
 
 export const employeeCheckInOutController = async (req: EmployeeCheckInOutRequest, res: Response) => {
-  const { currentHotelId } = req.auth!
+  const { role, currentHotelId } = req.auth!
   const { id, status } = req.body
   const date = new Date(req.body.date)
 
-  if (!currentHotelId) {
+  if (role !== 'agnos_admin' && !currentHotelId) {
     return resp(res, 'Unauthorized', 401)
   }
 
-  const employee = await prisma.employee.findUnique({ where: { id }, select: { status: true } })
+  const hotelId = currentHotelId ?? undefined
+
+  const employee = await prisma.employee.findUnique({ where: { id, hotelId }, select: { status: true } })
 
   if (!employee) {
     return resp(res, 'Employee not found', 404)
@@ -141,16 +143,18 @@ export const employeeUrlSubmitController = async (req: EmployeeUrlSubmitRequest,
 }
 
 export const employeeBreakStartEndController = async (req: EmployeeBreakStartEndRequest, res: Response) => {
-  const { currentHotelId } = req.auth!
+  const { role, currentHotelId } = req.auth!
   const { id, status } = req.body
   const date = new Date(req.body.date)
 
-  if (!currentHotelId) {
+  if (role !== 'agnos_admin' && !currentHotelId) {
     return resp(res, 'Unauthorized', 401)
   }
 
+  const hotelId = currentHotelId ?? undefined
+
   const employee = await prisma.employee.findUnique({
-    where: { id, hotelId: currentHotelId },
+    where: { id, hotelId },
     select: { 
       status: true, workLog: {  where: { checkOutDate: null }, orderBy: { checkInDate: 'desc' }, take: 1  } 
     }

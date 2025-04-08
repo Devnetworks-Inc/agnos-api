@@ -18,6 +18,28 @@ export const EmployeeBreakLog = z.object({
   totalSeconds: z.number().optional(),
 })
 
+export const EmployeeBreakLogCreate = EmployeeBreakLog.omit({
+  id: true, workLogId: true, totalSeconds: true
+})
+
+export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
+  id: true, totalSeconds: true,
+}).extend({
+  breaks: z.array(EmployeeBreakLogCreate).optional()
+})
+
+export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.partial().extend({
+  id: z.number()
+})
+
+export const EmployeeWorkLogCreate = z.object({
+  body: EmployeeWorkLogCreateBody
+})
+
+export const EmployeeWorkLogUpdate = z.object({
+  body: EmployeeWorkLogUpdateBody
+})
+
 export const Gender = z.enum(['male', 'female']);
 
 export const EmployeeStatus = z.enum(['check_in', 'check_out', 'on_break'])

@@ -18,12 +18,6 @@ employeeRouter.get('/url/:url', validateRequest(EmployeeGetByUrl), employeeGetBy
 // protected routes
 employeeRouter.use(validateToken)
 
-employeeRouter.patch(
-  '/check-in-out/:id',
-  authorizeRoles(['hsk_manager', 'hotel_manager']),
-  validateRequest(EmployeeCheckInOut), employeeCheckInOutController
-)
-
 employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
 
 employeeRouter.post('/shareable-url', validateRequest(EmployeeCreateShareableUrl), employeeCreateShareableUrlController)
