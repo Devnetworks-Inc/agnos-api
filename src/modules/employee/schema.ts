@@ -83,6 +83,14 @@ export const EmployeeGet = z.object({
   query: EmployeeGetQuery
 });
 
+export const EmployeeGetByUrlParam = z.object({
+  url: z.string(),
+});
+
+export const EmployeeGetByUrl = z.object({
+  params: EmployeeGetByUrlParam
+});
+
 export const EmployeeCheckInOutBody = z.object({
   id: z.number(),
   status: z.enum(['check_in', 'check_out']),
@@ -128,10 +136,12 @@ export type EmployeeCheckInOutBody = TypeOf<typeof EmployeeCheckInOutBody>;
 export type EmployeeCreateShareableUrlBody = TypeOf<typeof EmployeeCreateShareableUrlBody>;
 export type EmployeeUrlSubmitBody = TypeOf<typeof EmployeeUrlSubmitBody>;
 export type EmployeeBreakStartEndBody = TypeOf<typeof EmployeeBreakStartEndBody>;
+export type EmployeeGetByUrlParam = TypeOf<typeof EmployeeGetByUrlParam>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
 export type EmployeeCheckInOutRequest = Request<{}, {}, EmployeeCheckInOutBody> & AuthRequest;
 export type EmployeeCreateShareableUrlRequest = Request<{}, {}, EmployeeCreateShareableUrlBody> & AuthRequest;
 export type EmployeeBreakStartEndRequest = Request<{}, {}, EmployeeBreakStartEndBody> & AuthRequest;
+export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;

@@ -125,7 +125,7 @@ export const employeeUrlSubmitController = async (req: EmployeeUrlSubmitRequest,
   }
 
   if (employee.urlExpiryDate < new Date()) {
-    return resp(res, 'Link already expired')
+    return resp(res, 'Link already expired', 400)
   }
 
   const updatedEmployee = await prisma.employee.update({
@@ -209,7 +209,7 @@ export const employeeBreakStartEndController = async (req: EmployeeBreakStartEnd
     }
 
     if (date < breakLog.breakStartDate) {
-      return resp(res, 'Date must be greater than start-break date')
+      return resp(res, 'Date must be greater than start-break date', 400)
     }
 
     const diffInSecs = differenceInSeconds(date, breakLog.breakStartDate)
