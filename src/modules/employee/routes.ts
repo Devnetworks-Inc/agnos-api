@@ -1,10 +1,10 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeUpdate, EmployeeUrlSubmit } from "./schema"
+import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController } from "./ctrl.post"
 import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUrlSubmitController } from "./ctrl.patch"
-import { employeeGetController } from "./ctrl.get"
+import { employeeGetByUrlController, employeeGetController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -13,6 +13,7 @@ const employeeRouter = Router()
 
 // public route
 employeeRouter.patch('/url-submit',  validateRequest(EmployeeUrlSubmit), employeeUrlSubmitController)
+employeeRouter.get('/url/:url', validateRequest(EmployeeGetByUrl), employeeGetByUrlController)
 
 // protected routes
 employeeRouter.use(validateToken)

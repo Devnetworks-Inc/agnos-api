@@ -1,8 +1,10 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import resp from "objectify-response";
 import prisma from "../prisma";
-import { EmployeeGetRequest } from "./schema";
+import { EmployeeGetByUrlRequest, EmployeeGetRequest } from "./schema";
 import { Prisma } from "@prisma/client";
+import { IdParam } from "../id/schema";
+import { AuthRequest } from "../auth.schema";
 
 export const employeeGetController = async (req: EmployeeGetRequest, res: Response) => {
   const { role, currentHotelId } = req.auth!
@@ -21,5 +23,29 @@ export const employeeGetController = async (req: EmployeeGetRequest, res: Respon
   }
 
   const employees = await prisma.employee.findMany({ where, include: { hotel: {select: { name: true }} } });
-  return resp(res, employees)
+  resp(res, employees)
+}
+
+export const employeeGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
+  const employee = await prisma.employee.findUnique({ where: { id: +req.params.id } })
+
+  if (!employee) {
+    return resp(res, 'Employee not found', 404)
+  }
+  
+  resp(res, employee)
+}
+
+export const employeeGetByUrlController = async (req: EmployeeGetByUrlRequest, res: Response) => {
+  const employee = await prisma.employee.findUnique({ where: { shareableUrl: req.params.url } })
+
+  if (!employee) {
+    return resp(res, 'Invalid link', 400)
+  }
+
+  if (employee.urlExpiryDate && employee.urlExpiryDate < new Date()) {
+    return resp(res, 'Link already expired', 400)
+  }
+  
+  resp(res, employee)
 }
