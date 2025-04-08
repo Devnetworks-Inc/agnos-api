@@ -73,6 +73,21 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
   });
 
   registry.registerPath({
+    method: "get",
+    path: employeeBaseUrl+'/{id}',
+    summary: "get employee by id",
+    tags,
+    request: {
+      params: IdParam
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Employee", EmployeeSchema),
+    },
+  });
+
+  registry.registerPath({
     method: "patch",
     path: employeeBaseUrl+'/check-in-out/{id}',
     summary: "check-in/check-out employee",

@@ -4,7 +4,7 @@ import { validateToken } from "src/middlewares/validateToken"
 import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController } from "./ctrl.post"
 import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUrlSubmitController } from "./ctrl.patch"
-import { employeeGetByUrlController, employeeGetController } from "./ctrl.get"
+import { employeeGetByIdController, employeeGetByUrlController, employeeGetController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -28,6 +28,7 @@ employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager'
 
 employeeRouter.post('/shareable-url', validateRequest(EmployeeCreateShareableUrl), employeeCreateShareableUrlController)
 employeeRouter.post('/', validateRequest(EmployeeCreate), employeeCreateController)
+employeeRouter.get('/:id', validateRequest(IdParamRequest), employeeGetByIdController)
 employeeRouter.get('/', validateRequest(EmployeeGet), employeeGetController)
 employeeRouter.patch('/check-in-out/:id',  validateRequest(EmployeeCheckInOut), employeeCheckInOutController)
 employeeRouter.patch('/break-start-end/:id',  validateRequest(EmployeeBreakStartEnd), employeeBreakStartEndController)
