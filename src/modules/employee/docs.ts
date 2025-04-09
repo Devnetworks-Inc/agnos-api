@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetAttendancesQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -84,6 +84,28 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
     responses: {
       200: successJsonResponse("Employee", EmployeeSchema),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: employeeBaseUrl+'/attendances',
+    summary: "get employees attendances",
+    tags,
+    request: {
+      query: EmployeeGetAttendancesQuery
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse(
+        "Employees Attendances",
+        Employee.pick({
+          id: true, firstName: true, middleName: true, lastName: true
+        }).extend({
+          workLog: z.array(EmployeeWorkLog)
+        })
+      )
     },
   });
 

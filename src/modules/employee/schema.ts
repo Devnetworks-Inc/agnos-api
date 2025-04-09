@@ -150,6 +150,16 @@ export const EmployeeUrlSubmit = z.object({
   body: EmployeeUrlSubmitBody
 })
 
+export const EmployeeGetAttendancesQuery = z.object({
+  hotelId: z.number().optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional()
+})
+
+export const EmployeeGetAttendances = z.object({
+  query: EmployeeGetAttendancesQuery
+})
+
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;
 export type EmployeeUpdateBody = TypeOf<typeof EmployeeUpdateBody>;
@@ -159,11 +169,13 @@ export type EmployeeCreateShareableUrlBody = TypeOf<typeof EmployeeCreateShareab
 export type EmployeeUrlSubmitBody = TypeOf<typeof EmployeeUrlSubmitBody>;
 export type EmployeeBreakStartEndBody = TypeOf<typeof EmployeeBreakStartEndBody>;
 export type EmployeeGetByUrlParam = TypeOf<typeof EmployeeGetByUrlParam>;
+export type EmployeeGetAttendancesQuery = TypeOf<typeof EmployeeGetAttendancesQuery>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
 export type EmployeeCheckInOutRequest = Request<{}, {}, EmployeeCheckInOutBody> & AuthRequest;
 export type EmployeeCreateShareableUrlRequest = Request<{}, {}, EmployeeCreateShareableUrlBody> & AuthRequest;
 export type EmployeeBreakStartEndRequest = Request<{}, {}, EmployeeBreakStartEndBody> & AuthRequest;
+export type EmployeeGetAttendancesRequest = Request<{}, {}, {}, EmployeeGetAttendancesQuery> & AuthRequest;
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;
