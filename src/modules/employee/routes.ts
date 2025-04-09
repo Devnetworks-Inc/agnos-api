@@ -1,10 +1,10 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit } from "./schema"
+import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetAttendances, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController } from "./ctrl.post"
 import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUrlSubmitController } from "./ctrl.patch"
-import { employeeGetByIdController, employeeGetByUrlController, employeeGetController } from "./ctrl.get"
+import { employeeGetAttendancesController, employeeGetByIdController, employeeGetByUrlController, employeeGetController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -22,6 +22,7 @@ employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager'
 
 employeeRouter.post('/shareable-url', validateRequest(EmployeeCreateShareableUrl), employeeCreateShareableUrlController)
 employeeRouter.post('/', validateRequest(EmployeeCreate), employeeCreateController)
+employeeRouter.get('/attendances', validateRequest(EmployeeGetAttendances), employeeGetAttendancesController)
 employeeRouter.get('/:id', validateRequest(IdParamRequest), employeeGetByIdController)
 employeeRouter.get('/', validateRequest(EmployeeGet), employeeGetController)
 employeeRouter.patch('/check-in-out/:id',  validateRequest(EmployeeCheckInOut), employeeCheckInOutController)
