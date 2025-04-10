@@ -79,7 +79,7 @@ model employee_work_log {
   checkInDate DateTime
   checkOutDate DateTime?
   totalSeconds Int?
-  employee employee @relation(fields: [employeeId], references: [id])
+  employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   breaks employee_break_log[]
 }
 
@@ -89,13 +89,15 @@ model employee_break_log {
   breakStartDate DateTime
   breakEndDate DateTime?
   totalSeconds Int?
-  workLog employee_work_log @relation(fields: [workLogId], references: [id])
+  workLog employee_work_log @relation(fields: [workLogId], references: [id], onDelete: Cascade)
 }
 
 enum employee_status {
-  check_in
-  check_out
+  checked_in
+  checked_out
   on_break
+  absent
+  day_off
 }
 
 enum gender {
