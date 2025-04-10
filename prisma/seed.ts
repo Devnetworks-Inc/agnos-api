@@ -25,7 +25,7 @@ async function main() {
       email: '',
       address: 'molave zds',
       hiredDate: new Date(),
-      status: 'check_out',
+      status: 'checked_out',
       rateType: '',
       rate: 100,
       position: '',

@@ -11,7 +11,7 @@ export const employeeCreateController = async (req: EmployeeCreateRequest, res: 
     data: {
       ...req.body,
       hotelId,
-      status: "check_out",
+      status: "checked_out",
     }
   })
 

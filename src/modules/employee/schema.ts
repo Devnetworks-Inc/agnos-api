@@ -42,7 +42,7 @@ export const EmployeeWorkLogUpdate = z.object({
 
 export const Gender = z.enum(['male', 'female']);
 
-export const EmployeeStatus = z.enum(['check_in', 'check_out', 'on_break'])
+export const EmployeeStatus = z.enum(['checked_in', 'checked_out', 'on_break'])
 
 export const EmployeeChildren = z.array(z.object({
   firstName: z.string(),

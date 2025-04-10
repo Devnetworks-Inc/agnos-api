@@ -48,11 +48,11 @@ export const employeeCheckInOutController = async (req: EmployeeCheckInOutReques
     return resp(res, 'Employee not found', 404)
   }
 
-  if (employee.status === 'check_in' && status === 'check_in') {
+  if (employee.status === 'checked_in' && status === 'check_in') {
     return resp(res, 'Employee already check-in', 400)
   }
 
-  if (employee.status === 'check_out' && status === 'check_out') {
+  if (employee.status === 'checked_out' && status === 'check_out') {
     return resp(res, 'Employee already check-out', 400)
   }
 
@@ -67,7 +67,7 @@ export const employeeCheckInOutController = async (req: EmployeeCheckInOutReques
       }),
       prisma.employee.update({
         where: { id },
-        data: { status: 'check_in' }
+        data: { status: 'checked_in' }
       })
     ])
     return resp(res, workLog)
@@ -107,7 +107,7 @@ export const employeeCheckInOutController = async (req: EmployeeCheckInOutReques
       }),
       prisma.employee.update({
         where: { id },
-        data: { status: 'check_out' }
+        data: { status: 'checked_out' }
       })
     ])
 
@@ -164,7 +164,7 @@ export const employeeBreakStartEndController = async (req: EmployeeBreakStartEnd
     return resp(res, 'Employee not found', 404)
   }
 
-  if (employee.status === 'check_out') {
+  if (employee.status === 'checked_out') {
     return resp(res, 'Employee already check-out', 400)
   }
 
@@ -172,7 +172,7 @@ export const employeeBreakStartEndController = async (req: EmployeeBreakStartEnd
     return resp(res, 'Employee already on break', 400)
   }
 
-  if (employee.status === 'check_in' && status === 'end_break') {
+  if (employee.status === 'checked_in' && status === 'end_break') {
     return resp(res, 'Employee is not on break', 400)
   }
 
@@ -228,7 +228,7 @@ export const employeeBreakStartEndController = async (req: EmployeeBreakStartEnd
       }),
       prisma.employee.update({
         where: { id },
-        data: { status: 'check_in' }
+        data: { status: 'checked_in' }
       })
     ])
 
