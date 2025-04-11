@@ -1,9 +1,9 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetAttendances, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit } from "./schema"
+import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetAttendances, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogUpdate } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController } from "./ctrl.post"
-import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUrlSubmitController } from "./ctrl.patch"
+import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUpdateWorkLogController, employeeUrlSubmitController } from "./ctrl.patch"
 import { employeeGetAttendancesController, employeeGetByIdController, employeeGetByUrlController, employeeGetController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController } from "./ctrl.delete"
@@ -27,6 +27,7 @@ employeeRouter.get('/:id', validateRequest(IdParamRequest), employeeGetByIdContr
 employeeRouter.get('/', validateRequest(EmployeeGet), employeeGetController)
 employeeRouter.patch('/check-in-out/:id',  validateRequest(EmployeeCheckInOut), employeeCheckInOutController)
 employeeRouter.patch('/break-start-end/:id',  validateRequest(EmployeeBreakStartEnd), employeeBreakStartEndController)
+employeeRouter.patch('/work-log/:workLogId',  validateRequest(EmployeeWorkLogUpdate), employeeUpdateWorkLogController)
 employeeRouter.patch('/',  validateRequest(EmployeeUpdate), employeeUpdateController)
 employeeRouter.delete('/:id',  validateRequest(IdParamRequest), employeeDeleteController)
 
