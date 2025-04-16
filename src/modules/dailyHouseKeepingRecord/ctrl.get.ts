@@ -14,7 +14,8 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
     where: { date: {
       gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
       lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
-    }}
+    }},
+    include: { hotel: { select: { name: true } } }
   })
 
   return resp(res, dailyHousekeepingRecords)
@@ -23,7 +24,8 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
 export const dailyHousekeepingRecordGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
   const id = +req.params.id
   const dailyHousekeepingRecord = await prisma.daily_housekeeping_record.findUnique({
-    where: { id }
+    where: { id },
+    include: { hotel: { select: { name: true } } }
   });
   if (!dailyHousekeepingRecord) {
     return resp(res, 'Record not found', 404)
