@@ -1,6 +1,7 @@
 import { NextFunction, Response } from "express";
 import resp from "objectify-response";
 import {
+  EmployeeBreakLogCreate,
   EmployeeBreakStartEndRequest,
   EmployeeCheckInOutRequest,
   EmployeeUpdateRequest,
@@ -8,7 +9,7 @@ import {
   EmployeeWorkLogUpdateRequest,
 } from "./schema";
 import prisma from "../prisma";
-import { Prisma } from "@prisma/client";
+import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds } from "date-fns";
 
 export const employeeUpdateController = async (
@@ -59,6 +60,10 @@ export const employeeCheckInOutController = async (
 
   if (!employee) {
     return resp(res, "Employee not found", 404);
+  }
+
+  if (employee.status === "on_break") {
+    return resp(res, "Employee is On Break", 400);
   }
 
   if (employee.status === "checked_in" && status === "check_in") {
@@ -275,48 +280,142 @@ export const employeeUpdateWorkLogController = async (
   res: Response,
   next: NextFunction
 ) => {
-  let { workLogId: id, checkInDate, checkOutDate } = req.body;
-  const workLog = await prisma.employee_work_log.findUnique({ where: { id }, include: { breaks: true } })
+  let { workLogId: id, breaks, employeeId } = req.body;
+  const workLog = await prisma.employee_work_log.findUnique({ where: { id }, include: { breaks: true, employee: { select: { status: true } } } })
   if (!workLog) {
     return resp(res, "Record to update not found.", 404);
   }
 
-  checkInDate = checkInDate || workLog.checkInDate.toISOString()
-  checkOutDate = checkOutDate === undefined ? workLog.checkOutDate?.toISOString() : checkOutDate
-  let totalSeconds = 0
+  let status: employee_status = 'checked_in'
+
+  const checkInDate = new Date(req.body.checkInDate)
+  const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
+  const newBreaks: (EmployeeBreakLogCreate & { totalSeconds?: number })[] = []
+  let totalSeconds = workLog.totalSeconds
+  
+  let lastBreak: EmployeeBreakLogCreate | undefined
+
+  if (breaks) {
+    for (const val of breaks) {
+      const breakStartDate = new Date(val.breakStartDate)
+      const breakEndDate = val.breakEndDate && new Date(val.breakEndDate)
+      const lastEndBreak = lastBreak?.breakEndDate && new Date(lastBreak.breakEndDate)
+      
+
+      if (lastBreak && !lastEndBreak) {
+        return resp(res, "Break End time are required in previous breaks", 400)
+      }
+      if (breakStartDate < checkInDate) {
+        return resp(res, "Break Start time should be greater than Check-In time", 400)
+      }
+      if (lastEndBreak && breakStartDate < lastEndBreak) {
+        return resp(res, "Break Start time should be greater than previous Break End time", 400)
+      }
+      if (breakEndDate && breakEndDate < breakStartDate) {
+        return resp(res, "End-Break must be greater than Start-Break", 400);
+      }
+      lastBreak = val
+      const seconds = breakEndDate ? differenceInSeconds(breakEndDate, breakStartDate) : 0
+      newBreaks.push({ ...val, totalSeconds: seconds})
+    }
+  }
+
+  if (lastBreak && !lastBreak.breakEndDate) {
+    status = 'on_break'
+  } else {
+    status = 'checked_in'
+  }
 
   if (checkOutDate) {
-    if (new Date(checkOutDate) < workLog.checkInDate) {
-      return resp(res, "Check-Out date must be greater than work log Check-In date");
+    totalSeconds = totalSeconds ?? 0
+    const { breakEndDate } = lastBreak ?? {}
+
+    if (status === 'on_break') {
+      return resp(res, "Cannot check-out if employee is on break", 400);
+    }
+    if (checkOutDate < checkInDate) {
+      return resp(res, "Check-Out date must be greater than Check-In date", 400);
+    }
+    if (breakEndDate && (new Date(breakEndDate) > checkOutDate)) {
+      return resp(res, "Check-Out date must be greater than Break End date", 400);
     }
 
-    const breakTotalSeconds = workLog.breaks.reduce(
+    const breakTotalSeconds = newBreaks.reduce(
       (acc, val) => acc + (val.totalSeconds ?? 0),
       0
     );
 
-    totalSeconds =
-      differenceInSeconds(checkOutDate, workLog.checkInDate) - breakTotalSeconds;
+    if (breaks) {
+      totalSeconds = differenceInSeconds(checkOutDate, checkInDate) - breakTotalSeconds
+    } else {
+      const diffSecs =  differenceInSeconds(checkOutDate, checkInDate)
+      const breaksTotalSeconds = diffSecs - totalSeconds
+      totalSeconds = diffSecs - breaksTotalSeconds
+    }
+
+    status = 'checked_out'
+  } else {
+    totalSeconds = null
   }
 
-  prisma.employee_work_log
-    .update({
+  const [newWorkLog, employee] = await prisma.$transaction([
+    prisma.employee_work_log.update({
       where: { id },
       data: {
+        employeeId,
         checkInDate,
         checkOutDate,
-        totalSeconds
+        totalSeconds,
+        breaks: breaks ? {
+          deleteMany: {},
+          create: newBreaks
+        } : undefined,
       },
+      include: { breaks: true }
+    }),
+    prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        status,
+      },
+      select: { id: true, status: true }
     })
-    .then((workLog) => {
-      resp(res, workLog);
-    })
-    .catch((e) => {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2025") {
-          return resp(res, "Record to update not found.", 404);
-        }
-      }
-      next(e);
-    });
+  ])
+
+  resp(res, {...employee, workLog: newWorkLog})
+
+  // if (checkOutDate) {
+  //   if (new Date(checkOutDate) < workLog.checkInDate) {
+  //     return resp(res, "Check-Out date must be greater than work log Check-In date");
+  //   }
+
+  //   const breakTotalSeconds = workLog.breaks.reduce(
+  //     (acc, val) => acc + (val.totalSeconds ?? 0),
+  //     0
+  //   );
+
+  //   totalSeconds =
+  //     differenceInSeconds(checkOutDate, workLog.checkInDate) - breakTotalSeconds;
+  // }
+
+  // prisma.employee_work_log
+  //   .update({
+  //     where: { id },
+  //     data: {
+  //       checkInDate,
+  //       checkOutDate,
+  //       totalSeconds
+  //     },
+  //   })
+  //   .then((workLog) => {
+  //     resp(res, workLog);
+  //   })
+  //   .catch((e) => {
+  //     if (e instanceof Prisma.PrismaClientKnownRequestError) {
+  //       if (e.code === "P2025") {
+  //         return resp(res, "Record to update not found.", 404);
+  //       }
+  //     }
+  //     next(e);
+  //   });
 };

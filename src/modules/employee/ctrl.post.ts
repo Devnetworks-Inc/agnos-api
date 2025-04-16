@@ -1,8 +1,10 @@
 import resp from "objectify-response";
 import { NextFunction, Response } from "express";
 import prisma from "../prisma";
-import { EmployeeCreateRequest, EmployeeCreateShareableUrlRequest } from "./schema";
+import { EmployeeBreakLogCreate, EmployeeCreateRequest, EmployeeCreateShareableUrlRequest, EmployeeWorkLogCreateRequest } from "./schema";
 import { nanoid } from "nanoid";
+import { employee_status } from "@prisma/client";
+import { differenceInSeconds } from "date-fns";
 
 export const employeeCreateController = async (req: EmployeeCreateRequest, res: Response, next: NextFunction) => {
   const { hotelId } = req.body
@@ -30,4 +32,96 @@ export const employeeCreateShareableUrlController = async (req: EmployeeCreateSh
   })
 
   resp(res, { shareableUrl, urlExpiryDate })
+};
+
+export const employeeCreateWorkLogController = async (
+  req: EmployeeWorkLogCreateRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  let { breaks = [], employeeId } = req.body;
+  let status: employee_status = 'checked_in'
+
+  const checkInDate = new Date(req.body.checkInDate)
+  const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
+  const newBreaks: (EmployeeBreakLogCreate & { totalSeconds?: number })[] = []
+
+  let totalSeconds = 0
+  let lastBreak: EmployeeBreakLogCreate | undefined
+
+  if (breaks.length) {
+    for (const val of breaks) {
+      const breakStartDate = new Date(val.breakStartDate)
+      const breakEndDate = val.breakEndDate && new Date(val.breakEndDate)
+      const lastEndBreak = lastBreak?.breakEndDate && new Date(lastBreak.breakEndDate)
+      
+
+      if (lastBreak && !lastEndBreak) {
+        return resp(res, "End-Break are required in previous breaks")
+      }
+      if (breakStartDate < checkInDate) {
+        return resp(res, "Break Start time should be greater than Check-In time", 400)
+      }
+      if (lastEndBreak && breakStartDate < lastEndBreak) {
+        return resp(res, "Start-Break should be greater than previous End-Break")
+      }
+      if (breakEndDate && breakEndDate < breakStartDate) {
+        return resp(res, "End-Break must be greater than Start-Break", 400);
+      }
+      lastBreak = val
+      const seconds = breakEndDate ? differenceInSeconds(breakEndDate, breakStartDate) : 0
+      newBreaks.push({ ...val, totalSeconds: seconds})
+    }
+  }
+
+  if (lastBreak && !lastBreak.breakEndDate) {
+    status = 'on_break'
+  }
+
+  if (checkOutDate) {
+    const { breakEndDate } = lastBreak ?? {}
+    if (status === 'on_break') {
+      return resp(res, "Cannot check-out if employee is on break", 400);
+    }
+    if (checkOutDate < checkInDate) {
+      return resp(res, "Check-Out date must be greater than Check-In date", 400);
+    }
+    if (breakEndDate && (new Date(breakEndDate) > checkOutDate)) {
+      return resp(res, "Check-Out date must be greater than Break End date", 400);
+    }
+
+    const breakTotalSeconds = newBreaks.reduce(
+      (acc, val) => acc + (val.totalSeconds ?? 0),
+      0
+    );
+
+    totalSeconds =
+      differenceInSeconds(checkOutDate, checkInDate) - breakTotalSeconds;
+
+    status = 'checked_out'
+  }
+
+  const [workLog, employee] = await prisma.$transaction([
+    prisma.employee_work_log.create({
+      data: {
+        employeeId,
+        checkInDate,
+        checkOutDate,
+        totalSeconds,
+        breaks: newBreaks.length ? {
+          create: newBreaks
+        } : undefined,
+      },
+      include: { breaks: true }
+    }),
+    prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        status,
+      },
+      select: { id: true, status: true }
+    })
+  ])
+
+  resp(res, {...employee, workLog})  
 };
