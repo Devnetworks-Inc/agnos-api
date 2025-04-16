@@ -125,11 +125,14 @@ model user {
 
   employee employee? @relation(fields: [employeeId], references: [id])
   currentHotel hotel? @relation(fields: [currentHotelId], references: [id])
+  housekeepingRecordApproved daily_housekeeping_record[]
 }
 
 model daily_housekeeping_record {
   id  Int @id @default(autoincrement())
   hotelId Int
+  approvedById Int?
+  approvedDate DateTime?
   date         DateTime @db.Date @unique
   occupancyPercentage Float
   numberOfRoomNights  Int
@@ -160,6 +163,7 @@ model daily_housekeeping_record {
 
   services       service_entry[]
   hotel hotel @relation(fields: [hotelId], references: [id])
+  approvedBy user? @relation(fields: [approvedById], references: [id])
 }
 
 model service {

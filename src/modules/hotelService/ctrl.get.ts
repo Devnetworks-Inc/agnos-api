@@ -26,15 +26,23 @@ export const hotelServiceGetAllController = async (req: Request & AuthRequest, r
     //   })
     // }
   }
-  const services = await prisma.hotel_service.findMany({ where });
+  const services = await prisma.hotel_service.findMany({ where, include: {
+    service: { select: { name: true } },
+    hotel: { select: { name: true } }
+  }});
   return resp(res, services)
 }
 
 export const hotelServiceGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
   const id = +req.params.id
   const hotelService = await prisma.hotel_service.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      service: { select: { name: true } },
+      hotel: { select: { name: true } }
+    }
   });
+
   if (!hotelService) {
     return resp(res, 'Service Entry not found', 404)
   }
