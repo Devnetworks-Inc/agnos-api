@@ -14,7 +14,7 @@ export const EmployeeBreakLog = z.object({
   id: z.number(),
   workLogId: z.number(),
   breakStartDate: z.string().datetime(),
-  breakEndDate: z.string().datetime().optional(),
+  breakEndDate: z.string().datetime().nullable().optional(),
   totalSeconds: z.number().optional(),
 })
 
@@ -28,9 +28,9 @@ export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
   breaks: z.array(EmployeeBreakLogCreate).optional()
 })
 
-export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.partial().extend({
+export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.extend({
   workLogId: z.number()
-}).omit({ breaks: true, employeeId: true })
+})
 
 export const EmployeeWorkLogCreate = z.object({
   body: EmployeeWorkLogCreateBody
@@ -172,6 +172,8 @@ export type EmployeeUrlSubmitBody = TypeOf<typeof EmployeeUrlSubmitBody>;
 export type EmployeeBreakStartEndBody = TypeOf<typeof EmployeeBreakStartEndBody>;
 export type EmployeeGetByUrlParam = TypeOf<typeof EmployeeGetByUrlParam>;
 export type EmployeeGetAttendancesQuery = TypeOf<typeof EmployeeGetAttendancesQuery>;
+export type EmployeeBreakLogCreate = TypeOf<typeof EmployeeBreakLogCreate>;
+export type EmployeeWorkLogCreateBody = TypeOf<typeof EmployeeWorkLogCreateBody>;
 export type EmployeeWorkLogUpdateBody = TypeOf<typeof EmployeeWorkLogUpdateBody>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
@@ -180,6 +182,7 @@ export type EmployeeCheckInOutRequest = Request<{}, {}, EmployeeCheckInOutBody> 
 export type EmployeeCreateShareableUrlRequest = Request<{}, {}, EmployeeCreateShareableUrlBody> & AuthRequest;
 export type EmployeeBreakStartEndRequest = Request<{}, {}, EmployeeBreakStartEndBody> & AuthRequest;
 export type EmployeeGetAttendancesRequest = Request<{}, {}, {}, EmployeeGetAttendancesQuery> & AuthRequest;
+export type EmployeeWorkLogCreateRequest = Request<{}, {}, EmployeeWorkLogCreateBody> & AuthRequest;
 export type EmployeeWorkLogUpdateRequest = Request<{}, {}, EmployeeWorkLogUpdateBody> & AuthRequest;
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;

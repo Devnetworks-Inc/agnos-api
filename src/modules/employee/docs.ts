@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetAttendancesQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetAttendancesQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -40,6 +40,25 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
         shareableUrl: z.string(),
         urlExpiryDate: z.string().datetime()
       })),
+    },
+  });
+
+  registry.registerPath({
+    method: "post",
+    path: employeeBaseUrl+'/work-log',
+    summary: "create work log",
+    tags,
+    request: {
+      body: requestBody(EmployeeWorkLogCreateBody),
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Work Log", z.object({
+        id: z.number(),
+        status: EmployeeStatus,
+        workLog: EmployeeWorkLog
+      }),)
     },
   });
 
@@ -165,6 +184,25 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
     responses: {
       200: successJsonResponse("Employee", EmployeeSchema),
+    },
+  });
+
+  registry.registerPath({
+    method: "patch",
+    path: employeeBaseUrl+'/work-log',
+    summary: "update work log",
+    tags,
+    request: {
+      body: requestBody(EmployeeWorkLogUpdateBody),
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Work Log", z.object({
+        id: z.number(),
+        status: EmployeeStatus,
+        workLog: EmployeeWorkLog
+      }),)
     },
   });
 
