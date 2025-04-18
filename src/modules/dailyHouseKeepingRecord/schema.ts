@@ -5,7 +5,11 @@ import { TypeOf, z } from "zod";
 export const DailyHousekeepingRecord = z.object({
   id: z.number(),
   hotelId: z.number(),
-  date: z.string().datetime(),
+  date: z.string().refine(
+    (v) => isMatch(v, 'yyyy-MM-dd'),
+    { message: 'Date format must be "yyyy-MM-dd"' }
+  ).openapi({ example: '2025-05-01' }),
+  month: z.number().gte(1).lte(12),
   occupancyPercentage: z.coerce.number().gte(0).multipleOf(0.01),
   numberOfRoomNights: z.coerce.number().gte(0).multipleOf(1),
 
@@ -25,14 +29,24 @@ export const DailyHousekeepingRecord = z.object({
   totalRefreshRooms: z.number().default(0),
   totalHousekeepingManagerCost: z.number().default(0),
   totalHousekeepingCleanerCost: z.number().default(0),
+
+  approvedByHskManagerId: z.number().optional(),
+  approvedByHotelManagerId: z.number().optional(),
+  hskManagerApprovedDate: z.string().datetime().optional(),
+  hotelManagerApprovedDate: z.string().datetime().optional(),
 })
 
 export const DailyHousekeepingRecordCreateBody = DailyHousekeepingRecord.omit({
   id: true,
+  month: true,
   totalCleanedRooms: true,
   totalRefreshRooms: true,
   totalHousekeepingManagerCost: true,
   totalHousekeepingCleanerCost: true,
+  approvedByHotelManagerId: true,
+  approvedByHskManagerId: true,
+  hskManagerApprovedDate: true,
+  hotelManagerApprovedDate: true
 })
 
 export const DailyHousekeepingRecordCreate = z.object({

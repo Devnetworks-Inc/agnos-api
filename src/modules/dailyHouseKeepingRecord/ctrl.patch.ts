@@ -1,8 +1,10 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Response, Request } from "express";
 import resp from "objectify-response";
 import { DailyHousekeepingRecordUpdateRequest } from "./schema";
 import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
+import { AuthRequest } from "../auth.schema";
+import { IdParam } from "../id/schema";
 
 export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekeepingRecordUpdateRequest, res: Response, next: NextFunction) => {
   const { id, hotelId, services } = req.body
@@ -89,4 +91,29 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
   })
 
   resp(res, newRecord)
+}
+
+export const dailyHousekeepingRecordApproveController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
+  const { id, role, currentHotelId } = req.auth!
+
+  if (!currentHotelId) {
+    return resp(res, 'Unauthorized', 401)
+  }
+
+  const update: Prisma.daily_housekeeping_recordUncheckedUpdateInput = {}
+  
+  if (role === 'hotel_manager') {
+    update.approvedByHotelManagerId = id
+    update.hotelManagerApprovedDate = new Date()
+  } else if (role === 'hsk_manager') {
+    update.approvedByHskManagerId = id
+    update.hskManagerApprovedDate = new Date()
+  }
+
+  await prisma.daily_housekeeping_record.update({
+    where: { id: +req.params.id, hotelId: currentHotelId },
+    data: update
+  })
+
+  resp (res, update)
 }
