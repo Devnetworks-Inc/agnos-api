@@ -75,10 +75,13 @@ model employee {
 
 model employee_work_log {
   id Int @id @default(autoincrement())
+  date DateTime @db.Date @unique
   employeeId Int
   checkInDate DateTime
   checkOutDate DateTime?
   totalSeconds Int?
+  status employee_status @default(checked_out)
+  month Int @db.TinyInt // 1 as january - 12 as december
   employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   breaks employee_break_log[]
 }
@@ -125,15 +128,19 @@ model user {
 
   employee employee? @relation(fields: [employeeId], references: [id])
   currentHotel hotel? @relation(fields: [currentHotelId], references: [id])
-  housekeepingRecordApproved daily_housekeeping_record[]
+  hskManagerHousekeepingRecords daily_housekeeping_record[] @relation("HskManagerRecords")
+  hotelManagerHousekeepingRecords daily_housekeeping_record[] @relation("HotelManagerRecords")
 }
 
 model daily_housekeeping_record {
   id  Int @id @default(autoincrement())
   hotelId Int
-  approvedById Int?
-  approvedDate DateTime?
+  approvedByHskManagerId Int?
+  approvedByHotelManagerId Int?
+  hskManagerApprovedDate DateTime?
+  hotelManagerApprovedDate DateTime?
   date         DateTime @db.Date @unique
+  month Int @db.UnsignedTinyInt
   occupancyPercentage Float
   numberOfRoomNights  Int
 
@@ -163,7 +170,8 @@ model daily_housekeeping_record {
 
   services       service_entry[]
   hotel hotel @relation(fields: [hotelId], references: [id])
-  approvedBy user? @relation(fields: [approvedById], references: [id])
+  approvedByHskManager user? @relation("HskManagerRecords", fields: [approvedByHskManagerId], references: [id])
+  approvedByHotelManager user? @relation("HotelManagerRecords", fields: [approvedByHotelManagerId], references: [id])
 }
 
 model service {

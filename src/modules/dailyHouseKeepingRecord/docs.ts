@@ -71,6 +71,26 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
   });
 
   registry.registerPath({
+    method: "patch",
+    path: dailyHousekeepingRecordBaseUrl+'/approve/{id}',
+    summary: "approve daily housekeeping record",
+    tags,
+    request: {
+      params: IdParam,
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("DailyHousekeepingRecord", z.object({
+        approvedByHskManagerId: z.number().optional(),
+        approvedByHotelManagerId: z.number().optional(),
+        hskManagerApprovedDate: z.string().datetime().optional(),
+        hotelManagerApprovedDate: z.string().datetime().optional(),
+      })),
+    },
+  });
+
+  registry.registerPath({
     method: "delete",
     path: dailyHousekeepingRecordBaseUrl+"/{id}",
     summary: "delete daily housekeeping record",

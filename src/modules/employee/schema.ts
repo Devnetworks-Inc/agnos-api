@@ -1,13 +1,19 @@
 import { Request } from "express";
 import { TypeOf, z } from "zod";
 import { AuthRequest } from "../auth.schema";
+import { isMatch } from "date-fns";
 
 export const EmployeeWorkLog = z.object({
   id: z.number(),
+  date: z.string().refine(
+    (v) => isMatch(v, 'yyyy-MM-dd'),
+    { message: 'Date format must be "yyyy-MM-dd"' }
+  ).openapi({ example: '2025-05-01' }),
   employeeId: z.number(),
   checkInDate: z.string().datetime(),
   checkOutDate: z.string().datetime().nullable().optional(),
   totalSeconds: z.number().optional(),
+  month: z.number().gte(1).lte(12)
 })
 
 export const EmployeeBreakLog = z.object({
@@ -23,14 +29,14 @@ export const EmployeeBreakLogCreate = EmployeeBreakLog.omit({
 })
 
 export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
-  id: true, totalSeconds: true,
+  id: true, totalSeconds: true, month: true
 }).extend({
   breaks: z.array(EmployeeBreakLogCreate).optional()
 })
 
 export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.extend({
   workLogId: z.number()
-})
+}).omit({ date: true })
 
 export const EmployeeWorkLogCreate = z.object({
   body: EmployeeWorkLogCreateBody
@@ -116,7 +122,11 @@ export const EmployeeGetByUrl = z.object({
 export const EmployeeCheckInOutBody = z.object({
   id: z.number(),
   status: z.enum(['check_in', 'check_out']),
-  date: z.string().datetime(),
+  date: z.string().refine(
+    (v) => isMatch(v, 'yyyy-MM-dd'),
+    { message: 'Date format must be "yyyy-MM-dd"' }
+  ).openapi({ example: '2025-05-01' }),
+  datetime: z.string().datetime()
 });
 
 export const EmployeeCheckInOut = z.object({

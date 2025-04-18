@@ -44,8 +44,8 @@ export const employeeCheckInOutController = async (
   res: Response
 ) => {
   const { role, currentHotelId } = req.auth!;
-  const { id, status } = req.body;
-  const date = new Date(req.body.date);
+  const { id, status, date } = req.body;
+  const datetime = new Date(req.body.datetime)
 
   if (role !== "agnos_admin" && !currentHotelId) {
     return resp(res, "Unauthorized", 401);
@@ -78,8 +78,10 @@ export const employeeCheckInOutController = async (
     const [workLog] = await prisma.$transaction([
       prisma.employee_work_log.create({
         data: {
+          date: new Date(date),
           employeeId: id,
-          checkInDate: date,
+          checkInDate: datetime,
+          month: +date.split('-')[1]
         },
         include: {
           employee: {
@@ -108,7 +110,7 @@ export const employeeCheckInOutController = async (
       return resp(res, "No check-in in work log found", 404);
     }
 
-    if (date < log.checkInDate) {
+    if (datetime < log.checkInDate) {
       return resp(res, "Date must be greater than work log check in date");
     }
 
@@ -118,13 +120,13 @@ export const employeeCheckInOutController = async (
     );
 
     const totalSeconds =
-      differenceInSeconds(date, log.checkInDate) - breakTotalSeconds;
+      differenceInSeconds(datetime, log.checkInDate) - breakTotalSeconds;
 
     const [workLog] = await prisma.$transaction([
       prisma.employee_work_log.update({
         where: { id: log.id },
         data: {
-          checkOutDate: date,
+          checkOutDate: datetime,
           totalSeconds,
         },
         include: {
@@ -366,6 +368,7 @@ export const employeeUpdateWorkLogController = async (
         checkInDate,
         checkOutDate,
         totalSeconds,
+        status,
         breaks: breaks ? {
           deleteMany: {},
           create: newBreaks
@@ -383,39 +386,4 @@ export const employeeUpdateWorkLogController = async (
   ])
 
   resp(res, {...employee, workLog: newWorkLog})
-
-  // if (checkOutDate) {
-  //   if (new Date(checkOutDate) < workLog.checkInDate) {
-  //     return resp(res, "Check-Out date must be greater than work log Check-In date");
-  //   }
-
-  //   const breakTotalSeconds = workLog.breaks.reduce(
-  //     (acc, val) => acc + (val.totalSeconds ?? 0),
-  //     0
-  //   );
-
-  //   totalSeconds =
-  //     differenceInSeconds(checkOutDate, workLog.checkInDate) - breakTotalSeconds;
-  // }
-
-  // prisma.employee_work_log
-  //   .update({
-  //     where: { id },
-  //     data: {
-  //       checkInDate,
-  //       checkOutDate,
-  //       totalSeconds
-  //     },
-  //   })
-  //   .then((workLog) => {
-  //     resp(res, workLog);
-  //   })
-  //   .catch((e) => {
-  //     if (e instanceof Prisma.PrismaClientKnownRequestError) {
-  //       if (e.code === "P2025") {
-  //         return resp(res, "Record to update not found.", 404);
-  //       }
-  //     }
-  //     next(e);
-  //   });
 };

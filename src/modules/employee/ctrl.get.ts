@@ -63,7 +63,7 @@ export const employeeGetAttendancesController = async (req: EmployeeGetAttendanc
 
   const employees = await prisma.employee.findMany({
     where: { hotelId },
-    select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, workLog: {
+    select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true, workLog: {
       where: { checkInDate: { gte: startDate, lte: endDate } },
       include: { breaks: true }
     }},

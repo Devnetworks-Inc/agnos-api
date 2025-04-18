@@ -42,6 +42,7 @@ export const employeeCreateWorkLogController = async (
   let { breaks = [], employeeId } = req.body;
   let status: employee_status = 'checked_in'
 
+  const date = req.body.date+"T00:00:00.000Z"
   const checkInDate = new Date(req.body.checkInDate)
   const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
   const newBreaks: (EmployeeBreakLogCreate & { totalSeconds?: number })[] = []
@@ -105,9 +106,12 @@ export const employeeCreateWorkLogController = async (
     prisma.employee_work_log.create({
       data: {
         employeeId,
+        date,
+        month: +date.split('-')[1],
         checkInDate,
         checkOutDate,
         totalSeconds,
+        status,
         breaks: newBreaks.length ? {
           create: newBreaks
         } : undefined,

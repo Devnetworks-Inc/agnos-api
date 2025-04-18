@@ -18,6 +18,7 @@ export const dailyHousekeepingRecordCreateController = async (
     refreshRooms,
     hotelId,
     services,
+    date
   } = req.body
 
   const [hotel, hotelServices] = await prisma.$transaction([
@@ -50,6 +51,8 @@ export const dailyHousekeepingRecordCreateController = async (
   await prisma.daily_housekeeping_record.create({
     data: {
       ...req.body,
+      date: date+"T00:00:00.000Z",
+      month: +date.split('-')[1],
       totalCleanedRooms,
       totalRefreshRooms: refreshRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(hotel.roomsCleaningRate).times(totalCleanedRooms),
