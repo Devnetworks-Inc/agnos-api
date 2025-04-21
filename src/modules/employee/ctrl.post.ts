@@ -102,12 +102,15 @@ export const employeeCreateWorkLogController = async (
     status = 'checked_out'
   }
 
+  const yearMonthDayArr = date.split('-')
+
   const [workLog, employee] = await prisma.$transaction([
     prisma.employee_work_log.create({
       data: {
         employeeId,
         date,
-        month: +date.split('-')[1],
+        month: +yearMonthDayArr[1],
+        year: +yearMonthDayArr[0],
         checkInDate,
         checkOutDate,
         totalSeconds,

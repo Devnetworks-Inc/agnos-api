@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
-import { DailyHousekeepingRecord, DailyHousekeepingRecordCreateBody, DailyHousekeepingRecordGetQuery, DailyHousekeepingRecordUpdateBody } from "./schema";
+import { DailyHousekeepingRecord, DailyHousekeepingRecordCreateBody, DailyHousekeepingRecordGetQuery, DailyHousekeepingRecordUpdateBody, MonthlyHousekeepingRecordGetQuery } from "./schema";
 import { IdParam } from "../id/schema";
 import { dailyHousekeepingRecordBaseUrl } from "src/router";
 
@@ -21,7 +21,7 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
     security: [{ BearerAuth: []}],
 
     responses: {
-      200: successJsonResponse("DailyHousekeepingRecord", DailyHousekeepingRecord),
+      200: successJsonResponse("Daily Housekeeping Record", DailyHousekeepingRecord),
     },
   });
 
@@ -36,7 +36,7 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
     security: [{ BearerAuth: []}],
 
     responses: {
-      200: successJsonResponse("DailyHousekeepingRecords", z.array(DailyHousekeepingRecordSchema)),
+      200: successJsonResponse("Daily Housekeeping Records", z.array(DailyHousekeepingRecordSchema)),
     },
   });
 
@@ -51,7 +51,22 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
     security: [{ BearerAuth: []}],
 
     responses: {
-      200: successJsonResponse("DailyHousekeepingRecord", DailyHousekeepingRecordSchema),
+      200: successJsonResponse("Daily Housekeeping Record", DailyHousekeepingRecordSchema),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: dailyHousekeepingRecordBaseUrl+"/monthly",
+    summary: "get monthly housekeeping record",
+    tags,
+    request: {
+      query: MonthlyHousekeepingRecordGetQuery
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Monthly Housekeeping Record", z.array(DailyHousekeepingRecordSchema)),
     },
   });
 
@@ -66,7 +81,7 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
     security: [{ BearerAuth: []}],
 
     responses: {
-      200: successJsonResponse("DailyHousekeepingRecord", DailyHousekeepingRecordSchema),
+      200: successJsonResponse("Daily Housekeeping Record", DailyHousekeepingRecordSchema),
     },
   });
 
