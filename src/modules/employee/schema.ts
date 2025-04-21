@@ -13,7 +13,8 @@ export const EmployeeWorkLog = z.object({
   checkInDate: z.string().datetime(),
   checkOutDate: z.string().datetime().nullable().optional(),
   totalSeconds: z.number().optional(),
-  month: z.number().gte(1).lte(12)
+  month: z.number().gte(1).lte(12),
+  year: z.number()
 })
 
 export const EmployeeBreakLog = z.object({
@@ -29,7 +30,7 @@ export const EmployeeBreakLogCreate = EmployeeBreakLog.omit({
 })
 
 export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
-  id: true, totalSeconds: true, month: true
+  id: true, totalSeconds: true, month: true, year: true
 }).extend({
   breaks: z.array(EmployeeBreakLogCreate).optional()
 })
@@ -46,7 +47,11 @@ export const EmployeeWorkLogUpdate = z.object({
   body: EmployeeWorkLogUpdateBody
 })
 
-export const Gender = z.enum(['male', 'female']);
+export const Gender = z.enum([
+  'male', // männlich
+  'female', // weiblich
+  'other' // andere
+]);
 
 export const EmployeeStatus = z.enum(['checked_in', 'checked_out', 'on_break'])
 

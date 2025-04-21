@@ -75,15 +75,18 @@ model employee {
 
 model employee_work_log {
   id Int @id @default(autoincrement())
-  date DateTime @db.Date @unique
+  date DateTime
   employeeId Int
   checkInDate DateTime
   checkOutDate DateTime?
   totalSeconds Int?
   status employee_status @default(checked_out)
-  month Int @db.TinyInt // 1 as january - 12 as december
+  year Int @db.UnsignedSmallInt
+  month Int @db.UnsignedTinyInt // 1 as january - 12 as december
   employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   breaks employee_break_log[]
+
+  @@unique([employeeId, date])
 }
 
 model employee_break_log {
@@ -104,8 +107,9 @@ enum employee_status {
 }
 
 enum gender {
-  male
-  female
+  male // männlich
+  female // weiblich
+  other // andere
 }
 
 enum user_role {
@@ -141,6 +145,7 @@ model daily_housekeeping_record {
   hotelManagerApprovedDate DateTime?
   date         DateTime @db.Date @unique
   month Int @db.UnsignedTinyInt
+  year Int @db.UnsignedSmallInt
   occupancyPercentage Float
   numberOfRoomNights  Int
 

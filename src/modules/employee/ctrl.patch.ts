@@ -81,7 +81,8 @@ export const employeeCheckInOutController = async (
           date: new Date(date),
           employeeId: id,
           checkInDate: datetime,
-          month: +date.split('-')[1]
+          month: +date.split('-')[1],
+          year: +date.split('-')[0],
         },
         include: {
           employee: {

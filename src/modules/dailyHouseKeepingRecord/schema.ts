@@ -1,6 +1,12 @@
 import { isMatch } from "date-fns";
 import { Request } from "express";
 import { TypeOf, z } from "zod";
+import { AuthRequest } from "../auth.schema";
+import { Id } from "../id/schema";
+
+export const DateOnlyString = z.string().refine((val) => isMatch(val, 'yyyy-MM-dd'), {
+  message: "Date format must be ''yyyy-MM-dd'",
+}).openapi({ example: '2025-03-01' })
 
 export const DailyHousekeepingRecord = z.object({
   id: z.number(),
@@ -10,6 +16,7 @@ export const DailyHousekeepingRecord = z.object({
     { message: 'Date format must be "yyyy-MM-dd"' }
   ).openapi({ example: '2025-05-01' }),
   month: z.number().gte(1).lte(12),
+  year: z.number(),
   occupancyPercentage: z.coerce.number().gte(0).multipleOf(0.01),
   numberOfRoomNights: z.coerce.number().gte(0).multipleOf(1),
 
@@ -39,6 +46,7 @@ export const DailyHousekeepingRecord = z.object({
 export const DailyHousekeepingRecordCreateBody = DailyHousekeepingRecord.omit({
   id: true,
   month: true,
+  year: true,
   totalCleanedRooms: true,
   totalRefreshRooms: true,
   totalHousekeepingManagerCost: true,
@@ -72,10 +80,22 @@ export const DailyHousekeepingRecordGet = z.object({
   query: DailyHousekeepingRecordGetQuery
 })
 
+export const MonthlyHousekeepingRecordGetQuery = z.object({
+  hotelId: Id.optional(),
+  startDate: DateOnlyString.optional(),
+  endDate: DateOnlyString.optional(),
+})
+
+export const MonthlyHousekeepingRecordGet = z.object({
+  query: MonthlyHousekeepingRecordGetQuery
+})
+
 export type DailyHousekeepingRecord = TypeOf<typeof DailyHousekeepingRecord>
 export type DailyHousekeepingRecordCreateBody = TypeOf<typeof DailyHousekeepingRecordCreateBody>
 export type DailyHousekeepingRecordUpdateBody = TypeOf<typeof DailyHousekeepingRecordUpdateBody>
 export type DailyHousekeepingRecordGetQuery = TypeOf<typeof DailyHousekeepingRecordGetQuery>
-export type DailyHousekeepingRecordCreateRequest = Request<{}, {}, DailyHousekeepingRecordCreateBody>
-export type DailyHousekeepingRecordUpdateRequest = Request<{}, {}, DailyHousekeepingRecordUpdateBody>
-export type DailyHousekeepingRecordGetRequest = Request<{}, {}, {}, DailyHousekeepingRecordGetQuery>
+export type MonthlyHousekeepingRecordGetQuery = TypeOf<typeof MonthlyHousekeepingRecordGetQuery>
+export type DailyHousekeepingRecordCreateRequest = Request<{}, {}, DailyHousekeepingRecordCreateBody> & AuthRequest
+export type DailyHousekeepingRecordUpdateRequest = Request<{}, {}, DailyHousekeepingRecordUpdateBody> & AuthRequest
+export type DailyHousekeepingRecordGetRequest = Request<{}, {}, {}, DailyHousekeepingRecordGetQuery> & AuthRequest
+export type MonthlyHousekeepingRecordGetRequest = Request<{}, {}, {}, MonthlyHousekeepingRecordGetQuery> & AuthRequest
