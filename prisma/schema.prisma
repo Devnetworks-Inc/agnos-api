@@ -34,16 +34,16 @@ model employee {
   firstName String // Vorname
   middleName String @default("") //Zweiter Vorname
   lastName String // Name
-  birthdate DateTime @db.Date // Geburtsdatum
+  birthdate DateTime? @db.Date // Geburtsdatum
   gender gender // Geschlecht
   religion String @default("") // Konfession
-  civilStatus String // Zivilstand
+  civilStatus String @default("") // Zivilstand
   nationality String @default("") // Nationalität
   children Json @default("[]") // Kinder 
   mobileNumber String @default("") // Mobile
   telephoneNumber String @default("") // Telefon
   email String @default("")
-  address String // Addresse
+  address String @default("") // Addresse
   emergencyContactName String @default("") // Notfallkontakt Name
   emergencyContactNumber String @default("") // Notfallkontakt Telefon
   healthInsurance String @default("") // Krankenkasse
@@ -52,8 +52,9 @@ model employee {
   iban String @default("")
   hiredDate DateTime? @db.Date
   rateType String @default("")
+  employmentType String @default("")
   rate Float @default(0)
-  status employee_status
+  status employee_status @default(checked_out)
   position String @default("")
   activity String @default("") // Tätigkeit
   job String @default("") // Beschäftigung
