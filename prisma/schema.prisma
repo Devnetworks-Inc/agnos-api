@@ -144,7 +144,7 @@ model daily_housekeeping_record {
   approvedByHotelManagerId Int?
   hskManagerApprovedDate DateTime?
   hotelManagerApprovedDate DateTime?
-  date         DateTime @db.Date @unique
+  date         DateTime @db.Date
   month Int @db.UnsignedTinyInt
   year Int @db.UnsignedSmallInt
   occupancyPercentage Float
@@ -178,6 +178,8 @@ model daily_housekeeping_record {
   hotel hotel @relation(fields: [hotelId], references: [id])
   approvedByHskManager user? @relation("HskManagerRecords", fields: [approvedByHskManagerId], references: [id])
   approvedByHotelManager user? @relation("HotelManagerRecords", fields: [approvedByHotelManagerId], references: [id])
+
+  @@unique([hotelId, date])
 }
 
 model service {
