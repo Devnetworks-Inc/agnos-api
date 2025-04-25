@@ -81,7 +81,6 @@ export const DailyHousekeepingRecordGet = z.object({
 })
 
 export const MonthlyHousekeepingRecordGetQuery = z.object({
-  hotelId: Id.optional(),
   startDate: DateOnlyString.optional(),
   endDate: DateOnlyString.optional(),
 })
