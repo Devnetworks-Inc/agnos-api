@@ -7,7 +7,7 @@ import { DailyHousekeepingRecordGetRequest, HousekeepingRecordGetByMonthRequest,
 import { addMonths, differenceInMonths, subMonths } from "date-fns";
 import { format } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
-import { getEmployeeWorkLogGroupByMonthYearHotel } from "../employee/services";
+import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 
 export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepingRecordGetRequest, res: Response) => {
   const { startDate, endDate } = req.query
@@ -60,7 +60,7 @@ export const housekeepingRecordGetMonthlyController = async (req: HousekeepingRe
 
   const [record, workLog] = await Promise.all([
     getHousekeepingRecordGroupByMonthYearHotel(startDate, endDate, hotelId),
-    getEmployeeWorkLogGroupByMonthYearHotel(startDate, endDate, hotelId)
+    getEmployeesWorkLogGroupByMonthYearHotel(startDate, endDate, hotelId)
   ])
 
   resp(res, { record, workLog })

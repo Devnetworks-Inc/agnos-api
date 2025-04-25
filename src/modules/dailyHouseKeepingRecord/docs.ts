@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
-import { DailyHousekeepingRecord, DailyHousekeepingRecordCreateBody, DailyHousekeepingRecordGetQuery, DailyHousekeepingRecordUpdateBody, MonthlyHousekeepingRecordGetQuery } from "./schema";
+import { DailyHousekeepingRecord, DailyHousekeepingRecordCreateBody, DailyHousekeepingRecordGetQuery, DailyHousekeepingRecordUpdateBody, HousekeepingRecordGetMonthlyQuery } from "./schema";
 import { IdParam } from "../id/schema";
 import { dailyHousekeepingRecordBaseUrl } from "src/router";
 
@@ -61,7 +61,7 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
     summary: "get monthly housekeeping record",
     tags,
     request: {
-      query: MonthlyHousekeepingRecordGetQuery
+      query: HousekeepingRecordGetMonthlyQuery
     },
     security: [{ BearerAuth: []}],
 
