@@ -80,21 +80,34 @@ export const DailyHousekeepingRecordGet = z.object({
   query: DailyHousekeepingRecordGetQuery
 })
 
-export const MonthlyHousekeepingRecordGetQuery = z.object({
+export const HousekeepingRecordGetMonthlyQuery = z.object({
   startDate: DateOnlyString.optional(),
   endDate: DateOnlyString.optional(),
+  hotelId: z.coerce.number().optional()
 })
 
 export const MonthlyHousekeepingRecordGet = z.object({
-  query: MonthlyHousekeepingRecordGetQuery
+  query: HousekeepingRecordGetMonthlyQuery
+})
+
+export const HousekeepingRecordGetByMonthParam = z.object({
+  yearMonth: z.string().refine((val) => isMatch(val, 'yyyy-MM'), {
+    message: "Date format must be ''yyyy-MM'",
+  }).openapi({ example: '2025-03' })
+})
+
+export const HousekeepingRecordGetByMonth = z.object({
+  params: HousekeepingRecordGetByMonthParam
 })
 
 export type DailyHousekeepingRecord = TypeOf<typeof DailyHousekeepingRecord>
 export type DailyHousekeepingRecordCreateBody = TypeOf<typeof DailyHousekeepingRecordCreateBody>
 export type DailyHousekeepingRecordUpdateBody = TypeOf<typeof DailyHousekeepingRecordUpdateBody>
 export type DailyHousekeepingRecordGetQuery = TypeOf<typeof DailyHousekeepingRecordGetQuery>
-export type MonthlyHousekeepingRecordGetQuery = TypeOf<typeof MonthlyHousekeepingRecordGetQuery>
+export type HousekeepingRecordGetMonthlyQuery = TypeOf<typeof HousekeepingRecordGetMonthlyQuery>
+export type HousekeepingRecordGetByMonthParam = TypeOf<typeof HousekeepingRecordGetByMonthParam>
 export type DailyHousekeepingRecordCreateRequest = Request<{}, {}, DailyHousekeepingRecordCreateBody> & AuthRequest
 export type DailyHousekeepingRecordUpdateRequest = Request<{}, {}, DailyHousekeepingRecordUpdateBody> & AuthRequest
 export type DailyHousekeepingRecordGetRequest = Request<{}, {}, {}, DailyHousekeepingRecordGetQuery> & AuthRequest
-export type MonthlyHousekeepingRecordGetRequest = Request<{}, {}, {}, MonthlyHousekeepingRecordGetQuery> & AuthRequest
+export type HousekeepingRecordGetMonthlyRequest = Request<{}, {}, {}, HousekeepingRecordGetMonthlyQuery> & AuthRequest
+export type HousekeepingRecordGetByMonthRequest = Request<HousekeepingRecordGetByMonthParam> & AuthRequest

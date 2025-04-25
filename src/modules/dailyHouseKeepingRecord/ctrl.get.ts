@@ -3,10 +3,11 @@ import resp from "objectify-response";
 import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
-import { DailyHousekeepingRecordGetRequest, MonthlyHousekeepingRecordGetRequest } from "./schema";
+import { DailyHousekeepingRecordGetRequest, HousekeepingRecordGetByMonthRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
 import { addMonths, differenceInMonths, subMonths } from "date-fns";
 import { format } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
+import { getEmployeeWorkLogGroupByMonthYearHotel } from "../employee/services";
 
 export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepingRecordGetRequest, res: Response) => {
   const { startDate, endDate } = req.query
@@ -37,28 +38,30 @@ export const dailyHousekeepingRecordGetByIdController = async (req: Request<IdPa
   resp(res, dailyHousekeepingRecord)
 }
 
-export const monthlyHousekeepingRecordGetController = async (req: MonthlyHousekeepingRecordGetRequest, res: Response) => {
+export const housekeepingRecordGetMonthlyController = async (req: HousekeepingRecordGetMonthlyRequest, res: Response) => {
   const { role, currentHotelId } = req.auth!
   const { startDate: s, endDate: e } = req.query
   const today = new Date()
   const startDate = s ? new Date(s) : subMonths(today, 12)
   const endDate = e ? new Date(e) : today
+  let hotelId = currentHotelId
 
   if (role !== 'agnos_admin') {
     if (!currentHotelId) {
       return resp(res, 'Unauthorized', 401)
     }
+  } else {
+    hotelId = req.query.hotelId
   }
 
   if (startDate > endDate) {
     return resp(res, 'Start date must be lesser than End date')
   }
 
-  const data = await getHousekeepingRecordGroupByMonthYearHotel(startDate, endDate, currentHotelId)
+  const [record, workLog] = await Promise.all([
+    getHousekeepingRecordGroupByMonthYearHotel(startDate, endDate, hotelId),
+    getEmployeeWorkLogGroupByMonthYearHotel(startDate, endDate, hotelId)
+  ])
 
-  resp(res, data)
-}
-
-export const housekeepingRecordGetByMonthController = () => {
-
+  resp(res, { record, workLog })
 }
