@@ -12,7 +12,12 @@ export const hotelGetAllController = async (req: Request & AuthRequest, res: Res
 export const hotelGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
   const id = +req.params.id
   const hotel = await prisma.hotel.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      services: {
+        include: { service: { select: { name: true } } }
+      }
+    }
   });
   if (!hotel) {
     return resp(res, 'Hotel not found', 404)

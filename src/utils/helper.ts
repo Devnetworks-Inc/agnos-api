@@ -38,3 +38,7 @@ export const decimalTypePropsToNumber = (obj: any) => {
 
   return newObj 
 }
+
+export const isoStringRemoveTime = (isoString: string) => {
+  return isoString.split('T')[0]
+}
