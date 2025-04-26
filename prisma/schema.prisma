@@ -74,6 +74,24 @@ model employee {
   hotel hotel @relation(fields: [hotelId], references: [id])
 }
 
+model user {
+  id Int @id @default(autoincrement())
+  employeeId Int? @unique
+  username String @unique
+  password String
+  role user_role
+  currentHotelId Int?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  employee employee? @relation(fields: [employeeId], references: [id])
+  currentHotel hotel? @relation(fields: [currentHotelId], references: [id])
+  hskManagerHousekeepingRecords daily_housekeeping_record[] @relation("HskManagerRecords")
+  hotelManagerHousekeepingRecords daily_housekeeping_record[] @relation("HotelManagerRecords")
+  editedWorkLogs employee_work_edit_log[]
+}
+
 model employee_work_log {
   id Int @id @default(autoincrement())
   date DateTime
@@ -86,6 +104,7 @@ model employee_work_log {
   month Int @db.UnsignedTinyInt // 1 as january - 12 as december
   employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   breaks employee_break_log[]
+  editLogs employee_work_edit_log[]
 
   @@unique([employeeId, date])
 }
@@ -96,6 +115,16 @@ model employee_break_log {
   breakStartDate DateTime
   breakEndDate DateTime?
   totalSeconds Int?
+  workLog employee_work_log @relation(fields: [workLogId], references: [id], onDelete: Cascade)
+}
+
+model employee_work_edit_log {
+  id Int @id @default(autoincrement())
+  workLogId Int
+  editorId Int?
+  comment String
+  date DateTime
+  editor user? @relation(fields: [editorId], references: [id])
   workLog employee_work_log @relation(fields: [workLogId], references: [id], onDelete: Cascade)
 }
 
@@ -118,23 +147,7 @@ enum user_role {
   hsk_manager
   hsk_staff
   hotel_manager
-}
-
-model user {
-  id Int @id @default(autoincrement())
-  employeeId Int? @unique
-  username String @unique
-  password String
-  role user_role
-  currentHotelId Int?
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  employee employee? @relation(fields: [employeeId], references: [id])
-  currentHotel hotel? @relation(fields: [currentHotelId], references: [id])
-  hskManagerHousekeepingRecords daily_housekeeping_record[] @relation("HskManagerRecords")
-  hotelManagerHousekeepingRecords daily_housekeeping_record[] @relation("HotelManagerRecords")
+  check_in_assistant
 }
 
 model daily_housekeeping_record {

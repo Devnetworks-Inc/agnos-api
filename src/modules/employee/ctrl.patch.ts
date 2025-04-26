@@ -283,7 +283,8 @@ export const employeeUpdateWorkLogController = async (
   res: Response,
   next: NextFunction
 ) => {
-  let { workLogId: id, breaks, employeeId } = req.body;
+  const { id: userId } = req.auth!
+  let { workLogId: id, breaks, employeeId, comment } = req.body;
   const workLog = await prisma.employee_work_log.findUnique({ where: { id }, include: { breaks: true, employee: { select: { status: true } } } })
   if (!workLog) {
     return resp(res, "Record to update not found.", 404);
@@ -374,8 +375,15 @@ export const employeeUpdateWorkLogController = async (
           deleteMany: {},
           create: newBreaks
         } : undefined,
+        editLogs: {
+          create: {
+            editorId: userId,
+            date: new Date(),
+            comment
+          }
+        }
       },
-      include: { breaks: true }
+      include: { breaks: true },
     }),
     prisma.employee.update({
       where: { id: employeeId },
