@@ -39,7 +39,8 @@ export const employeeCreateWorkLogController = async (
   res: Response,
   next: NextFunction
 ) => {
-  let { breaks = [], employeeId } = req.body;
+  const { id: userId } = req.auth!
+  let { breaks = [], employeeId, comment } = req.body;
   let status: employee_status = 'checked_in'
 
   const date = req.body.date+"T00:00:00.000Z"
@@ -118,6 +119,13 @@ export const employeeCreateWorkLogController = async (
         breaks: newBreaks.length ? {
           create: newBreaks
         } : undefined,
+        editLogs: {
+          create: {
+            editorId: userId,
+            date: new Date(),
+            comment
+          }
+        }
       },
       include: { breaks: true }
     }),
