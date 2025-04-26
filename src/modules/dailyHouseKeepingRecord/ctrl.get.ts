@@ -29,7 +29,10 @@ export const dailyHousekeepingRecordGetByIdController = async (req: Request<IdPa
   const id = +req.params.id
   const dailyHousekeepingRecord = await prisma.daily_housekeeping_record.findUnique({
     where: { id },
-    include: { hotel: { select: { name: true, services: { select: { id: true, service: { select: { name: true } } } } } } }
+    include: {
+      hotel: { select: { name: true, services: { select: { id: true, service: { select: { name: true } } } } } },
+      services: true
+    }
   });
   if (!dailyHousekeepingRecord) {
     return resp(res, 'Record not found', 404)
