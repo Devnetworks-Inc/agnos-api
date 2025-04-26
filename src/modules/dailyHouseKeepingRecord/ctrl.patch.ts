@@ -7,7 +7,8 @@ import { AuthRequest } from "../auth.schema";
 import { IdParam } from "../id/schema";
 
 export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekeepingRecordUpdateRequest, res: Response, next: NextFunction) => {
-  const { id, hotelId, services } = req.body
+  const { id, hotelId, services, date: dt } = req.body
+
 
   const record = await prisma.daily_housekeeping_record.findUnique({
     where: { id },
@@ -20,6 +21,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
 
   let roomsCleaningRate = record.hotel.roomsCleaningRate
   let roomsRefreshRate = record.hotel.roomsRefreshRate
+  let date = dt ? new Date(dt) : record.date
 
   if (hotelId && hotelId !== record.hotelId) {
     const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } })
@@ -70,11 +72,15 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
   } = req.body
 
   const totalCleanedRooms = dr + sor + drld + dur + ecr
+  const yearMonthDayArr = date.toISOString().split('-')
 
   const newRecord = await prisma.daily_housekeeping_record.update({
     where: { id },
     data: {
       ...req.body,
+      date,
+      month: +yearMonthDayArr[1],
+      year: +yearMonthDayArr[0],
       totalCleanedRooms,
       totalRefreshRooms: refreshRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(roomsCleaningRate).times(totalCleanedRooms),
