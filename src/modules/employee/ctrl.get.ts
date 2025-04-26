@@ -65,29 +65,7 @@ export const employeeGetAttendancesController = async (req: EmployeeGetAttendanc
     where: { hotelId },
     select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true, workLog: {
       where: { checkInDate: { gte: startDate, lte: endDate } },
-      include: { breaks: true }
-    }},
-  })
-
-  resp(res, employees)
-}
-
-export const employeeGetendancesController = async (req: EmployeeGetAttendancesRequest, res: Response) => {
-  const { role, currentHotelId } = req.auth!
-  let { hotelId, startDate, endDate } = req.query
-
-  if (role !== 'agnos_admin' && role !== 'hsk_manager') {
-    if (!currentHotelId) {
-      return resp(res, 'Unauthorized', 401)
-    }
-    hotelId = currentHotelId
-  }
-
-  const employees = await prisma.employee.findMany({
-    where: { hotelId },
-    select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true, workLog: {
-      where: { checkInDate: { gte: startDate, lte: endDate } },
-      include: { breaks: true }
+      include: { breaks: true, editLogs: true }
     }},
   })
 
