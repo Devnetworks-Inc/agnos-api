@@ -61,13 +61,23 @@ export const employeeGetAttendancesController = async (req: EmployeeGetAttendanc
     hotelId = currentHotelId
   }
 
-  const employees = await prisma.employee.findMany({
-    where: { hotelId },
-    select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true, workLog: {
-      where: { checkInDate: { gte: startDate, lte: endDate } },
-      include: { breaks: true, editLogs: true }
-    }},
-  })
+  const [employees, workLog] = await prisma.$transaction([
+    prisma.employee.findMany({
+      where: { hotelId },
+      select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true, workLog: {
+        where: { checkInDate: { gte: startDate, lte: endDate } },
+        include: { breaks: true, editLogs: true }
+      }},
+    }),
+    prisma.employee_work_log.aggregate({
+      where: { checkInDate: { gte: startDate, lte: endDate }, employee: { hotelId } },
+      _sum: { salaryToday: true, totalSeconds: true }
+    })
+  ])
 
-  resp(res, employees)
+  resp(res, {
+    ...employees,
+    totalHours: +(( (workLog._sum.totalSeconds ?? 0) / 3600).toFixed(2) ),
+    totalCost: workLog._sum.salaryToday?.toNumber()
+  })
 }

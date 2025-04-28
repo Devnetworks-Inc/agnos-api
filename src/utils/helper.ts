@@ -1,5 +1,6 @@
 import { Prisma, user_role } from "@prisma/client"
 import jwt from 'jsonwebtoken'
+import { RateType } from "src/modules/employee/schema";
 
 export type CreateJwtTokenParams = {
   id: number;
@@ -41,4 +42,37 @@ export const decimalTypePropsToNumber = (obj: any) => {
 
 export const isoStringRemoveTime = (isoString: string) => {
   return isoString.split('T')[0]
+}
+
+export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
+  let rate = new Prisma.Decimal(rateAmount)
+  let hourlyRate = rate;
+
+  switch (rateType) {
+    case 'hourly': break;
+    case 'daily':
+      hourlyRate = rate.dividedBy(8.4); // Assuming 8.4 working hours per day
+      break;
+    case 'weekly':
+      hourlyRate = rate.dividedBy(42); // Assuming 5 days/week * 8.4 hours = 42 hours
+      break;
+    case '15days':
+      hourlyRate = rate.dividedBy(84);
+      break;
+    // case 'biweekly':
+    //   hourlyRate = rate.dividedBy(84); // 10 working days * 8.4 hours = 84 hours
+    //   break;
+    case 'monthly':
+      hourlyRate = rate.dividedBy(168); // 20 working days * 8.4 hours = 160 hours
+      break;
+    default:
+      throw new Error('Invalid rate type');
+  }
+
+  return hourlyRate;
+}
+
+export const calculateSalary = (hourlyRate: number | Prisma.Decimal, secondsWork: number ) => {
+  let totalHoursWorked = new Prisma.Decimal(secondsWork).dividedBy(3600)
+  return totalHoursWorked.times(hourlyRate)
 }

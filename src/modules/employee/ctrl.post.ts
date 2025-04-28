@@ -1,10 +1,11 @@
 import resp from "objectify-response";
 import { NextFunction, Response } from "express";
 import prisma from "../prisma";
-import { EmployeeBreakLogCreate, EmployeeCreateRequest, EmployeeCreateShareableUrlRequest, EmployeeWorkLogCreateRequest } from "./schema";
+import { EmployeeBreakLogCreate, EmployeeCreateRequest, EmployeeCreateShareableUrlRequest, EmployeeWorkLogCreateRequest, RateType } from "./schema";
 import { nanoid } from "nanoid";
-import { employee_status } from "@prisma/client";
+import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds } from "date-fns";
+import { calculateSalary, getHourlyRate } from "src/utils/helper";
 
 export const employeeCreateController = async (req: EmployeeCreateRequest, res: Response, next: NextFunction) => {
   const { hotelId } = req.body
@@ -48,8 +49,20 @@ export const employeeCreateWorkLogController = async (
   const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
   const newBreaks: (EmployeeBreakLogCreate & { totalSeconds?: number })[] = []
 
+  const employee = await prisma.employee.findUnique({ where: { id: employeeId }, select: {
+    rate: true,
+    rateType: true,
+
+  }})
+
+  if (!employee) {
+    return resp(res, 'Employee not found', 404)
+  }
+
   let totalSeconds = 0
   let lastBreak: EmployeeBreakLogCreate | undefined
+  let salaryToday: Prisma.Decimal | undefined
+  let hourlyRate = getHourlyRate(employee.rateType as RateType, employee.rate)
 
   if (breaks.length) {
     for (const val of breaks) {
@@ -101,15 +114,20 @@ export const employeeCreateWorkLogController = async (
       differenceInSeconds(checkOutDate, checkInDate) - breakTotalSeconds;
 
     status = 'checked_out'
+    salaryToday = calculateSalary(hourlyRate, totalSeconds)    
   }
 
   const yearMonthDayArr = date.split('-')
 
-  const [workLog, employee] = await prisma.$transaction([
+  const [workLog, updatedEmployee] = await prisma.$transaction([
     prisma.employee_work_log.create({
       data: {
         employeeId,
         date,
+        rate: employee.rate,
+        rateType: employee.rateType,
+        hourlyRate,
+        salaryToday,
         month: +yearMonthDayArr[1],
         year: +yearMonthDayArr[0],
         checkInDate,
@@ -138,5 +156,5 @@ export const employeeCreateWorkLogController = async (
     })
   ])
 
-  resp(res, {...employee, workLog})  
+  resp(res, {...updatedEmployee, workLog})  
 };

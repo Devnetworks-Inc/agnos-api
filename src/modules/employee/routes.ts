@@ -28,8 +28,8 @@ employeeRouter.get('/attendances', validateRequest(EmployeeGetAttendances), empl
 employeeRouter.get('/:id', validateRequest(IdParamRequest), employeeGetByIdController)
 employeeRouter.get('/', validateRequest(EmployeeGet), employeeGetController)
 
-employeeRouter.patch('/check-in-out/:id',  validateRequest(EmployeeCheckInOut), employeeCheckInOutController)
-employeeRouter.patch('/break-start-end/:id',  validateRequest(EmployeeBreakStartEnd), employeeBreakStartEndController)
+employeeRouter.patch('/check-in-out/:id', authorizeRoles(['hsk_manager', 'hotel_manager', 'check_in_assistant']), validateRequest(EmployeeCheckInOut), employeeCheckInOutController)
+employeeRouter.patch('/break-start-end/:id', authorizeRoles(['hsk_manager', 'hotel_manager', 'check_in_assistant']), validateRequest(EmployeeBreakStartEnd), employeeBreakStartEndController)
 employeeRouter.patch('/work-log',  validateRequest(EmployeeWorkLogUpdate), employeeUpdateWorkLogController)
 employeeRouter.patch('/',  validateRequest(EmployeeUpdate), employeeUpdateController)
 
