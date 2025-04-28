@@ -99,6 +99,10 @@ model employee_work_log {
   checkInDate DateTime
   checkOutDate DateTime?
   totalSeconds Int?
+  rate Float
+  rateType String
+  hourlyRate Decimal @db.Decimal(8,2)
+  salaryToday Decimal @db.Decimal(10,2) @default(0)
   status employee_status @default(checked_out)
   year Int @db.UnsignedSmallInt
   month Int @db.UnsignedTinyInt // 1 as january - 12 as december

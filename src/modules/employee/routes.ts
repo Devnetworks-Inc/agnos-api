@@ -18,21 +18,80 @@ employeeRouter.get('/url/:url', validateRequest(EmployeeGetByUrl), employeeGetBy
 // protected routes
 employeeRouter.use(validateToken)
 
-employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
+// employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
 
-employeeRouter.post('/work-log/',  validateRequest(EmployeeWorkLogCreate), employeeCreateWorkLogController)
-employeeRouter.post('/shareable-url', validateRequest(EmployeeCreateShareableUrl), employeeCreateShareableUrlController)
-employeeRouter.post('/', validateRequest(EmployeeCreate), employeeCreateController)
+employeeRouter.post(
+  '/work-log/', 
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeWorkLogCreate), employeeCreateWorkLogController
+)
 
-employeeRouter.get('/attendances', validateRequest(EmployeeGetAttendances), employeeGetAttendancesController)
-employeeRouter.get('/:id', validateRequest(IdParamRequest), employeeGetByIdController)
-employeeRouter.get('/', validateRequest(EmployeeGet), employeeGetController)
+employeeRouter.post(
+  '/shareable-url',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeCreateShareableUrl),
+  employeeCreateShareableUrlController
+)
 
-employeeRouter.patch('/check-in-out/:id',  validateRequest(EmployeeCheckInOut), employeeCheckInOutController)
-employeeRouter.patch('/break-start-end/:id',  validateRequest(EmployeeBreakStartEnd), employeeBreakStartEndController)
-employeeRouter.patch('/work-log',  validateRequest(EmployeeWorkLogUpdate), employeeUpdateWorkLogController)
-employeeRouter.patch('/',  validateRequest(EmployeeUpdate), employeeUpdateController)
+employeeRouter.post(
+  '/',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeCreate), employeeCreateController
+)
 
-employeeRouter.delete('/:id',  validateRequest(IdParamRequest), employeeDeleteController)
+employeeRouter.get(
+  '/attendances',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeGetAttendances),
+  employeeGetAttendancesController
+)
+
+employeeRouter.get(
+  '/:id',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(IdParamRequest), employeeGetByIdController
+)
+
+employeeRouter.get(
+  '/',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeGet),
+  employeeGetController
+)
+
+employeeRouter.patch(
+  '/check-in-out/:id',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'check_in_assistant']),
+  validateRequest(EmployeeCheckInOut),
+  employeeCheckInOutController
+)
+
+employeeRouter.patch(
+  '/break-start-end/:id',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'check_in_assistant']),
+  validateRequest(EmployeeBreakStartEnd),
+  employeeBreakStartEndController
+)
+
+employeeRouter.patch(
+  '/work-log',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeWorkLogUpdate),
+  employeeUpdateWorkLogController
+)
+
+employeeRouter.patch(
+  '/',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeUpdate),
+  employeeUpdateController
+)
+
+employeeRouter.delete(
+  '/:id',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(IdParamRequest),
+  employeeDeleteController
+)
 
 export default employeeRouter

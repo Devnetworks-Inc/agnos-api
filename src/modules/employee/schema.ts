@@ -3,6 +3,8 @@ import { TypeOf, z } from "zod";
 import { AuthRequest } from "../auth.schema";
 import { isMatch } from "date-fns";
 
+export const RateType = z.enum(['hourly', 'daily', 'weekly', '15days', 'monthly'])
+
 export const EmployeeWorkLog = z.object({
   id: z.number(),
   date: z.string().refine(
@@ -14,7 +16,10 @@ export const EmployeeWorkLog = z.object({
   checkOutDate: z.string().datetime().nullable().optional(),
   totalSeconds: z.number().optional(),
   month: z.number().gte(1).lte(12),
-  year: z.number()
+  year: z.number(),
+  hourlyRate: z.number(),
+  rate: z.number(),
+  rateType: RateType,
 })
 
 export const EmployeeBreakLog = z.object({
@@ -30,14 +35,16 @@ export const EmployeeBreakLogCreate = EmployeeBreakLog.omit({
 })
 
 export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
-  id: true, totalSeconds: true, month: true, year: true
+  id: true, totalSeconds: true, month: true, year: true, rate: true, rateType: true, hourlyRate: true
 }).extend({
   breaks: z.array(EmployeeBreakLogCreate).optional(),
   comment: z.string()
 })
 
 export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.extend({
-  workLogId: z.number()
+  workLogId: z.number(),
+  rate: z.number().optional(),
+  rateType: RateType.optional(),
 }).omit({ date: true })
 
 export const EmployeeWorkLogCreate = z.object({
@@ -85,7 +92,7 @@ export const Employee = z.object({
   bankAccount: z.string().optional(),
   iban: z.string().optional(),
   hiredDate: z.string().datetime().optional(),
-  rateType: z.string().optional(),
+  rateType: RateType.optional(),
   employmentType: z.string().optional(),
   rate: z.coerce.number().default(0),
   position: z.string().optional(),
@@ -184,7 +191,7 @@ export const EmployeeGetAttendances = z.object({
 })
 
 
-
+export type RateType = TypeOf<typeof RateType>;
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;
 export type EmployeeUpdateBody = TypeOf<typeof EmployeeUpdateBody>;

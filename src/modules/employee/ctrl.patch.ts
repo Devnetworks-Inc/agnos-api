@@ -7,10 +7,12 @@ import {
   EmployeeUpdateRequest,
   EmployeeUrlSubmitRequest,
   EmployeeWorkLogUpdateRequest,
+  RateType,
 } from "./schema";
 import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds } from "date-fns";
+import { calculateSalary, getHourlyRate } from "src/utils/helper";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
@@ -55,7 +57,7 @@ export const employeeCheckInOutController = async (
 
   const employee = await prisma.employee.findUnique({
     where: { id, hotelId },
-    select: { status: true },
+    select: { status: true, rate: true, rateType: true },
   });
 
   if (!employee) {
@@ -74,10 +76,16 @@ export const employeeCheckInOutController = async (
     return resp(res, "Employee already check-out", 400);
   }
 
+  const { rate, rateType } = employee
+  const hourlyRate = getHourlyRate(rateType as RateType, rate)
+
   if (status === "check_in") {
     const [workLog] = await prisma.$transaction([
       prisma.employee_work_log.create({
         data: {
+          rate,
+          rateType,
+          hourlyRate,
           date: new Date(date),
           employeeId: id,
           checkInDate: datetime,
@@ -102,7 +110,7 @@ export const employeeCheckInOutController = async (
     // get latest check in
     const log = await prisma.employee_work_log.findFirst({
       where: { checkOutDate: null, employeeId: id },
-      select: { id: true, breaks: true, checkInDate: true },
+      select: { id: true, breaks: true, checkInDate: true, hourlyRate: true },
       take: 1,
       orderBy: { checkInDate: "desc" },
     });
@@ -129,6 +137,7 @@ export const employeeCheckInOutController = async (
         data: {
           checkOutDate: datetime,
           totalSeconds,
+          salaryToday: calculateSalary(hourlyRate, totalSeconds)
         },
         include: {
           employee: {
@@ -284,12 +293,16 @@ export const employeeUpdateWorkLogController = async (
   next: NextFunction
 ) => {
   const { id: userId } = req.auth!
-  let { workLogId: id, breaks, employeeId, comment } = req.body;
+  let { workLogId: id, breaks, employeeId, comment, rate, rateType } = req.body;
   const workLog = await prisma.employee_work_log.findUnique({ where: { id }, include: { breaks: true, employee: { select: { status: true } } } })
   if (!workLog) {
     return resp(res, "Record to update not found.", 404);
   }
+  rate = rate ?? workLog.rate
+  rateType = rateType ?? workLog.rateType as RateType
 
+  let hourlyRate = getHourlyRate(rateType, rate)
+  let salaryToday: Prisma.Decimal | undefined
   let status: employee_status = 'checked_in'
 
   const checkInDate = new Date(req.body.checkInDate)
@@ -358,6 +371,7 @@ export const employeeUpdateWorkLogController = async (
     }
 
     status = 'checked_out'
+    salaryToday = calculateSalary(hourlyRate, totalSeconds)
   } else {
     totalSeconds = null
   }
@@ -370,6 +384,10 @@ export const employeeUpdateWorkLogController = async (
         checkInDate,
         checkOutDate,
         totalSeconds,
+        salaryToday,
+        rate,
+        rateType,
+        hourlyRate,
         status,
         breaks: breaks ? {
           deleteMany: {},
