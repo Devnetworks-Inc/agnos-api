@@ -114,7 +114,7 @@ export const employeeCreateWorkLogController = async (
       differenceInSeconds(checkOutDate, checkInDate) - breakTotalSeconds;
 
     status = 'checked_out'
-    salaryToday = calculateSalary(hourlyRate, totalSeconds)    
+    salaryToday = calculateSalary(hourlyRate, totalSeconds)
   }
 
   const yearMonthDayArr = date.split('-')
