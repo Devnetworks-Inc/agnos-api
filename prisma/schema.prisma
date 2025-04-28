@@ -51,7 +51,7 @@ model employee {
   bankAccount String @default("")
   iban String @default("")
   hiredDate DateTime? @db.Date
-  rateType String @default("")
+  rateType String @default("hourly")
   employmentType String @default("")
   rate Float @default(0)
   status employee_status @default(checked_out)
