@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import resp from "objectify-response";
 import prisma from "../prisma";
-import { EmployeeGetWorkLogsRequest, EmployeeGetByUrlRequest, EmployeeGetRequest } from "./schema";
+import { EmployeeGetWorkLogsRequest, EmployeeGetByUrlRequest, EmployeeGetRequest, EmployeeGetWorkLogsByIdPaginatedRequest } from "./schema";
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
@@ -103,4 +103,28 @@ export const employeeGetWorkLogsController = async (req: EmployeeGetWorkLogsRequ
   })
    
   resp(res, employees)
+}
+export const employeeGetWorkLogsByIdPaginatedController = async (req: EmployeeGetWorkLogsByIdPaginatedRequest, res: Response) => {
+  const employeeId = +req.params.employeeId
+  const { pageNumber = 1, pageSize = 50, startDate, endDate } = req.query
+
+  const where = {
+    employeeId,
+    checkInDate: { gte: startDate, lte: endDate }
+  }
+
+  const [items, totalItems] = await prisma.$transaction([
+    prisma.employee_work_log.findMany({
+      where,
+      include: { employee: { select: { firstName: true, middleName: true, lastName: true } } },
+      skip: (pageNumber - 1) * pageSize,
+      take: pageSize,
+      orderBy: { checkInDate: 'desc' }
+    }),
+    prisma.employee_work_log.count({
+      where,
+    })
+  ])
+
+  resp(res, { items, totalItems, totalPages: Math.ceil(totalItems/pageSize) })
 }

@@ -2,7 +2,7 @@ import { Request } from "express";
 import { TypeOf, z } from "zod";
 import { AuthRequest } from "../auth.schema";
 import { isMatch } from "date-fns";
-import { gender } from "@prisma/client";
+import { Id } from "../id/schema";
 
 export const RateType = z.enum(['hourly', 'daily', 'weekly', '15days', 'monthly'])
 
@@ -93,9 +93,9 @@ export const Employee = z.object({
   bankAccount: z.string().optional(),
   iban: z.string().optional(),
   hiredDate: z.string().datetime().optional(),
-  rateType: RateType.optional(),
-  employmentType: z.string().optional(),
-  rate: z.coerce.number().default(0),
+  rateType: RateType,
+  employmentType: z.string(),
+  rate: z.coerce.number(),
   position: z.string().optional(),
   activity: z.string().optional(),
   job: z.string().optional(),
@@ -191,6 +191,22 @@ export const EmployeeGetWorkLogs = z.object({
   query: EmployeeGetWorkLogsQuery
 })
 
+export const EmployeeGetWorkLogsByIdPaginatedParams = z.object({
+  employeeId: Id
+})
+
+export const EmployeeGetWorkLogsByIdPaginatedQuery = z.object({
+  pageNumber: z.coerce.number().optional(),
+  pageSize: z.coerce.number().optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional()
+})
+
+export const EmployeeGetWorkLogsByIdPaginated = z.object({
+  params: EmployeeGetWorkLogsByIdPaginatedParams,
+  query: EmployeeGetWorkLogsByIdPaginatedQuery
+})
+
 
 export type RateType = TypeOf<typeof RateType>;
 export type Employee = TypeOf<typeof Employee>;
@@ -206,6 +222,8 @@ export type EmployeeGetWorkLogsQuery = TypeOf<typeof EmployeeGetWorkLogsQuery>;
 export type EmployeeBreakLogCreate = TypeOf<typeof EmployeeBreakLogCreate>;
 export type EmployeeWorkLogCreateBody = TypeOf<typeof EmployeeWorkLogCreateBody>;
 export type EmployeeWorkLogUpdateBody = TypeOf<typeof EmployeeWorkLogUpdateBody>;
+export type EmployeeGetWorkLogsByIdPaginatedParams = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedParams>;
+export type EmployeeGetWorkLogsByIdPaginatedQuery = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedQuery>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
@@ -215,5 +233,7 @@ export type EmployeeBreakStartEndRequest = Request<{}, {}, EmployeeBreakStartEnd
 export type EmployeeGetWorkLogsRequest = Request<{}, {}, {}, EmployeeGetWorkLogsQuery> & AuthRequest;
 export type EmployeeWorkLogCreateRequest = Request<{}, {}, EmployeeWorkLogCreateBody> & AuthRequest;
 export type EmployeeWorkLogUpdateRequest = Request<{}, {}, EmployeeWorkLogUpdateBody> & AuthRequest;
+export type EmployeeGetWorkLogsByIdPaginatedRequest = Request<EmployeeGetWorkLogsByIdPaginatedParams, {}, {}, EmployeeGetWorkLogsByIdPaginatedQuery> & AuthRequest;
+
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;
