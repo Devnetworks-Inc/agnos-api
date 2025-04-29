@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -103,6 +103,22 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
     responses: {
       200: successJsonResponse("Employee", EmployeeSchema),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: employeeBaseUrl+'/work-logs/paginated/{employeeId}',
+    summary: "get paginated employee work logs by id",
+    tags,
+    request: {
+      params: EmployeeGetWorkLogsByIdPaginatedParams,
+      query: EmployeeGetWorkLogsByIdPaginatedQuery
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Employee Work Logs", z.array(EmployeeWorkLog)),
     },
   });
 
