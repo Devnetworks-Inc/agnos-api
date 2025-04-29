@@ -9,17 +9,15 @@ extendZodWithOpenApi(z)
 import getOpenApiDocumentation from './docs'
 import { errorHandler } from './middlewares/errorHandler'
 import router from './router'
-// import cookieParser from 'cookie-parser'
+
+process.env.TZ = 'Europe/Berlin'
 
 const app = express()
 const docs = getOpenApiDocumentation()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-// app.use(cookieParser())
-app.use(cors(
-  /// {origin: 'http://192.168.254.100/:5173'}
-))
+app.use(cors())
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(docs));
 app.use(router)
