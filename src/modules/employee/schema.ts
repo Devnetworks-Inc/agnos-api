@@ -2,6 +2,7 @@ import { Request } from "express";
 import { TypeOf, z } from "zod";
 import { AuthRequest } from "../auth.schema";
 import { isMatch } from "date-fns";
+import { gender } from "@prisma/client";
 
 export const RateType = z.enum(['hourly', 'daily', 'weekly', '15days', 'monthly'])
 
@@ -76,7 +77,7 @@ export const Employee = z.object({
   middleName: z.string().optional(),
   lastName: z.string(),
   birthdate: z.string().datetime().optional(),
-  gender: Gender,
+  gender: Gender.default('other'),
   religion: z.string().optional(),
   civilStatus: z.string().default(''),
   nationality: z.string().optional(),
@@ -84,7 +85,7 @@ export const Employee = z.object({
   mobileNumber: z.string().optional(),
   telephoneNumber: z.string().optional(),
   email: z.string().optional(),
-  address: z.string(),
+  address: z.string().optional(),
   emergencyContactName: z.string().optional(),
   emergencyContactNumber: z.string().optional(),
   healthInsurance: z.string().optional(),
@@ -173,7 +174,7 @@ export const EmployeeCreateShareableUrl = z.object({
 })
 
 export const EmployeeUrlSubmitBody = EmployeeCreateBody.omit({ hotelId: true }).extend({
-  shareableUrl: z.string()  
+  shareableUrl: z.string(),
 })
 
 export const EmployeeUrlSubmit = z.object({
