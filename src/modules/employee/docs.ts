@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetAttendancesQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -45,7 +45,7 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "post",
-    path: employeeBaseUrl+'/work-log',
+    path: employeeBaseUrl+'/work-logs',
     summary: "create work log",
     tags,
     request: {
@@ -108,11 +108,11 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "get",
-    path: employeeBaseUrl+'/attendances',
-    summary: "get employees attendances",
+    path: employeeBaseUrl+'/work-logs',
+    summary: "get employees work logs",
     tags,
     request: {
-      query: EmployeeGetAttendancesQuery
+      query: EmployeeGetWorkLogsQuery
     },
     security: [{ BearerAuth: []}],
 
@@ -189,7 +189,7 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "patch",
-    path: employeeBaseUrl+'/work-log',
+    path: employeeBaseUrl+'/work-logs',
     summary: "update work log",
     tags,
     request: {

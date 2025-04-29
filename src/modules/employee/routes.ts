@@ -1,10 +1,10 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetAttendances, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogCreate, EmployeeWorkLogUpdate } from "./schema"
+import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetWorkLogs, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogCreate, EmployeeWorkLogUpdate } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController, employeeCreateWorkLogController } from "./ctrl.post"
 import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUpdateWorkLogController, employeeUrlSubmitController } from "./ctrl.patch"
-import { employeeGetAttendancesController, employeeGetByIdController, employeeGetByUrlController, employeeGetController } from "./ctrl.get"
+import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -21,7 +21,7 @@ employeeRouter.use(validateToken)
 // employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
 
 employeeRouter.post(
-  '/work-log/', 
+  '/work-logs', 
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
   validateRequest(EmployeeWorkLogCreate), employeeCreateWorkLogController
 )
@@ -40,10 +40,10 @@ employeeRouter.post(
 )
 
 employeeRouter.get(
-  '/attendances',
+  '/work-logs',
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
-  validateRequest(EmployeeGetAttendances),
-  employeeGetAttendancesController
+  validateRequest(EmployeeGetWorkLogs),
+  employeeGetWorkLogsController
 )
 
 employeeRouter.get(
@@ -74,7 +74,7 @@ employeeRouter.patch(
 )
 
 employeeRouter.patch(
-  '/work-log',
+  '/work-logs',
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
   validateRequest(EmployeeWorkLogUpdate),
   employeeUpdateWorkLogController
