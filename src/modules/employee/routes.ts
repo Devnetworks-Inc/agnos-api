@@ -21,7 +21,7 @@ employeeRouter.use(validateToken)
 // employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
 
 employeeRouter.post(
-  '/work-log/', 
+  '/work-logs', 
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
   validateRequest(EmployeeWorkLogCreate), employeeCreateWorkLogController
 )
@@ -74,7 +74,7 @@ employeeRouter.patch(
 )
 
 employeeRouter.patch(
-  '/work-log',
+  '/work-logs',
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
   validateRequest(EmployeeWorkLogUpdate),
   employeeUpdateWorkLogController

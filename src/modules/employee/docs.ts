@@ -45,7 +45,7 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "post",
-    path: employeeBaseUrl+'/work-log',
+    path: employeeBaseUrl+'/work-logs',
     summary: "create work log",
     tags,
     request: {
@@ -189,7 +189,7 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "patch",
-    path: employeeBaseUrl+'/work-log',
+    path: employeeBaseUrl+'/work-logs',
     summary: "update work log",
     tags,
     request: {
