@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import resp from "objectify-response";
 import prisma from "../prisma";
-import { EmployeeGetAttendancesRequest, EmployeeGetByUrlRequest, EmployeeGetRequest } from "./schema";
+import { EmployeeGetWorkLogsRequest, EmployeeGetByUrlRequest, EmployeeGetRequest } from "./schema";
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
@@ -83,7 +83,7 @@ export const employeeGetByUrlController = async (req: EmployeeGetByUrlRequest, r
   resp(res, employee)
 }
 
-export const employeeGetAttendancesController = async (req: EmployeeGetAttendancesRequest, res: Response) => {
+export const employeeGetWorkLogsController = async (req: EmployeeGetWorkLogsRequest, res: Response) => {
   const { role, currentHotelId } = req.auth!
   let { hotelId, startDate, endDate } = req.query
 
