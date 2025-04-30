@@ -18,8 +18,6 @@ employeeRouter.get('/url/:url', validateRequest(EmployeeGetByUrl), employeeGetBy
 // protected routes
 employeeRouter.use(validateToken)
 
-// employeeRouter.use(authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']))
-
 employeeRouter.post(
   '/work-logs', 
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
@@ -45,6 +43,14 @@ employeeRouter.get(
   validateRequest(EmployeeGetWorkLogsByIdPaginated),
   employeeGetWorkLogsByIdPaginatedController
 )
+
+employeeRouter.get(
+  '/work-logs/summary/daily',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeGetWorkLogsByIdPaginated),
+  employeeGetWorkLogsByIdPaginatedController
+)
+
 
 employeeRouter.get(
   '/work-logs',

@@ -104,6 +104,7 @@ export const employeeGetWorkLogsController = async (req: EmployeeGetWorkLogsRequ
    
   resp(res, employees)
 }
+
 export const employeeGetWorkLogsByIdPaginatedController = async (req: EmployeeGetWorkLogsByIdPaginatedRequest, res: Response) => {
   const employeeId = +req.params.employeeId
   const { pageNumber = 1, pageSize = 50, startDate, endDate } = req.query
@@ -113,10 +114,19 @@ export const employeeGetWorkLogsByIdPaginatedController = async (req: EmployeeGe
     checkInDate: { gte: startDate, lte: endDate }
   }
 
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    include: { hotel: { select: { name: true } } }
+  })
+
+  if (!employee) {
+    return resp(res, 'Employee not found', 404)
+  }
+
   const [items, totalItems] = await prisma.$transaction([
     prisma.employee_work_log.findMany({
       where,
-      include: { employee: { select: { firstName: true, middleName: true, lastName: true } } },
+      include: { breaks: true },
       skip: (pageNumber - 1) * pageSize,
       take: pageSize,
       orderBy: { checkInDate: 'desc' }
@@ -126,5 +136,9 @@ export const employeeGetWorkLogsByIdPaginatedController = async (req: EmployeeGe
     })
   ])
 
-  resp(res, { items, totalItems, totalPages: Math.ceil(totalItems/pageSize) })
+  resp(res, { employee, items, totalItems, totalPages: Math.ceil(totalItems/pageSize) })
+}
+
+export const employeeGetWorkLogsSummaryDaily = () => {
+
 }
