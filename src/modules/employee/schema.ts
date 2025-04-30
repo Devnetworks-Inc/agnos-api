@@ -207,6 +207,15 @@ export const EmployeeGetWorkLogsByIdPaginated = z.object({
   query: EmployeeGetWorkLogsByIdPaginatedQuery
 })
 
+export const EmployeeGetWorkLogsSummaryQuery = z.object({
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional()
+})
+
+export const EmployeeGetWorkLogsSummary = z.object({
+  params: EmployeeGetWorkLogsByIdPaginatedParams,
+  query: EmployeeGetWorkLogsByIdPaginatedQuery
+})
 
 export type RateType = TypeOf<typeof RateType>;
 export type Employee = TypeOf<typeof Employee>;
