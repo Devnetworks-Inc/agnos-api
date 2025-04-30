@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import resp from "objectify-response";
 import prisma from "../prisma";
-import { EmployeeGetWorkLogsRequest, EmployeeGetByUrlRequest, EmployeeGetRequest, EmployeeGetWorkLogsByIdPaginatedRequest } from "./schema";
+import { EmployeeGetWorkLogsRequest, EmployeeGetByUrlRequest, EmployeeGetRequest, EmployeeGetWorkLogsByIdPaginatedRequest, EmployeeGetWorkLogsByHotelIdSummaryDailyRequest } from "./schema";
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
@@ -139,6 +139,19 @@ export const employeeGetWorkLogsByIdPaginatedController = async (req: EmployeeGe
   resp(res, { employee, items, totalItems, totalPages: Math.ceil(totalItems/pageSize) })
 }
 
-export const employeeGetWorkLogsSummaryDaily = () => {
+export const employeeGetWorkLogsSummaryDailyController = async (req: EmployeeGetWorkLogsByHotelIdSummaryDailyRequest, res: Response) => {
+  const hotelId = +req.params.hotelId
+  const { startDate, endDate } = req.query
 
+  const data = await prisma.employee_work_log.groupBy({
+    by: ['date'],
+    where: { employee: { hotelId },  checkInDate: { gte: startDate, lte: endDate } },
+    _sum: { totalSeconds: true, salaryToday: true }
+  })
+
+  resp(res, data.map(v => ({
+    date: v.date,
+    totalHours: +((v._sum.totalSeconds ?? 0) / 3600).toFixed(2),
+    totalCost: +(v._sum.salaryToday ?? 0) 
+  })))
 }
