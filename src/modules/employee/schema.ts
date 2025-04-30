@@ -207,14 +207,18 @@ export const EmployeeGetWorkLogsByIdPaginated = z.object({
   query: EmployeeGetWorkLogsByIdPaginatedQuery
 })
 
-export const EmployeeGetWorkLogsSummaryQuery = z.object({
+export const EmployeeGetWorkLogsByHotelIdSummaryDailyParam = z.object({
+  hotelId: Id
+})
+
+export const EmployeeGetWorkLogsByHotelIdSummaryDailyQuery = z.object({
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional()
 })
 
-export const EmployeeGetWorkLogsSummary = z.object({
-  params: EmployeeGetWorkLogsByIdPaginatedParams,
-  query: EmployeeGetWorkLogsByIdPaginatedQuery
+export const EmployeeGetWorkLogsByHotelIdSummaryDaily = z.object({
+  params: EmployeeGetWorkLogsByHotelIdSummaryDailyParam,
+  query: EmployeeGetWorkLogsByHotelIdSummaryDailyQuery
 })
 
 export type RateType = TypeOf<typeof RateType>;
@@ -231,6 +235,9 @@ export type EmployeeGetWorkLogsQuery = TypeOf<typeof EmployeeGetWorkLogsQuery>;
 export type EmployeeBreakLogCreate = TypeOf<typeof EmployeeBreakLogCreate>;
 export type EmployeeWorkLogCreateBody = TypeOf<typeof EmployeeWorkLogCreateBody>;
 export type EmployeeWorkLogUpdateBody = TypeOf<typeof EmployeeWorkLogUpdateBody>;
+export type EmployeeGetWorkLogsByHotelIdSummaryDailyParam = TypeOf<typeof EmployeeGetWorkLogsByHotelIdSummaryDailyParam>;
+export type EmployeeGetWorkLogsByHotelIdSummaryDailyQuery = TypeOf<typeof EmployeeGetWorkLogsByHotelIdSummaryDailyQuery>;
+export type EmployeeGetWorkLogsByHotelIdSummaryDaily = TypeOf<typeof EmployeeGetWorkLogsByHotelIdSummaryDaily>;
 export type EmployeeGetWorkLogsByIdPaginatedParams = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedParams>;
 export type EmployeeGetWorkLogsByIdPaginatedQuery = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedQuery>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
@@ -243,6 +250,7 @@ export type EmployeeGetWorkLogsRequest = Request<{}, {}, {}, EmployeeGetWorkLogs
 export type EmployeeWorkLogCreateRequest = Request<{}, {}, EmployeeWorkLogCreateBody> & AuthRequest;
 export type EmployeeWorkLogUpdateRequest = Request<{}, {}, EmployeeWorkLogUpdateBody> & AuthRequest;
 export type EmployeeGetWorkLogsByIdPaginatedRequest = Request<EmployeeGetWorkLogsByIdPaginatedParams, {}, {}, EmployeeGetWorkLogsByIdPaginatedQuery> & AuthRequest;
+export type EmployeeGetWorkLogsByHotelIdSummaryDailyRequest = Request<EmployeeGetWorkLogsByHotelIdSummaryDailyParam, {}, {}, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery> & AuthRequest;
 
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;
