@@ -95,11 +95,15 @@ export const employeeGetWorkLogsController = async (req: EmployeeGetWorkLogsRequ
   }
 
   const employees = await prisma.employee.findMany({
-    where: { hotelId },
-    select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true, workLog: {
-      where: { checkInDate: { gte: startDate, lte: endDate } },
-      include: { breaks: true, editLogs: true }
-    }},
+    where: { hotelId, OR: [
+      { user: { role: { not: 'check_in_assistant' } }},
+      { user: null }
+    ]},
+    select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true,
+      workLog: {
+        where: { checkInDate: { gte: startDate, lte: endDate } },
+        include: { breaks: true, editLogs: { orderBy: { date: 'desc' } } }
+      }},
   })
    
   resp(res, employees)
