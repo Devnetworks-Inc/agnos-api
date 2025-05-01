@@ -8,7 +8,7 @@ export const getEmployeesWorkLogGroupByMonthYearHotel = async (startDate: Date, 
 
   const result = await prisma.$queryRawUnsafe(
     `SELECT
-      e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, e.position, sum(ewl.totalSeconds) as totalSeconds
+      e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, e.position, sum(ewl.totalSeconds) as totalSeconds, sum(ewl.salaryToday) as cost
     FROM ${db}.employee as e
     LEFT JOIN 
       ( SELECT * FROM ${db}.employee_work_log WHERE date BETWEEN '${sd}' AND '${ed}' ) as ewl
