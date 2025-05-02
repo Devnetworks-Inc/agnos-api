@@ -94,7 +94,7 @@ export const Employee = z.object({
   iban: z.string().optional(),
   hiredDate: z.string().datetime().optional(),
   rateType: RateType,
-  employmentType: z.string(),
+  employmentType: z.string().optional(),
   rate: z.coerce.number(),
   position: z.string().optional(),
   activity: z.string().optional(),
