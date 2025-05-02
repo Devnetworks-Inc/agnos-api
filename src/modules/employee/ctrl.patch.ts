@@ -61,7 +61,10 @@ export const employeeCheckInOutController = async (
   });
 
   if (!employee) {
-    return resp(res, "Employee not found", 404);
+    const hotel = await prisma.hotel.findUnique({
+      where: { id: hotelId }
+    });
+    return resp(res, `Employee not found in ${hotel?.name}`, 404);
   }
 
   if (employee.status === "on_break") {
@@ -212,7 +215,10 @@ export const employeeBreakStartEndController = async (
   });
 
   if (!employee) {
-    return resp(res, "Employee not found", 404);
+    const hotel = await prisma.hotel.findUnique({
+      where: { id: hotelId }
+    });
+    return resp(res, `Employee not found in ${hotel?.name}`, 404);
   }
 
   if (employee.status === "checked_out") {
