@@ -211,6 +211,8 @@ export const employeeBreakStartEndController = async (
         orderBy: { checkInDate: "desc" },
         take: 1,
       },
+      firstName: true,
+      lastName: true
     },
   });
 
@@ -253,6 +255,8 @@ export const employeeBreakStartEndController = async (
       }),
     ]);
 
+    breakLog.employee = employee;
+
     return resp(res, breakLog);
   }
 
@@ -281,13 +285,15 @@ export const employeeBreakStartEndController = async (
         data: {
           breakEndDate: date,
           totalSeconds: diffInSecs,
-        },
+        }
       }),
       prisma.employee.update({
         where: { id },
         data: { status: "checked_in" },
       }),
     ]);
+
+    updatedBreakLog.employee = employee;
 
     return resp(res, updatedBreakLog);
   }
