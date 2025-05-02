@@ -74,5 +74,6 @@ export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
 
 export const calculateSalary = (hourlyRate: number | Prisma.Decimal, secondsWork: number ) => {
   let totalHoursWorked = new Prisma.Decimal(secondsWork).dividedBy(3600)
-  return totalHoursWorked.times(hourlyRate)
+  const roundedHours = totalHoursWorked.toDecimalPlaces(2);
+  return new Prisma.Decimal(hourlyRate).times(roundedHours);
 }
