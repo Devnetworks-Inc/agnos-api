@@ -46,7 +46,7 @@ employeeRouter.get(
 
 employeeRouter.get(
   '/work-logs/paginated/:employeeId',
-  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
   validateRequest(EmployeeGetWorkLogsByIdPaginated),
   employeeGetWorkLogsByIdPaginatedController
 )
@@ -60,7 +60,7 @@ employeeRouter.get(
 
 employeeRouter.get(
   '/:id',
-  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
   validateRequest(IdParamRequest), employeeGetByIdController
 )
 
