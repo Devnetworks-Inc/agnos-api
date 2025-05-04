@@ -128,6 +128,7 @@ model employee_work_edit_log {
   editorId Int?
   comment String
   date DateTime
+  details Json?
   editor user? @relation(fields: [editorId], references: [id])
   workLog employee_work_log @relation(fields: [workLogId], references: [id], onDelete: Cascade)
 }
