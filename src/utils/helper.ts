@@ -10,9 +10,9 @@ export type CreateJwtTokenParams = {
 }
 
 export const createJwtToken = (data: CreateJwtTokenParams) => {
-  const { id, username, role, currentHotelId } = data
+  const { id, username, role, currentHotelId, employeeId: emp } = data
   const jwtSecret = process.env.JWT_SECRET || ''
-  return jwt.sign({ id, username, role, currentHotelId }, jwtSecret)
+  return jwt.sign({ id, username, role, currentHotelId, emp }, jwtSecret)
 }
 
 export const decimalTypePropsToNumber = (obj: any) => {
@@ -73,6 +73,7 @@ export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
 }
 
 export const calculateSalary = (hourlyRate: number | Prisma.Decimal, secondsWork: number ) => {
-  let totalHoursWorked = new Prisma.Decimal(secondsWork).dividedBy(3600).toDecimalPlaces(2)
-  return totalHoursWorked.times(hourlyRate)
+  let totalHoursWorked = new Prisma.Decimal(secondsWork).dividedBy(3600)
+  const roundedHours = totalHoursWorked.toDecimalPlaces(2);
+  return new Prisma.Decimal(hourlyRate).times(roundedHours);
 }

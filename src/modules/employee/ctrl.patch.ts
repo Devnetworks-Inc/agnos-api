@@ -61,7 +61,10 @@ export const employeeCheckInOutController = async (
   });
 
   if (!employee) {
-    return resp(res, "Employee not found", 404);
+    const hotel = await prisma.hotel.findUnique({
+      where: { id: hotelId }
+    });
+    return resp(res, `Employee not found in ${hotel?.name}`, 404);
   }
 
   if (employee.status === "on_break") {
@@ -208,11 +211,16 @@ export const employeeBreakStartEndController = async (
         orderBy: { checkInDate: "desc" },
         take: 1,
       },
+      firstName: true,
+      lastName: true
     },
   });
 
   if (!employee) {
-    return resp(res, "Employee not found", 404);
+    const hotel = await prisma.hotel.findUnique({
+      where: { id: hotelId }
+    });
+    return resp(res, `Employee not found in ${hotel?.name}`, 404);
   }
 
   if (employee.status === "checked_out") {
@@ -247,6 +255,8 @@ export const employeeBreakStartEndController = async (
       }),
     ]);
 
+    breakLog.employee = employee;
+
     return resp(res, breakLog);
   }
 
@@ -275,13 +285,15 @@ export const employeeBreakStartEndController = async (
         data: {
           breakEndDate: date,
           totalSeconds: diffInSecs,
-        },
+        }
       }),
       prisma.employee.update({
         where: { id },
         data: { status: "checked_in" },
       }),
     ]);
+
+    updatedBreakLog.employee = employee;
 
     return resp(res, updatedBreakLog);
   }

@@ -105,8 +105,14 @@ export const employeeGetWorkLogsController = async (req: EmployeeGetWorkLogsRequ
         include: { breaks: true, editLogs: { orderBy: { date: 'desc' } } }
       }},
   })
+
+  // Set status to 'Inactive' if workLog is empty or null
+  const employeesFinal = employees.map(emp => ({
+    ...emp,
+    status: !emp.workLog || emp.workLog.length === 0 ? 'Inactive' : emp.status
+  }));
    
-  resp(res, employees)
+  resp(res, employeesFinal)
 }
 
 export const employeeGetWorkLogsByIdPaginatedController = async (req: EmployeeGetWorkLogsByIdPaginatedRequest, res: Response) => {
