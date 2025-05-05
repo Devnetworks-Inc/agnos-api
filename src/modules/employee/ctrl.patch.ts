@@ -14,7 +14,6 @@ import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds, isEqual } from "date-fns";
 import { calculateSalary, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
-import { hotelBaseUrl } from "src/router";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
