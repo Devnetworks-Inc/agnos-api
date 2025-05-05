@@ -1,6 +1,7 @@
 import { NextFunction, Response } from "express";
 import resp from "objectify-response";
 import {
+  EditWorkLogDetails,
   EmployeeBreakLogCreate,
   EmployeeBreakStartEndRequest,
   EmployeeCheckInOutRequest,
@@ -11,7 +12,7 @@ import {
 } from "./schema";
 import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
-import { differenceInSeconds } from "date-fns";
+import { differenceInSeconds, isEqual } from "date-fns";
 import { calculateSalary, getHourlyRate } from "src/utils/helper";
 
 export const employeeUpdateController = async (
@@ -255,9 +256,7 @@ export const employeeBreakStartEndController = async (
       }),
     ]);
 
-    breakLog.employee = employee;
-
-    return resp(res, breakLog);
+    return resp(res, {...breakLog, employee});
   }
 
   if (status === "end_break") {
@@ -293,9 +292,7 @@ export const employeeBreakStartEndController = async (
       }),
     ]);
 
-    updatedBreakLog.employee = employee;
-
-    return resp(res, updatedBreakLog);
+    return resp(res, {...updatedBreakLog, employee});
   }
 };
 
@@ -305,8 +302,13 @@ export const employeeUpdateWorkLogController = async (
   next: NextFunction
 ) => {
   const { id: userId } = req.auth!
-  let { workLogId: id, breaks, employeeId, comment, rate, rateType } = req.body;
-  const workLog = await prisma.employee_work_log.findUnique({ where: { id }, include: { breaks: true, employee: { select: { status: true } } } })
+  let { workLogId: id, breaks, employeeId, comment, rate, rateType, checkInDate: rCheckInDate } = req.body;
+
+  const workLog = await prisma.employee_work_log.findUnique({
+    where: { id },
+    include: { breaks: true, employee: { select: { status: true } } }
+  })
+
   if (!workLog) {
     return resp(res, "Record to update not found.", 404);
   }
@@ -317,17 +319,31 @@ export const employeeUpdateWorkLogController = async (
   let salaryToday: Prisma.Decimal | undefined
   let status: employee_status = 'checked_in'
 
-  const checkInDate = new Date(req.body.checkInDate)
+  const checkInDate = rCheckInDate ? new Date(rCheckInDate) : workLog.checkInDate
   const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
   const newBreaks: (EmployeeBreakLogCreate & { totalSeconds?: number })[] = []
+
+  const details: EditWorkLogDetails = {
+    breaks: [],
+    newTotalMinsBreak: 0,
+    newTotalHours: 0,
+    correction: 0,
+    action: 'update'
+  }
+
+  if (!isEqual(checkInDate, workLog.checkInDate)) {
+    details.newCheckIn = checkInDate.toISOString()
+    details.prevCheckIn = workLog.checkInDate.toISOString()
+  }
+
   let totalSeconds = workLog.totalSeconds
-  
   let lastBreak: EmployeeBreakLogCreate | undefined
 
   if (breaks) {
+    let index = 0
     for (const val of breaks) {
       const breakStartDate = new Date(val.breakStartDate)
-      const breakEndDate = val.breakEndDate && new Date(val.breakEndDate)
+      const breakEndDate = val.breakEndDate ? new Date(val.breakEndDate) : null
       const lastEndBreak = lastBreak?.breakEndDate && new Date(lastBreak.breakEndDate)
       
 
@@ -346,6 +362,27 @@ export const employeeUpdateWorkLogController = async (
       lastBreak = val
       const seconds = breakEndDate ? differenceInSeconds(breakEndDate, breakStartDate) : 0
       newBreaks.push({ ...val, totalSeconds: seconds})
+
+      if (workLog.breaks.length > (index + 1)) {
+        const logBreak = workLog.breaks[index]
+
+        const breakDetails: EditWorkLogDetails['breaks'][0] = {
+          action: 'update',
+          position: index + 1,
+        }
+
+        if (!isEqual(breakStartDate, logBreak.breakStartDate)) {
+          breakDetails.prevStartBreak = logBreak.breakStartDate.toISOString()
+          breakDetails.newStartBreak = breakStartDate.toISOString()
+        }
+
+        if ( (breakEndDate && !logBreak.breakEndDate) || (logBreak.breakEndDate && !breakEndDate) || (breakEndDate && logBreak.breakEndDate && (!isEqual(breakEndDate, logBreak.breakEndDate))) ) {
+          breakDetails.prevEndBreak = logBreak.breakEndDate?.toISOString()
+          breakDetails.newEndBreak = breakEndDate?.toISOString()
+        }
+
+        details.breaks.push(breakDetails)
+      }
     }
   }
 
@@ -384,8 +421,23 @@ export const employeeUpdateWorkLogController = async (
 
     status = 'checked_out'
     salaryToday = calculateSalary(hourlyRate, totalSeconds)
+
+    if ((workLog.checkOutDate && !isEqual(checkOutDate, workLog.checkOutDate)) || !workLog.checkOutDate) {
+      details.newCheckOut = checkOutDate.toISOString(),
+      details.prevCheckOut = workLog.checkOutDate?.toISOString()
+    }
+    if (totalSeconds !== (workLog.totalSeconds ?? 0)) {
+      details.newTotalHours = +((totalSeconds / 3600).toFixed(2))
+      details.prevTotalHours = +((workLog.totalSeconds ?? 0 / 3600).toFixed(2))
+      details.correction = +((details.newTotalHours - details.prevTotalHours).toFixed(2))
+    }
   } else {
     totalSeconds = null
+    if (workLog.checkOutDate) {
+      details.newTotalHours = 0
+      details.prevTotalHours = +((workLog.totalSeconds ?? 0 / 3600).toFixed(2))
+      details.correction = +((details.newTotalHours - details.prevTotalHours).toFixed(2))
+    }
   }
 
   const [newWorkLog, employee] = await prisma.$transaction([
@@ -409,7 +461,8 @@ export const employeeUpdateWorkLogController = async (
           create: {
             editorId: userId,
             date: new Date(),
-            comment
+            comment,
+            details
           }
         }
       },

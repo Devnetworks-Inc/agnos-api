@@ -69,7 +69,7 @@ export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
       throw new Error('Invalid rate type');
   }
 
-  return hourlyRate;
+  return hourlyRate.toDecimalPlaces(2);
 }
 
 export const calculateSalary = (hourlyRate: number | Prisma.Decimal, secondsWork: number ) => {
