@@ -69,7 +69,7 @@ export const EmployeeChildren = z.array(z.object({
   firstName: z.string(),
   middleName: z.string().optional(),
   lastName: z.string(),
-  birthDate: z.string().datetime().optional(),
+  birthDate: z.string().datetime().optional().nullable(),
 }))
 
 export const Employee = z.object({
