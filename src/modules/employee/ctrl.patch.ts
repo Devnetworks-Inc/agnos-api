@@ -13,7 +13,7 @@ import {
 import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds, isEqual } from "date-fns";
-import { calculateSalary, getHourlyRate } from "src/utils/helper";
+import { calculateSalary, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
@@ -21,10 +21,16 @@ export const employeeUpdateController = async (
   next: NextFunction
 ) => {
   const { id } = req.body;
+  const { role, currentHotelId } = req.auth!
+
+  if (role !== 'agnos_admin' && !currentHotelId)
+    return resp(res, 'Unauthorized', 401)
+
+  const hotelId = currentHotelId ?? undefined
 
   prisma.employee
     .update({
-      where: { id },
+      where: { id, hotelId },
       data: {
         ...req.body,
       },
@@ -318,6 +324,7 @@ export const employeeUpdateWorkLogController = async (
   let hourlyRate = getHourlyRate(rateType, rate)
   let salaryToday: Prisma.Decimal | undefined
   let status: employee_status = 'checked_in'
+  let hasUpdate = false
 
   const checkInDate = rCheckInDate ? new Date(rCheckInDate) : workLog.checkInDate
   const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
@@ -334,6 +341,7 @@ export const employeeUpdateWorkLogController = async (
   if (!isEqual(checkInDate, workLog.checkInDate)) {
     details.newCheckIn = checkInDate.toISOString()
     details.prevCheckIn = workLog.checkInDate.toISOString()
+    hasUpdate = true
   }
 
   let totalSeconds = workLog.totalSeconds
@@ -363,27 +371,52 @@ export const employeeUpdateWorkLogController = async (
       const seconds = breakEndDate ? differenceInSeconds(breakEndDate, breakStartDate) : 0
       newBreaks.push({ ...val, totalSeconds: seconds})
 
-      if (workLog.breaks.length > (index + 1)) {
-        const logBreak = workLog.breaks[index]
+      const breakDetails: EditWorkLogDetails['breaks'][0] = {
+        action: 'create',
+        position: index + 1,
+      }
 
-        const breakDetails: EditWorkLogDetails['breaks'][0] = {
-          action: 'update',
-          position: index + 1,
-        }
+      // check changes for breaks
+      if (workLog.breaks.length >= (index + 1)) {
+        const logBreak = workLog.breaks[index]
+        breakDetails.action = 'update'
+        let hasBreakUpdate = false
 
         if (!isEqual(breakStartDate, logBreak.breakStartDate)) {
           breakDetails.prevStartBreak = logBreak.breakStartDate.toISOString()
           breakDetails.newStartBreak = breakStartDate.toISOString()
+          hasBreakUpdate = true
         }
 
         if ( (breakEndDate && !logBreak.breakEndDate) || (logBreak.breakEndDate && !breakEndDate) || (breakEndDate && logBreak.breakEndDate && (!isEqual(breakEndDate, logBreak.breakEndDate))) ) {
           breakDetails.prevEndBreak = logBreak.breakEndDate?.toISOString()
           breakDetails.newEndBreak = breakEndDate?.toISOString()
+          hasBreakUpdate = true
         }
-
+        if (hasBreakUpdate) {
+          hasUpdate = true
+          details.breaks.push(breakDetails)
+        }
+      } else {
+        breakDetails.newStartBreak = breakStartDate.toISOString()
+        breakDetails.newEndBreak = breakEndDate?.toISOString()
         details.breaks.push(breakDetails)
+        hasUpdate = true
       }
+
+      index++
     }
+  }
+
+  // check for breaks deletion
+  if (breaks && (breaks.length < workLog.breaks.length)) {
+    for (let i = breaks.length; i < workLog.breaks.length; i++) {
+      details.breaks.push({
+        action: 'delete',
+        position: i + 1
+      })
+    }
+    hasUpdate = true
   }
 
   if (lastBreak && !lastBreak.breakEndDate) {
@@ -425,18 +458,20 @@ export const employeeUpdateWorkLogController = async (
     if ((workLog.checkOutDate && !isEqual(checkOutDate, workLog.checkOutDate)) || !workLog.checkOutDate) {
       details.newCheckOut = checkOutDate.toISOString(),
       details.prevCheckOut = workLog.checkOutDate?.toISOString()
+      hasUpdate = true
     }
     if (totalSeconds !== (workLog.totalSeconds ?? 0)) {
-      details.newTotalHours = +((totalSeconds / 3600).toFixed(2))
-      details.prevTotalHours = +((workLog.totalSeconds ?? 0 / 3600).toFixed(2))
-      details.correction = +((details.newTotalHours - details.prevTotalHours).toFixed(2))
+      details.newTotalHours = toDecimalPlaces(totalSeconds / 3600, 2)
+      details.prevTotalHours = toDecimalPlaces((workLog.totalSeconds ?? 0) / 3600, 2)
+      details.correction = toDecimalPlaces(details.newTotalHours - details.prevTotalHours, 2)
     }
   } else {
     totalSeconds = null
     if (workLog.checkOutDate) {
       details.newTotalHours = 0
-      details.prevTotalHours = +((workLog.totalSeconds ?? 0 / 3600).toFixed(2))
-      details.correction = +((details.newTotalHours - details.prevTotalHours).toFixed(2))
+      details.prevTotalHours = toDecimalPlaces((workLog.totalSeconds ?? 0) / 3600, 2)
+      details.correction = toDecimalPlaces(details.newTotalHours - details.prevTotalHours, 2)
+      hasUpdate = true
     }
   }
 
@@ -457,14 +492,14 @@ export const employeeUpdateWorkLogController = async (
           deleteMany: {},
           create: newBreaks
         } : undefined,
-        editLogs: {
+        editLogs: hasUpdate ? {
           create: {
             editorId: userId,
             date: new Date(),
             comment,
             details
           }
-        }
+        } : undefined
       },
       include: { breaks: true },
     }),
