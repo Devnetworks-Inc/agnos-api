@@ -42,10 +42,11 @@ export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
   comment: z.string()
 })
 
-export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.extend({
+export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.partial().extend({
   workLogId: z.number(),
   rate: z.number().optional(),
   rateType: RateType.optional(),
+  comment: z.string()
 }).omit({ date: true })
 
 export const EmployeeWorkLogCreate = z.object({
@@ -254,3 +255,24 @@ export type EmployeeGetWorkLogsByHotelIdSummaryDailyRequest = Request<EmployeeGe
 
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;
+
+export type EditWorkLogDetails = {
+  prevCheckIn?: string;
+  newCheckIn?: string;
+  prevCheckOut?: string;
+  newCheckOut?: string;
+  breaks: {
+    prevStartBreak?: string;
+    newStartBreak?: string;
+    prevEndBreak?: string;
+    newEndBreak?: string;
+    action: 'create' | 'update' | 'delete';
+    position: number;
+  }[];
+  prevTotalMinsBreak?: number;
+  newTotalMinsBreak: number;
+  prevTotalHours?: number;
+  newTotalHours: number;
+  correction: number;
+  action: 'create' | 'update'
+}
