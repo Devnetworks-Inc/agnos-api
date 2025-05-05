@@ -81,7 +81,6 @@ export const employeeCreateWorkLogController = async (
       const breakEndDate = val.breakEndDate && new Date(val.breakEndDate)
       const lastEndBreak = lastBreak?.breakEndDate && new Date(lastBreak.breakEndDate)
       
-
       if (lastBreak && !lastEndBreak) {
         return resp(res, "End-Break are required in previous breaks")
       }
