@@ -94,7 +94,7 @@ employeeRouter.patch(
 
 employeeRouter.patch(
   '/',
-  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
   validateRequest(EmployeeUpdate),
   employeeUpdateController
 )
