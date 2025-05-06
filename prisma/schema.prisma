@@ -43,7 +43,10 @@ model employee {
   mobileNumber String @default("") // Mobile
   telephoneNumber String @default("") // Telefon
   email String @default("")
-  address String @default("") // Addresse
+  // address String @default("") // Addresse
+  street String @default("")
+  city String @default("")
+  postalCode String @default("")
   emergencyContactName String @default("") // Notfallkontakt Name
   emergencyContactNumber String @default("") // Notfallkontakt Telefon
   healthInsurance String @default("") // Krankenkasse
@@ -64,6 +67,8 @@ model employee {
   workValidUntil DateTime? // Gültig bis
   shareableUrl String? @unique
   urlExpiryDate DateTime?
+  minimumWeeklyHours Int?
+  overtimeRate Float?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -106,6 +111,7 @@ model employee_work_log {
   status employee_status @default(checked_out)
   year Int @db.UnsignedSmallInt
   month Int @db.UnsignedTinyInt // 1 as january - 12 as december
+  comment String?
   employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   breaks employee_break_log[]
   editLogs employee_work_edit_log[]

@@ -1,19 +1,12 @@
 import { Prisma, user_role } from "@prisma/client"
 import jwt from 'jsonwebtoken'
+import { Auth } from "src/modules/auth.schema";
 import { RateType } from "src/modules/employee/schema";
 
-export type CreateJwtTokenParams = {
-  id: number;
-  username: string;
-  role: user_role;
-  currentHotelId?: number | null;
-  employeeId?: number | null;
-}
-
-export const createJwtToken = (data: CreateJwtTokenParams) => {
-  const { id, username, role, currentHotelId, employeeId: emp } = data
+export const createJwtToken = (data: Auth) => {
+  const { id, username, role, currentHotelId, employeeId } = data
   const jwtSecret = process.env.JWT_SECRET || ''
-  return jwt.sign({ id, username, role, currentHotelId, emp }, jwtSecret)
+  return jwt.sign({ id, username, role, currentHotelId, employeeId }, jwtSecret)
 }
 
 export const decimalTypePropsToNumber = (obj: any) => {

@@ -3,7 +3,7 @@ import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
 import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetWorkLogs, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogCreate, EmployeeWorkLogUpdate, EmployeeGetWorkLogsByIdPaginated, EmployeeGetWorkLogsByHotelIdSummaryDaily } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController, employeeCreateWorkLogController } from "./ctrl.post"
-import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUpdateWorkLogController, employeeUrlSubmitController } from "./ctrl.patch"
+import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUpdateWorkLogCommentController, employeeUpdateWorkLogController, employeeUrlSubmitController } from "./ctrl.patch"
 import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController, employeeGetWorkLogsByIdPaginatedController, employeeGetWorkLogsSummaryDailyController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController } from "./ctrl.delete"
@@ -83,6 +83,13 @@ employeeRouter.patch(
   authorizeRoles(['hsk_manager', 'hotel_manager', 'check_in_assistant']),
   validateRequest(EmployeeBreakStartEnd),
   employeeBreakStartEndController
+)
+
+employeeRouter.patch(
+  '/work-logs/comment',
+  authorizeRoles(['hsk_staff']),
+  validateRequest(EmployeeWorkLogUpdate),
+  employeeUpdateWorkLogCommentController
 )
 
 employeeRouter.patch(

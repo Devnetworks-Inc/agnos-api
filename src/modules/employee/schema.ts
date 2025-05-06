@@ -21,6 +21,7 @@ export const EmployeeWorkLog = z.object({
   hourlyRate: z.number(),
   rate: z.number(),
   rateType: RateType,
+  comment: z.string().optional()
 })
 
 export const EmployeeBreakLog = z.object({
@@ -86,7 +87,10 @@ export const Employee = z.object({
   mobileNumber: z.string().optional(),
   telephoneNumber: z.string().optional(),
   email: z.string().optional(),
-  address: z.string().optional(),
+  // address: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  postalCode: z.string().optional(),
   emergencyContactName: z.string().optional(),
   emergencyContactNumber: z.string().optional(),
   healthInsurance: z.string().optional(),
@@ -106,7 +110,9 @@ export const Employee = z.object({
   workValidUntil: z.string().datetime().nullable().optional(),
   hotelId: z.coerce.number(),  // Single hotel ID
   shareableUrl: z.string().optional(),
-  urlExpiryDate: z.string().datetime().optional()
+  urlExpiryDate: z.string().datetime().optional(),
+  minimumWeeklyHours: z.coerce.number().nullable().optional(),
+  overtimeRate: z.coerce.number().nullable().optional()
 });
 
 export const EmployeeCreateBody = Employee.omit({ id: true, shareableUrl: true, urlExpiryDate: true }).extend({
@@ -222,6 +228,15 @@ export const EmployeeGetWorkLogsByHotelIdSummaryDaily = z.object({
   query: EmployeeGetWorkLogsByHotelIdSummaryDailyQuery
 })
 
+export const EmployeeWorkLogCommentBody =  z.object({
+  workLogId: z.number(),
+  comment: z.string()
+})
+
+export const EmployeeWorkLogComment =  z.object({
+  body: EmployeeWorkLogCommentBody
+})
+
 export type RateType = TypeOf<typeof RateType>;
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;
@@ -241,6 +256,7 @@ export type EmployeeGetWorkLogsByHotelIdSummaryDailyQuery = TypeOf<typeof Employ
 export type EmployeeGetWorkLogsByHotelIdSummaryDaily = TypeOf<typeof EmployeeGetWorkLogsByHotelIdSummaryDaily>;
 export type EmployeeGetWorkLogsByIdPaginatedParams = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedParams>;
 export type EmployeeGetWorkLogsByIdPaginatedQuery = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedQuery>;
+export type EmployeeWorkLogCommentBody = TypeOf<typeof EmployeeWorkLogCommentBody>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
@@ -252,6 +268,7 @@ export type EmployeeWorkLogCreateRequest = Request<{}, {}, EmployeeWorkLogCreate
 export type EmployeeWorkLogUpdateRequest = Request<{}, {}, EmployeeWorkLogUpdateBody> & AuthRequest;
 export type EmployeeGetWorkLogsByIdPaginatedRequest = Request<EmployeeGetWorkLogsByIdPaginatedParams, {}, {}, EmployeeGetWorkLogsByIdPaginatedQuery> & AuthRequest;
 export type EmployeeGetWorkLogsByHotelIdSummaryDailyRequest = Request<EmployeeGetWorkLogsByHotelIdSummaryDailyParam, {}, {}, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery> & AuthRequest;
+export type EmployeeWorkLogCommentRequest = Request<{}, {}, EmployeeWorkLogCommentBody> & AuthRequest;
 
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;

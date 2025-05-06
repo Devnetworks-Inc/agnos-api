@@ -7,6 +7,7 @@ import {
   EmployeeCheckInOutRequest,
   EmployeeUpdateRequest,
   EmployeeUrlSubmitRequest,
+  EmployeeWorkLogCommentRequest,
   EmployeeWorkLogUpdateRequest,
   RateType,
 } from "./schema";
@@ -514,3 +515,34 @@ export const employeeUpdateWorkLogController = async (
 
   resp(res, {...employee, workLog: newWorkLog})
 };
+
+export const employeeUpdateWorkLogCommentController = (req: EmployeeWorkLogCommentRequest, res: Response, next: NextFunction) => {
+  const { employeeId } = req.auth!
+  const { workLogId, comment } = req.body
+
+  if (!employeeId) {
+    return resp(res, 'Unauthorized', 401)
+  }
+
+  prisma.employee_work_log.update({
+    where: { employeeId, id: workLogId },
+    data: {
+      comment
+    }
+  })
+  .then(() => {
+    resp(res, 'Successfully set a comment')
+  })
+  .catch(e => {
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === 'P2025') {
+        return resp(
+          res,
+          'Record to comment does not exist.',
+          400
+        )
+      }
+    }
+    next(e)
+  })
+}
