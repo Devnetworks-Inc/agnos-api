@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery, EmployeeGetWorkLogsByHotelIdSummaryDailyParam, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery, EmployeeGetWorkLogsByHotelIdSummaryDailyParam, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery, EmployeeWorkLogCommentBody } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -220,6 +220,21 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
     responses: {
       200: successJsonResponse("Employee", EmployeeSchema),
+    },
+  });
+
+  registry.registerPath({
+    method: "patch",
+    path: employeeBaseUrl+'/work-logs/comment',
+    summary: "set work log comment",
+    tags,
+    request: {
+      body: requestBody(EmployeeWorkLogCommentBody),
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Success message", z.literal('Successfully set a comment'))
     },
   });
 
