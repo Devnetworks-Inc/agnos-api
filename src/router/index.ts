@@ -1,6 +1,7 @@
 import { Router } from "express"
 import dailyHousekeepingRecordRouter from "src/modules/dailyHouseKeepingRecord/routes"
 import employeeRouter from "src/modules/employee/routes"
+import fileRouter from "src/modules/file/routes"
 import hotelRouter from "src/modules/hotel/routes"
 import hotelServiceRouter from "src/modules/hotelService/routes"
 import serviceEntryRouter from "src/modules/seriviceEntry/routes"
@@ -35,6 +36,9 @@ router.use(base+serviceBaseUrl, serviceEntryRouter)
 
 export const hotelServiceBaseUrl = '/hotel-services'
 router.use(base+hotelServiceBaseUrl, hotelServiceRouter)
+
+export const fileBaseUrl = '/file'
+router.use(base+fileBaseUrl, fileRouter)
 
 
 router.use(base, webauthnRouter)
