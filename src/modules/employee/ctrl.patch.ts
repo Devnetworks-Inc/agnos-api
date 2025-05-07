@@ -14,7 +14,7 @@ import {
 import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds, isEqual, secondsToHours, secondsToMinutes } from "date-fns";
-import { calculateSalary, decimal, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
+import { calculateSalary, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
@@ -332,7 +332,11 @@ export const employeeUpdateWorkLogController = async (
   let hasUpdate = false
 
   const checkInDate = rCheckInDate ? new Date(rCheckInDate) : workLog.checkInDate
-  const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
+
+  const checkOutDate =
+    req.body.checkOutDate ? new Date(req.body.checkOutDate) :
+    (req.body.checkOutDate === null ? null : workLog.checkOutDate)
+  
   const newBreaks: (EmployeeBreakLogCreate & { totalSeconds?: number })[] = []
 
   const details: EditWorkLogDetails = {
@@ -351,6 +355,11 @@ export const employeeUpdateWorkLogController = async (
 
   let totalSeconds = workLog.totalSeconds
   let lastBreak: EmployeeBreakLogCreate | undefined
+  let breakTotalSeconds = workLog.breaks.reduce(
+    (acc, val) => acc + (val.totalSeconds ?? 0),
+    0
+  );
+  let newBreakTotalSeconds = breakTotalSeconds
 
   if (breaks) {
     let index = 0
@@ -411,6 +420,11 @@ export const employeeUpdateWorkLogController = async (
 
       index++
     }
+
+    newBreakTotalSeconds = newBreaks.reduce(
+      (acc, val) => acc + (val.totalSeconds ?? 0),
+      0
+    );
   }
 
   // check for breaks deletion
@@ -444,19 +458,7 @@ export const employeeUpdateWorkLogController = async (
       return resp(res, "Check-Out date must be greater than Break End date", 400);
     }
 
-    const breakTotalSeconds = newBreaks.reduce(
-      (acc, val) => acc + (val.totalSeconds ?? 0),
-      0
-    );
-
-    if (breaks) {
-      totalSeconds = differenceInSeconds(checkOutDate, checkInDate) - breakTotalSeconds
-    } else {
-      const diffSecs =  differenceInSeconds(checkOutDate, checkInDate)
-      const breaksTotalSeconds = diffSecs - totalSeconds
-      totalSeconds = diffSecs - breaksTotalSeconds
-    }
-
+    totalSeconds = differenceInSeconds(checkOutDate, checkInDate) - newBreakTotalSeconds
     status = 'checked_out'
     salaryToday = calculateSalary(hourlyRate, totalSeconds)
 
@@ -478,6 +480,11 @@ export const employeeUpdateWorkLogController = async (
       details.correction = toDecimalPlaces(details.newTotalHours - details.prevTotalHours, 2)
       hasUpdate = true
     }
+  }
+
+  if (breakTotalSeconds !== newBreakTotalSeconds) {
+    details.newTotalMinsBreak = toDecimalPlaces(newBreakTotalSeconds / 60, 2)
+    details.prevTotalMinsBreak = toDecimalPlaces(breakTotalSeconds / 60, 2)
   }
 
   const [newWorkLog, employee] = await prisma.$transaction([
