@@ -13,8 +13,8 @@ import {
 } from "./schema";
 import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
-import { differenceInSeconds, isEqual } from "date-fns";
-import { calculateSalary, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
+import { differenceInSeconds, isEqual, secondsToHours, secondsToMinutes } from "date-fns";
+import { calculateSalary, decimal, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
@@ -162,7 +162,11 @@ export const employeeCheckInOutController = async (
       }),
     ]);
 
-    return resp(res, workLog);
+    return resp(res, {
+      ...workLog,
+      totalHours: secondsToHours(totalSeconds),
+      totalBreakMinutes: secondsToMinutes(breakTotalSeconds)
+    });
   }
 };
 
