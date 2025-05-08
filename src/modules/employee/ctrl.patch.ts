@@ -121,7 +121,7 @@ export const employeeCheckInOutController = async (
     // get latest check in
     const log = await prisma.employee_work_log.findFirst({
       where: { checkOutDate: null, employeeId: id },
-      select: { id: true, breaks: true, checkInDate: true, hourlyRate: true },
+      select: { id: true, breaks: true, checkInDate: true, hourlyRate: true, totalSecondsBreak: true },
       take: 1,
       orderBy: { checkInDate: "desc" },
     });
@@ -134,13 +134,10 @@ export const employeeCheckInOutController = async (
       return resp(res, "Date must be greater than work log check in date");
     }
 
-    const breakTotalSeconds = log.breaks.reduce(
-      (acc, val) => acc + (val.totalSeconds ?? 0),
-      0
-    );
+    const totalSecondsBreak = log.totalSecondsBreak ?? 0
 
     const totalSeconds =
-      differenceInSeconds(datetime, log.checkInDate) - breakTotalSeconds;
+      differenceInSeconds(datetime, log.checkInDate) - totalSecondsBreak;
 
     const [workLog] = await prisma.$transaction([
       prisma.employee_work_log.update({
@@ -165,7 +162,7 @@ export const employeeCheckInOutController = async (
     return resp(res, {
       ...workLog,
       totalHours: secondsToHours(totalSeconds),
-      totalBreakMinutes: secondsToMinutes(breakTotalSeconds)
+      totalBreakMinutes: secondsToMinutes(totalSecondsBreak)
     });
   }
 };
@@ -295,6 +292,9 @@ export const employeeBreakStartEndController = async (
         data: {
           breakEndDate: date,
           totalSeconds: diffInSecs,
+          workLog: { update: {
+            totalSecondsBreak: { increment: diffInSecs }
+          }}
         }
       }),
       prisma.employee.update({
@@ -355,11 +355,8 @@ export const employeeUpdateWorkLogController = async (
 
   let totalSeconds = workLog.totalSeconds
   let lastBreak: EmployeeBreakLogCreate | undefined
-  let breakTotalSeconds = workLog.breaks.reduce(
-    (acc, val) => acc + (val.totalSeconds ?? 0),
-    0
-  );
-  let newBreakTotalSeconds = breakTotalSeconds
+  let totalSecondsBreak = workLog.totalSecondsBreak ?? 0
+  let newBreakTotalSeconds = totalSecondsBreak
 
   if (breaks) {
     let index = 0
@@ -482,9 +479,9 @@ export const employeeUpdateWorkLogController = async (
     }
   }
 
-  if (breakTotalSeconds !== newBreakTotalSeconds) {
+  if (totalSecondsBreak !== newBreakTotalSeconds) {
     details.newTotalMinsBreak = toDecimalPlaces(newBreakTotalSeconds / 60, 2)
-    details.prevTotalMinsBreak = toDecimalPlaces(breakTotalSeconds / 60, 2)
+    details.prevTotalMinsBreak = toDecimalPlaces(totalSecondsBreak / 60, 2)
   }
 
   const [newWorkLog, employee] = await prisma.$transaction([
@@ -495,6 +492,7 @@ export const employeeUpdateWorkLogController = async (
         checkInDate,
         checkOutDate,
         totalSeconds,
+        totalSecondsBreak: newBreakTotalSeconds,
         salaryToday,
         rate,
         rateType,

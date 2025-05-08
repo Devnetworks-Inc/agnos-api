@@ -7,6 +7,8 @@ export const Hotel = z.object({
   address: z.string(),
   roomsCleaningRate: z.coerce.number().positive().multipleOf(0.01),
   roomsRefreshRate: z.coerce.number().positive().multipleOf(0.01),
+  numberOfRooms: z.coerce.number(),
+  roomsCheckingRate: z.coerce.number().positive().multipleOf(0.01)
 })
 
 export const HotelCreateBody = Hotel.omit({ id: true })
