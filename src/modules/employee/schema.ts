@@ -238,6 +238,14 @@ export const EmployeeWorkLogComment =  z.object({
   body: EmployeeWorkLogCommentBody
 })
 
+export const EmployeeGetWorkLogEditLogsParam = z.object({
+  workLogId: Id
+})
+
+export const EmployeeGetWorkLogEditLogs = z.object({
+  params: EmployeeGetWorkLogEditLogsParam
+})
+
 export type RateType = TypeOf<typeof RateType>;
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;
@@ -258,6 +266,7 @@ export type EmployeeGetWorkLogsByHotelIdSummaryDaily = TypeOf<typeof EmployeeGet
 export type EmployeeGetWorkLogsByIdPaginatedParams = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedParams>;
 export type EmployeeGetWorkLogsByIdPaginatedQuery = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedQuery>;
 export type EmployeeWorkLogCommentBody = TypeOf<typeof EmployeeWorkLogCommentBody>;
+export type EmployeeGetWorkLogEditLogsParam = TypeOf<typeof EmployeeGetWorkLogEditLogsParam>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
@@ -270,6 +279,7 @@ export type EmployeeWorkLogUpdateRequest = Request<{}, {}, EmployeeWorkLogUpdate
 export type EmployeeGetWorkLogsByIdPaginatedRequest = Request<EmployeeGetWorkLogsByIdPaginatedParams, {}, {}, EmployeeGetWorkLogsByIdPaginatedQuery> & AuthRequest;
 export type EmployeeGetWorkLogsByHotelIdSummaryDailyRequest = Request<EmployeeGetWorkLogsByHotelIdSummaryDailyParam, {}, {}, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery> & AuthRequest;
 export type EmployeeWorkLogCommentRequest = Request<{}, {}, EmployeeWorkLogCommentBody> & AuthRequest;
+export type EmployeeGetWorkLogEditLogsRequest = Request<EmployeeGetWorkLogEditLogsParam> & AuthRequest;
 
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;
@@ -288,9 +298,9 @@ export type EditWorkLogDetails = {
     position: number;
   }[];
   prevTotalMinsBreak?: number;
-  newTotalMinsBreak: number;
+  newTotalMinsBreak?: number;
   prevTotalHours?: number;
-  newTotalHours: number;
-  correction: number;
+  newTotalHours?: number;
+  correction?: number;
   action: 'create' | 'update'
 }

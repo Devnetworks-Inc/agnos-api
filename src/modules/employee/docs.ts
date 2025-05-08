@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery, EmployeeGetWorkLogsByHotelIdSummaryDailyParam, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery, EmployeeWorkLogCommentBody } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery, EmployeeGetWorkLogsByHotelIdSummaryDailyParam, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery, EmployeeWorkLogCommentBody, EmployeeGetWorkLogEditLogsParam } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -139,6 +139,43 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
         totalHours: z.number(),
         totalCost: z.number()
       }))),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: employeeBaseUrl+'/work-logs/edit-logs/{workLogId}',
+    summary: "get edit logs of employee work log ",
+    tags,
+    request: {
+      params: EmployeeGetWorkLogEditLogsParam
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse(
+        "Employee Work Log Edit Logs",
+        z.object({
+          prevCheckIn: z.string().datetime().optional(),
+          newCheckIn: z.string().datetime().optional(),
+          prevCheckOut: z.string().datetime().optional(),
+          newCheckOut: z.string().datetime().optional(),
+          breaks: z.array(z.object({
+            prevStartBreak: z.string().datetime().optional(),
+            newStartBreak: z.string().datetime().optional(),
+            prevEndBreak: z.string().datetime().optional(),
+            newEndBreak: z.string().datetime().optional(),
+            action: z.enum(['create', 'update', 'delete']),
+            position: z.number(),
+          })),
+          prevTotalMinsBreak: z.number().optional(),
+          newTotalMinsBreak: z.number().optional(),
+          prevTotalHours: z.number().optional(),
+          newTotalHours: z.number().optional(),
+          correction: z.number().optional(),
+          action: z.enum(['create', 'update']),
+        })
+      )
     },
   });
 

@@ -1,10 +1,10 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetWorkLogs, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogCreate, EmployeeWorkLogUpdate, EmployeeGetWorkLogsByIdPaginated, EmployeeGetWorkLogsByHotelIdSummaryDaily } from "./schema"
+import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetWorkLogs, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogCreate, EmployeeWorkLogUpdate, EmployeeGetWorkLogsByIdPaginated, EmployeeGetWorkLogsByHotelIdSummaryDaily, EmployeeGetWorkLogEditLogs } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController, employeeCreateWorkLogController } from "./ctrl.post"
 import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUpdateWorkLogCommentController, employeeUpdateWorkLogController, employeeUrlSubmitController } from "./ctrl.patch"
-import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController, employeeGetWorkLogsByIdPaginatedController, employeeGetWorkLogsSummaryDailyController } from "./ctrl.get"
+import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController, employeeGetWorkLogsByIdPaginatedController, employeeGetWorkLogsSummaryDailyController, employeeGetWorkLogEditLogsController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -49,6 +49,13 @@ employeeRouter.get(
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
   validateRequest(EmployeeGetWorkLogsByIdPaginated),
   employeeGetWorkLogsByIdPaginatedController
+)
+
+employeeRouter.get(
+  '/work-logs/edit-logs/:workLogId',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
+  validateRequest(EmployeeGetWorkLogEditLogs),
+  employeeGetWorkLogEditLogsController
 )
 
 employeeRouter.get(
