@@ -63,7 +63,7 @@ export const employeeCreateWorkLogController = async (
   let lastBreak: EmployeeBreakLogCreate | undefined
   let salaryToday: Prisma.Decimal | undefined
   let hourlyRate = getHourlyRate(employee.rateType as RateType, employee.rate)
-  let breakTotalSeconds = 0
+  let totalSecondsBreak = 0
 
   const details: EditWorkLogDetails | undefined = { 
     newCheckIn: checkInDate.toISOString(),
@@ -95,7 +95,7 @@ export const employeeCreateWorkLogController = async (
       }
       lastBreak = val
       const seconds = breakEndDate ? differenceInSeconds(breakEndDate, breakStartDate) : 0
-      breakTotalSeconds += seconds
+      totalSecondsBreak += seconds
       newBreaks.push({ ...val, totalSeconds: seconds})
 
       details.breaks.push({
@@ -124,13 +124,13 @@ export const employeeCreateWorkLogController = async (
       return resp(res, "Check-Out date must be greater than Break End date", 400);
     }
 
-    // const breakTotalSeconds = newBreaks.reduce(
+    // const totalSecondsBreak = newBreaks.reduce(
     //   (acc, val) => acc + (val.totalSeconds ?? 0),
     //   0
     // );
 
     totalSeconds =
-      differenceInSeconds(checkOutDate, checkInDate) - breakTotalSeconds;
+      differenceInSeconds(checkOutDate, checkInDate) - totalSecondsBreak;
 
     status = 'checked_out'
     salaryToday = calculateSalary(hourlyRate, totalSeconds)
@@ -140,7 +140,7 @@ export const employeeCreateWorkLogController = async (
   const totalHours = +((totalSeconds / 3600).toFixed(2))
   const yearMonthDayArr = date.split('-')
 
-  details.newTotalMinsBreak = +((breakTotalSeconds / 60).toFixed(2))
+  details.newTotalMinsBreak = +((totalSecondsBreak / 60).toFixed(2))
   details.newTotalHours = totalHours
   details.correction = totalHours
 
@@ -158,6 +158,7 @@ export const employeeCreateWorkLogController = async (
         checkInDate,
         checkOutDate,
         totalSeconds,
+        totalSecondsBreak,
         status,
         breaks: newBreaks.length ? {
           create: newBreaks

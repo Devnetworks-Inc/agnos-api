@@ -16,6 +16,7 @@ export const EmployeeWorkLog = z.object({
   checkInDate: z.string().datetime(),
   checkOutDate: z.string().datetime().nullable().optional(),
   totalSeconds: z.number().optional(),
+  totalSecondsBreak: z.number().optional(),
   month: z.number().gte(1).lte(12),
   year: z.number(),
   hourlyRate: z.number(),
@@ -37,7 +38,7 @@ export const EmployeeBreakLogCreate = EmployeeBreakLog.omit({
 })
 
 export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
-  id: true, totalSeconds: true, month: true, year: true, rate: true, rateType: true, hourlyRate: true
+  id: true, totalSeconds: true, totalSecondsBreak: true, month: true, year: true, rate: true, rateType: true, hourlyRate: true
 }).extend({
   breaks: z.array(EmployeeBreakLogCreate).optional(),
   comment: z.string()
