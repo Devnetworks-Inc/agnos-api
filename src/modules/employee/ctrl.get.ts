@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import resp from "objectify-response";
 import prisma from "../prisma";
-import { EmployeeGetWorkLogsRequest, EmployeeGetByUrlRequest, EmployeeGetRequest, EmployeeGetWorkLogsByIdPaginatedRequest, EmployeeGetWorkLogsByHotelIdSummaryDailyRequest } from "./schema";
+import { EmployeeGetWorkLogsRequest, EmployeeGetByUrlRequest, EmployeeGetRequest, EmployeeGetWorkLogsByIdPaginatedRequest, EmployeeGetWorkLogsByHotelIdSummaryDailyRequest, EmployeeGetWorkLogEditLogsRequest } from "./schema";
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
@@ -164,4 +164,32 @@ export const employeeGetWorkLogsSummaryDailyController = async (req: EmployeeGet
     totalHours: +((v._sum.totalSeconds ?? 0) / 3600).toFixed(2),
     totalCost: +(v._sum.salaryToday ?? 0) 
   })))
+}
+
+export const employeeGetWorkLogEditLogsController = async (req: EmployeeGetWorkLogEditLogsRequest, res: Response) => {
+  const { role, employeeId } = req.auth!
+  const workLogId = +req.params.workLogId
+
+  const where: Prisma.employee_work_edit_logWhereInput = {
+    workLogId,
+  }
+
+  if (role !== 'agnos_admin') {
+    if (!employeeId) return resp(res, 'Unauthorized', 401)
+    where.workLog = {
+      employeeId
+    }
+  }
+
+  const logs = await prisma.employee_work_edit_log.findMany({
+    where,
+    include: { editor: {
+      select: {
+        username: true,
+        employee: { select: { firstName: true, middleName: true, id: true } }
+      }
+    }},
+    orderBy: { date: 'desc' }
+  })
+  resp(res, logs)
 }
