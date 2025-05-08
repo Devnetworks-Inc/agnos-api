@@ -19,6 +19,8 @@ model hotel {
   address String
   roomsCleaningRate Float
   roomsRefreshRate Float
+  numberOfRooms Int @default(0)
+  roomsCheckingRate Float @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -104,6 +106,7 @@ model employee_work_log {
   checkInDate DateTime
   checkOutDate DateTime?
   totalSeconds Int?
+  totalSecondsBreak Int?
   rate Float
   rateType String
   hourlyRate Decimal @db.Decimal(8,2)
