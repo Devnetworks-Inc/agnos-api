@@ -5,6 +5,7 @@ import prisma from "../prisma";
 import { Prisma } from "@prisma/client";
 import { AuthRequest } from "../auth.schema";
 import { IdParam } from "../id/schema";
+import { toDecimalPlaces } from "src/utils/helper";
 
 export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekeepingRecordUpdateRequest, res: Response, next: NextFunction) => {
   const { id, hotelId, services, date: dt } = req.body
@@ -12,7 +13,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
 
   const record = await prisma.daily_housekeeping_record.findUnique({
     where: { id },
-    include: { hotel: { select: { roomsCleaningRate: true, roomsRefreshRate: true } } }
+    include: { hotel: { select: { roomsCleaningRate: true, roomsRefreshRate: true, numberOfRooms: true } } }
   })
 
   if (!record) {
@@ -82,6 +83,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
       month: +yearMonthDayArr[1],
       year: +yearMonthDayArr[0],
       totalCleanedRooms,
+      ttcPercent: toDecimalPlaces((totalCleanedRooms / record.hotel.numberOfRooms) * 100, 2),
       totalRefreshRooms: refreshRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(roomsCleaningRate).times(totalCleanedRooms),
       totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms),

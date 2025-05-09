@@ -3,6 +3,7 @@ import { NextFunction, Response } from "express";
 import prisma from "../prisma";
 import { DailyHousekeepingRecordCreateRequest } from "./schema";
 import { hotel_service, Prisma } from "@prisma/client";
+import { toDecimalPlaces } from "src/utils/helper";
 
 export const dailyHousekeepingRecordCreateController = async (
   req: DailyHousekeepingRecordCreateRequest,
@@ -56,6 +57,7 @@ export const dailyHousekeepingRecordCreateController = async (
       month: +yearMonthDayArr[1],
       year: +yearMonthDayArr[0],
       totalCleanedRooms,
+      ttcPercent: toDecimalPlaces((totalCleanedRooms / hotel.numberOfRooms) * 100, 2),
       totalRefreshRooms: refreshRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(hotel.roomsCleaningRate).times(totalCleanedRooms),
       totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms),
