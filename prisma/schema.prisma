@@ -175,7 +175,7 @@ model daily_housekeeping_record {
   month Int @db.UnsignedTinyInt
   year Int @db.UnsignedSmallInt
   occupancyPercentage Float
-  numberOfRoomNights  Int
+  // numberOfRoomNights  Int
 
   // Cleaned Rooms Fields
   departureRooms    Int
@@ -191,6 +191,7 @@ model daily_housekeeping_record {
   roomsCarryOver    Int
 
   // Auto Calculated Fields
+  ttcPercent Float @default(0) // total cleaned rooms divided by hotel no of rooms
   totalCleanedRooms    Int @default(0)
   totalRefreshRooms    Int @default(0)
   totalHousekeepingManagerCost Decimal @db.Decimal(10,2) @default(0)

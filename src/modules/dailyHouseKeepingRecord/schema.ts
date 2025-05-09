@@ -18,7 +18,7 @@ export const DailyHousekeepingRecord = z.object({
   month: z.number().gte(1).lte(12),
   year: z.number(),
   occupancyPercentage: z.coerce.number().gte(0).multipleOf(0.01),
-  numberOfRoomNights: z.coerce.number().gte(0).multipleOf(1),
+  // numberOfRoomNights: z.coerce.number().gte(0).multipleOf(1),
 
   departureRooms: z.coerce.number().gte(0).multipleOf(1),
   stayOverRooms: z.coerce.number().gte(0).multipleOf(1),
@@ -32,6 +32,7 @@ export const DailyHousekeepingRecord = z.object({
   services: z.array(z.number()),
 
   // Auto Calculated Fields
+  ttcPercent: z.number().default(0),
   totalCleanedRooms: z.number().default(0),
   totalRefreshRooms: z.number().default(0),
   totalHousekeepingManagerCost: z.number().default(0),
@@ -54,7 +55,8 @@ export const DailyHousekeepingRecordCreateBody = DailyHousekeepingRecord.omit({
   approvedByHotelManagerId: true,
   approvedByHskManagerId: true,
   hskManagerApprovedDate: true,
-  hotelManagerApprovedDate: true
+  hotelManagerApprovedDate: true,
+  ttcPercent: true
 })
 
 export const DailyHousekeepingRecordCreate = z.object({
