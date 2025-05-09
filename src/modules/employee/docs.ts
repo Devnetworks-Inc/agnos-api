@@ -156,24 +156,30 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
       200: successJsonResponse(
         "Employee Work Log Edit Logs",
         z.object({
-          prevCheckIn: z.string().datetime().optional(),
-          newCheckIn: z.string().datetime().optional(),
-          prevCheckOut: z.string().datetime().optional(),
-          newCheckOut: z.string().datetime().optional(),
-          breaks: z.array(z.object({
-            prevStartBreak: z.string().datetime().optional(),
-            newStartBreak: z.string().datetime().optional(),
-            prevEndBreak: z.string().datetime().optional(),
-            newEndBreak: z.string().datetime().optional(),
-            action: z.enum(['create', 'update', 'delete']),
-            position: z.number(),
-          })),
-          prevTotalMinsBreak: z.number().optional(),
-          newTotalMinsBreak: z.number().optional(),
-          prevTotalHours: z.number().optional(),
-          newTotalHours: z.number().optional(),
-          correction: z.number().optional(),
-          action: z.enum(['create', 'update']),
+          workLogId: z.number(),
+          editorId: z.number(),
+          comment: z.string(),
+          date: z.string().datetime(),
+          details: z.object({
+            prevCheckIn: z.string().datetime().optional(),
+            newCheckIn: z.string().datetime().optional(),
+            prevCheckOut: z.string().datetime().optional(),
+            newCheckOut: z.string().datetime().optional(),
+            breaks: z.array(z.object({
+              prevStartBreak: z.string().datetime().optional(),
+              newStartBreak: z.string().datetime().optional(),
+              prevEndBreak: z.string().datetime().optional(),
+              newEndBreak: z.string().datetime().optional(),
+              action: z.enum(['create', 'update', 'delete']),
+              position: z.number(),
+            })),
+            prevTotalMinsBreak: z.number().optional(),
+            newTotalMinsBreak: z.number().optional(),
+            prevTotalHours: z.number().optional(),
+            newTotalHours: z.number().optional(),
+            correction: z.number().optional(),
+            action: z.enum(['create', 'update']),
+          })
         })
       )
     },
