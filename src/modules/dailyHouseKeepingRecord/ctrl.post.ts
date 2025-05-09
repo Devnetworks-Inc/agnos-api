@@ -50,6 +50,8 @@ export const dailyHousekeepingRecordCreateController = async (
   const totalCleanedRooms = dr + sor + drld + dur + ecr
   const yearMonthDayArr = date.split('-')
 
+  const ttcPercent = toDecimalPlaces((totalCleanedRooms / (hotel.numberOfRooms || 1)) * 100, 2)
+
   await prisma.daily_housekeeping_record.create({
     data: {
       ...req.body,
@@ -57,7 +59,7 @@ export const dailyHousekeepingRecordCreateController = async (
       month: +yearMonthDayArr[1],
       year: +yearMonthDayArr[0],
       totalCleanedRooms,
-      ttcPercent: toDecimalPlaces((totalCleanedRooms / hotel.numberOfRooms) * 100, 2),
+      ttcPercent,
       totalRefreshRooms: refreshRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(hotel.roomsCleaningRate).times(totalCleanedRooms),
       totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms),
