@@ -83,7 +83,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
       month: +yearMonthDayArr[1],
       year: +yearMonthDayArr[0],
       totalCleanedRooms,
-      ttcPercent: toDecimalPlaces((totalCleanedRooms / record.hotel.numberOfRooms) * 100, 2),
+      ttcPercent: toDecimalPlaces((totalCleanedRooms / (record.hotel.numberOfRooms || 1)) * 100, 2),
       totalRefreshRooms: refreshRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(roomsCleaningRate).times(totalCleanedRooms),
       totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms),

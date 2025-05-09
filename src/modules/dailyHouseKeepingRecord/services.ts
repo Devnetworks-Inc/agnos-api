@@ -13,7 +13,7 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
       dhr.hotelId,
       h.name,
       avg(dhr.occupancyPercentage) as occupancyPercentage,
-      sum(dhr.numberOfRoomNights) as numberOfRoomNights,
+      avg(dhr.ttcPercent) as ttcPercent,
       sum(dhr.departureRooms) as departureRooms,
       sum(dhr.stayOverRooms) as stayOverRooms,
       sum(dhr.dirtyRoomsLastDay) as dirtyRoomsLastDay,
