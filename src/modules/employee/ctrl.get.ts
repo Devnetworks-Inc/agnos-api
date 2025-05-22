@@ -102,7 +102,7 @@ export const employeeGetWorkLogsController = async (req: EmployeeGetWorkLogsRequ
     select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true,
       workLog: {
         where: { checkInDate: { gte: startDate, lte: endDate } },
-        include: { breaks: true, editLogs: { select: { id: true}, orderBy: { date: 'desc' }, take: 1 } }
+        include: { breaks: true, editLogs: { select: { id: true}, orderBy: { date: 'desc' } } }
       }},
   })
 

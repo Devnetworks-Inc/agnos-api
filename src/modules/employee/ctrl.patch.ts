@@ -102,6 +102,7 @@ export const employeeCheckInOutController = async (
           checkInDate: datetime,
           month: +date.split('-')[1],
           year: +date.split('-')[0],
+          status: 'checked_in',
         },
         include: {
           employee: {
@@ -145,7 +146,8 @@ export const employeeCheckInOutController = async (
         data: {
           checkOutDate: datetime,
           totalSeconds,
-          salaryToday: calculateSalary(hourlyRate, totalSeconds)
+          salaryToday: calculateSalary(hourlyRate, totalSeconds),
+          status: 'checked_out',
         },
         include: {
           employee: {
@@ -252,12 +254,23 @@ export const employeeBreakStartEndController = async (
 
   if (status === "start_break") {
     const [breakLog] = await prisma.$transaction([
-      prisma.employee_break_log.create({
+      prisma.employee_work_log.update({
+        where: { id: workLog.id },
         data: {
-          workLogId: workLog.id,
-          breakStartDate: date,
-        },
+          status: 'on_break',
+          breaks: {
+            create: {
+              breakStartDate: date,
+            }
+          }
+        }
       }),
+      // prisma.employee_break_log.create({
+      //   data: {
+      //     workLogId: workLog.id,
+      //     breakStartDate: date,
+      //   },
+      // }),
       prisma.employee.update({
         where: { id },
         data: { status: "on_break" },
@@ -293,6 +306,7 @@ export const employeeBreakStartEndController = async (
           breakEndDate: date,
           totalSeconds: diffInSecs,
           workLog: { update: {
+            status: 'checked_in',
             totalSecondsBreak: { increment: diffInSecs }
           }}
         }
@@ -315,10 +329,26 @@ export const employeeUpdateWorkLogController = async (
   const { id: userId } = req.auth!
   let { workLogId: id, breaks, employeeId, comment, rate, rateType, checkInDate: rCheckInDate } = req.body;
 
-  const workLog = await prisma.employee_work_log.findUnique({
-    where: { id },
-    include: { breaks: true, employee: { select: { status: true } } }
-  })
+  // const workLog = await prisma.employee_work_log.findUnique({
+  //   where: { id },
+  //   include: { breaks: true, employee: { select: { status: true } } }
+  // })
+
+  // const lastLog = prisma.employee_work_log.findFirst({
+  //   where: { employeeId },
+  //   orderBy: { checkInDate: 'desc' }
+  // })
+
+  const [workLog, lastWorkLog] = await prisma.$transaction([
+    prisma.employee_work_log.findUnique({
+      where: { id },
+      include: { breaks: true, employee: { select: { status: true } } }
+    }),
+    prisma.employee_work_log.findFirst({
+      where: { employeeId },
+      orderBy: { checkInDate: 'desc' }
+    })
+  ])
 
   if (!workLog) {
     return resp(res, "Record to update not found.", 404);
@@ -484,7 +514,7 @@ export const employeeUpdateWorkLogController = async (
     details.prevTotalMinsBreak = toDecimalPlaces(totalSecondsBreak / 60, 2)
   }
 
-  const [newWorkLog, employee] = await prisma.$transaction([
+  const transaction: Prisma.PrismaPromise<any>[]  = [
     prisma.employee_work_log.update({
       where: { id },
       data: {
@@ -513,16 +543,23 @@ export const employeeUpdateWorkLogController = async (
       },
       include: { breaks: true },
     }),
-    prisma.employee.update({
-      where: { id: employeeId },
-      data: {
-        status,
-      },
-      select: { id: true, status: true }
-    })
-  ])
+  ]
 
-  resp(res, {...employee, workLog: newWorkLog})
+  if (!lastWorkLog || !(checkInDate < lastWorkLog.checkInDate)) {
+    transaction.push(
+      prisma.employee.update({
+        where: { id: employeeId },
+        data: {
+          status,
+        },
+        select: { id: true, status: true }
+      })
+    )
+  }
+
+  const [newWorkLog] = await prisma.$transaction(transaction)
+
+  resp(res, newWorkLog)
 };
 
 export const employeeUpdateWorkLogCommentController = (req: EmployeeWorkLogCommentRequest, res: Response, next: NextFunction) => {

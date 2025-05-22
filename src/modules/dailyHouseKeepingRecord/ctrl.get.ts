@@ -3,9 +3,8 @@ import resp from "objectify-response";
 import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
-import { DailyHousekeepingRecordGetRequest, HousekeepingRecordGetByMonthRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
-import { addMonths, differenceInMonths, subMonths } from "date-fns";
-import { format } from "date-fns";
+import { DailyHousekeepingRecordGetRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
+import { subMonths } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 
