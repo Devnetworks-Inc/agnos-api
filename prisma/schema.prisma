@@ -119,7 +119,7 @@ model employee_work_log {
   breaks employee_break_log[]
   editLogs employee_work_edit_log[]
 
-  @@unique([employeeId, date])
+  @@unique([employeeId, checkInDate])
 }
 
 model employee_break_log {

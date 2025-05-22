@@ -3,8 +3,8 @@ import { NextFunction, Response } from "express";
 import prisma from "../prisma";
 import { EditWorkLogDetails, EmployeeBreakLogCreate, EmployeeCreateRequest, EmployeeCreateShareableUrlRequest, EmployeeWorkLogCreateRequest, RateType } from "./schema";
 import { nanoid } from "nanoid";
-import { employee_status, employee_work_log, Prisma } from "@prisma/client";
-import { differenceInSeconds } from "date-fns";
+import { employee_status, Prisma } from "@prisma/client";
+import { compareAsc, differenceInSeconds } from "date-fns";
 import { calculateSalary, getHourlyRate } from "src/utils/helper";
 
 export const employeeCreateController = async (req: EmployeeCreateRequest, res: Response, next: NextFunction) => {
@@ -52,7 +52,7 @@ export const employeeCreateWorkLogController = async (
   const employee = await prisma.employee.findUnique({ where: { id: employeeId }, select: {
     rate: true,
     rateType: true,
-
+    workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
   }})
 
   if (!employee) {
@@ -144,7 +144,7 @@ export const employeeCreateWorkLogController = async (
   details.newTotalHours = totalHours
   details.correction = totalHours
 
-  const [workLog, updatedEmployee] = await prisma.$transaction([
+  const transaction: Prisma.PrismaPromise<any>[]  = [
     prisma.employee_work_log.create({
       data: {
         employeeId,
@@ -173,15 +173,24 @@ export const employeeCreateWorkLogController = async (
         }
       },
       include: { breaks: true }
-    }),
-    prisma.employee.update({
-      where: { id: employeeId },
-      data: {
-        status,
-      },
-      select: { id: true, status: true }
     })
-  ])
+  ]
 
-  resp(res, {...updatedEmployee, workLog})  
+  const lastCheckIn = employee.workLog.length ? employee.workLog[0].checkInDate : undefined
+
+  if (!lastCheckIn || lastCheckIn < checkInDate) {
+    transaction.push(
+      prisma.employee.update({
+        where: { id: employeeId },
+        data: {
+          status,
+        },
+        select: { id: true, status: true }
+      })
+    )
+  }
+
+  const [workLog] = await prisma.$transaction(transaction)
+
+  resp(res, workLog)  
 };
