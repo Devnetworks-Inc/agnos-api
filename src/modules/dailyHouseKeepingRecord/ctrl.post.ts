@@ -17,6 +17,7 @@ export const dailyHousekeepingRecordCreateController = async (
     dayUseRooms: dur,
     extraCleaningRooms: ecr,
     refreshRooms,
+    checkedRooms,
     hotelId,
     services,
     date
@@ -61,8 +62,10 @@ export const dailyHousekeepingRecordCreateController = async (
       totalCleanedRooms,
       ttcPercent,
       totalRefreshRooms: refreshRooms,
+      totalCheckedRooms: checkedRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(hotel.roomsCleaningRate).times(totalCleanedRooms),
-      totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms),
+      totalRefreshRoomsCost: new Prisma.Decimal(hotel.roomsRefreshRate).times(refreshRooms),
+      totalCheckedRoomsCost: new Prisma.Decimal(hotel.roomsCheckingRate).times(checkedRooms),
       services: map.size ? {
         createMany: { data: Array.from(map.values(), (v) => ({
           hotelServiceId: v.id,

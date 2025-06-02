@@ -19,6 +19,7 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
       sum(dhr.dirtyRoomsLastDay) as dirtyRoomsLastDay,
       sum(dhr.dayUseRooms) as dayUseRooms,
       sum(dhr.extraCleaningRooms) as extraCleaningRooms,
+      sum(dhr.checkedRooms) as checkedRooms,
       sum(dhr.noServiceRooms) as noServiceRooms,
       sum(dhr.lateCheckoutRooms) as lateCheckoutRooms,
       sum(dhr.refreshRooms) as refreshRooms,
@@ -28,7 +29,8 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
       sum(dhr.totalHousekeepingManagerCost) as totalHousekeepingManagerCost,
       sum(dhr.totalHousekeepingCleanerCost) as totalHousekeepingCleanerCost,
       sum(dhr.totalCleanedRoomsCost) as totalCleanedRoomsCost,
-      sum(dhr.totalRefreshRoomsCost) as totalRefreshRoomsCost
+      sum(dhr.totalRefreshRoomsCost) as totalRefreshRoomsCost,
+      sum(dhr.totalCheckedRoomsCost) as totalCheckedRoomsCost
     FROM ${db}.daily_housekeeping_record as dhr
     LEFT JOIN ${db}.hotel as h
     ON dhr.hotelId = h.id

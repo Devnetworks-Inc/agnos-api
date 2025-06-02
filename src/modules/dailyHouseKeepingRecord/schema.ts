@@ -25,6 +25,7 @@ export const DailyHousekeepingRecord = z.object({
   dirtyRoomsLastDay: z.coerce.number().gte(0).multipleOf(1),
   dayUseRooms: z.coerce.number().gte(0).multipleOf(1),
   extraCleaningRooms: z.coerce.number().gte(0).multipleOf(1),
+  checkedRooms: z.coerce.number().gte(0).multipleOf(1),
   noServiceRooms: z.coerce.number().gte(0).multipleOf(1),
   lateCheckoutRooms: z.coerce.number().gte(0).multipleOf(1),
   refreshRooms: z.coerce.number().gte(0).multipleOf(1),
@@ -35,6 +36,7 @@ export const DailyHousekeepingRecord = z.object({
   ttcPercent: z.number().default(0),
   totalCleanedRooms: z.number().default(0),
   totalRefreshRooms: z.number().default(0),
+  totalCheckedRooms: z.number().default(0),
   totalHousekeepingManagerCost: z.number().default(0),
   totalHousekeepingCleanerCost: z.number().default(0),
 
@@ -50,6 +52,7 @@ export const DailyHousekeepingRecordCreateBody = DailyHousekeepingRecord.omit({
   year: true,
   totalCleanedRooms: true,
   totalRefreshRooms: true,
+  totalCheckedRooms: true,
   totalHousekeepingManagerCost: true,
   totalHousekeepingCleanerCost: true,
   approvedByHotelManagerId: true,

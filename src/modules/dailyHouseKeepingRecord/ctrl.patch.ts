@@ -13,7 +13,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
 
   const record = await prisma.daily_housekeeping_record.findUnique({
     where: { id },
-    include: { hotel: { select: { roomsCleaningRate: true, roomsRefreshRate: true, numberOfRooms: true } } }
+    include: { hotel: { select: { roomsCleaningRate: true, roomsRefreshRate: true, roomsCheckingRate: true, numberOfRooms: true } } }
   })
 
   if (!record) {
@@ -22,6 +22,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
 
   let roomsCleaningRate = record.hotel.roomsCleaningRate
   let roomsRefreshRate = record.hotel.roomsRefreshRate
+  let roomsCheckingRate = record.hotel.roomsCheckingRate
   let date = dt ? new Date(dt) : record.date
 
   if (hotelId && hotelId !== record.hotelId) {
@@ -31,6 +32,7 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
     }
     roomsCleaningRate = hotel.roomsCleaningRate
     roomsRefreshRate = hotel.roomsRefreshRate
+    roomsCheckingRate = hotel.roomsCheckingRate
   }
 
   let map: Map<number, {
@@ -69,7 +71,8 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
     dirtyRoomsLastDay: drld = record.dirtyRoomsLastDay,
     dayUseRooms: dur = record.dayUseRooms,
     extraCleaningRooms: ecr = record.extraCleaningRooms,
-    refreshRooms = record.refreshRooms
+    refreshRooms = record.refreshRooms,
+    checkedRooms = record.checkedRooms
   } = req.body
 
   const totalCleanedRooms = dr + sor + drld + dur + ecr
@@ -85,8 +88,10 @@ export const dailyHousekeepingRecordUpdateController = async (req: DailyHousekee
       totalCleanedRooms,
       ttcPercent: toDecimalPlaces((totalCleanedRooms / (record.hotel.numberOfRooms || 1)) * 100, 2),
       totalRefreshRooms: refreshRooms,
+      totalCheckedRooms: checkedRooms,
       totalCleanedRoomsCost: new Prisma.Decimal(roomsCleaningRate).times(totalCleanedRooms),
-      totalRefreshRoomsCost: new Prisma.Decimal(refreshRooms).times(refreshRooms),
+      totalRefreshRoomsCost: new Prisma.Decimal(roomsRefreshRate).times(refreshRooms),
+      totalCheckedRoomsCost: new Prisma.Decimal(roomsCheckingRate).times(checkedRooms),
       services: map && {
         deleteMany: {},
         createMany: { data: Array.from(map.values(), (v) => ({

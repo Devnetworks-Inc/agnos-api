@@ -185,6 +185,7 @@ model daily_housekeeping_record {
   extraCleaningRooms  Int
 
   // Other Entry Fields
+  checkedRooms    Int
   noServiceRooms    Int
   lateCheckoutRooms  Int
   refreshRooms     Int
@@ -194,10 +195,12 @@ model daily_housekeeping_record {
   ttcPercent Float @default(0) // total cleaned rooms divided by hotel no of rooms
   totalCleanedRooms    Int @default(0)
   totalRefreshRooms    Int @default(0)
+  totalCheckedRooms    Int @default(0)
   totalHousekeepingManagerCost Decimal @db.Decimal(10,2) @default(0)
   totalHousekeepingCleanerCost Decimal @db.Decimal(10,2) @default(0)
   totalCleanedRoomsCost Decimal @db.Decimal(10,2) @default(0) // hotel clean rate * cleaned rooms
   totalRefreshRoomsCost Decimal @db.Decimal(10,2) @default(0) // hotel refresh rate * refresh rooms
+  totalCheckedRoomsCost Decimal @db.Decimal(10,2) @default(0) // hotel check rate * checked rooms
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
