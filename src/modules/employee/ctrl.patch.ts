@@ -307,7 +307,7 @@ export const employeeBreakStartEndController = async (
           totalSeconds: diffInSecs,
           workLog: { update: {
             status: 'checked_in',
-            totalSecondsBreak: { increment: diffInSecs }
+            totalSecondsBreak: workLog.totalSecondsBreak !== null ? { increment: diffInSecs } : diffInSecs
           }}
         }
       }),
