@@ -21,7 +21,32 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
     include: { hotel: { select: { name: true } } }
   })
 
-  return resp(res, dailyHousekeepingRecords)
+  // Add totalSalary to each record
+  const recordsWithSalaries = await Promise.all(
+    dailyHousekeepingRecords.map(async (record) => {
+      const totalSalary = await prisma.employee_work_log.aggregate({
+        _sum: {
+          salaryToday: true,
+        },
+        where: {
+          checkInDate: {
+            gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
+            lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
+          },
+          employee: {
+            hotelId: record.hotelId,
+          },
+        },
+      });
+
+      return {
+        ...record,
+        totalSalary: totalSalary._sum.salaryToday ?? 0,
+      };
+    })
+  );
+
+  return resp(res, recordsWithSalaries)
 }
 
 export const dailyHousekeepingRecordGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
