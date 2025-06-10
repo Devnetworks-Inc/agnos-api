@@ -19,6 +19,7 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
       sum(dhr.dirtyRoomsLastDay) as dirtyRoomsLastDay,
       sum(dhr.dayUseRooms) as dayUseRooms,
       sum(dhr.extraCleaningRooms) as extraCleaningRooms,
+      sum(dhr.checkedRooms) as checkedRooms,
       sum(dhr.noServiceRooms) as noServiceRooms,
       sum(dhr.lateCheckoutRooms) as lateCheckoutRooms,
       sum(dhr.refreshRooms) as refreshRooms,
@@ -28,7 +29,16 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
       sum(dhr.totalHousekeepingManagerCost) as totalHousekeepingManagerCost,
       sum(dhr.totalHousekeepingCleanerCost) as totalHousekeepingCleanerCost,
       sum(dhr.totalCleanedRoomsCost) as totalCleanedRoomsCost,
-      sum(dhr.totalRefreshRoomsCost) as totalRefreshRoomsCost
+      sum(dhr.totalRefreshRoomsCost) as totalRefreshRoomsCost,
+      sum(dhr.totalCheckedRoomsCost) as totalCheckedRoomsCost,
+      (
+        SELECT SUM(ewl.salaryToday)
+        FROM ${db}.employee_work_log ewl
+        JOIN ${db}.employee e ON ewl.employeeId = e.id
+        WHERE e.hotelId = dhr.hotelId
+          AND EXTRACT(YEAR FROM ewl.checkInDate) = dhr.year
+          AND EXTRACT(MONTH FROM ewl.checkInDate) = dhr.month
+      ) AS totalSalary
     FROM ${db}.daily_housekeeping_record as dhr
     LEFT JOIN ${db}.hotel as h
     ON dhr.hotelId = h.id
