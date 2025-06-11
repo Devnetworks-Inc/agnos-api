@@ -165,6 +165,7 @@ enum user_role {
   hsk_staff
   hotel_manager
   check_in_assistant
+  gouvernante
 }
 
 model daily_housekeeping_record {

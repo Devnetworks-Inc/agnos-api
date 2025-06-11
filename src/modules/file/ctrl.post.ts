@@ -51,17 +51,16 @@ export const fileUploadEmployeeFilesController = async (req: FileEmployeeUploadR
 
   const count = await prisma.file.createMany({
     data: files.map(f => ({
-        employeeId,
-          filename: f.fieldname,
-          originalName: f.originalname,
-          mimetype: f.mimetype,
-          size: f.size,
-          filePath: f.path,
-          folderPath: f.destination,
-          fileFor: 'employee_file'
+      employeeId,
+      filename: f.filename,
+      originalName: f.originalname,
+      mimetype: f.mimetype,
+      size: f.size,
+      filePath: f.path,
+      folderPath: f.destination,
+      fileFor: 'employee_file'
     }))
   })
-  console.log(count)
 
-  resp(res, 'Successfully upload employee files');
+  resp(res, `Successfully uploaded ${count.count} employee files`);
 }
