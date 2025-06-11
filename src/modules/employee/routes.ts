@@ -1,10 +1,10 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetWorkLogs, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogCreate, EmployeeWorkLogUpdate, EmployeeGetWorkLogsByIdPaginated, EmployeeGetWorkLogsByHotelIdSummaryDaily, EmployeeGetWorkLogEditLogs, EmployeeWorkLogComment } from "./schema"
+import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetWorkLogs, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogCreate, EmployeeWorkLogUpdate, EmployeeGetWorkLogsByIdPaginated, EmployeeGetWorkLogsByHotelIdSummaryDaily, EmployeeGetWorkLogEditLogs, EmployeeWorkLogComment, EmployeeGetWorkLogsByMonth } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController, employeeCreateWorkLogController } from "./ctrl.post"
 import { employeeBreakStartEndController, employeeCheckInOutController, employeeUpdateController, employeeUpdateWorkLogCommentController, employeeUpdateWorkLogController, employeeUrlSubmitController } from "./ctrl.patch"
-import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController, employeeGetWorkLogsByIdPaginatedController, employeeGetWorkLogsSummaryDailyController, employeeGetWorkLogEditLogsController } from "./ctrl.get"
+import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController, employeeGetWorkLogsByIdPaginatedController, employeeGetWorkLogsSummaryDailyController, employeeGetWorkLogEditLogsController, employeeGetWorkLogsByMonthController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -57,6 +57,14 @@ employeeRouter.get(
   validateRequest(EmployeeGetWorkLogEditLogs),
   employeeGetWorkLogEditLogsController
 )
+
+employeeRouter.get(
+  '/work-logs/month',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(EmployeeGetWorkLogsByMonth),
+  employeeGetWorkLogsByMonthController
+)
+
 
 employeeRouter.get(
   '/work-logs',

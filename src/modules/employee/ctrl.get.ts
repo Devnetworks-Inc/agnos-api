@@ -1,136 +1,236 @@
 import { Request, Response } from "express";
 import resp from "objectify-response";
 import prisma from "../prisma";
-import { EmployeeGetWorkLogsRequest, EmployeeGetByUrlRequest, EmployeeGetRequest, EmployeeGetWorkLogsByIdPaginatedRequest, EmployeeGetWorkLogsByHotelIdSummaryDailyRequest, EmployeeGetWorkLogEditLogsRequest } from "./schema";
+import {
+  EmployeeGetWorkLogsRequest,
+  EmployeeGetByUrlRequest,
+  EmployeeGetRequest,
+  EmployeeGetWorkLogsByIdPaginatedRequest,
+  EmployeeGetWorkLogsByHotelIdSummaryDailyRequest,
+  EmployeeGetWorkLogEditLogsRequest,
+  EmployeeGetWorkLogsByMonthRequest,
+} from "./schema";
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 import { endOfDay, endOfMonth, startOfDay, startOfMonth } from "date-fns";
 
-export const employeeGetController = async (req: EmployeeGetRequest, res: Response) => {
-  const { role, currentHotelId } = req.auth!
-  let { hotelId } = req.query
-  const where: Prisma.employeeWhereInput = {}
+export const employeeGetController = async (
+  req: EmployeeGetRequest,
+  res: Response
+) => {
+  const { role, currentHotelId } = req.auth!;
+  let { hotelId } = req.query;
+  const where: Prisma.employeeWhereInput = {};
 
-  if (role !== 'agnos_admin' && role !== 'hsk_manager') {
+  if (role !== "agnos_admin" && role !== "hsk_manager") {
     if (!currentHotelId) {
-      return resp(res, 'Unauthorized', 401)
+      return resp(res, "Unauthorized", 401);
     }
-    hotelId = currentHotelId
+    hotelId = currentHotelId;
   }
 
   if (hotelId) {
-    where.hotelId = hotelId
+    where.hotelId = hotelId;
   }
 
-  const employees = await prisma.employee.findMany({ where, include: { hotel: {select: { name: true }} } });
-  resp(res, employees)
-}
+  const employees = await prisma.employee.findMany({
+    where,
+    include: { hotel: { select: { name: true } } },
+  });
+  resp(res, employees);
+};
 
-export const employeeGetByIdController = async (req: Request<IdParam> & AuthRequest, res: Response) => {
-  const id = +req.params.id
-  const today = new Date()
-  const startDay = startOfDay(today)
-  const endDay = endOfDay(today)
-  const startMonth = startOfMonth(today)
-  const endMonth = endOfMonth(today)
+export const employeeGetByIdController = async (
+  req: Request<IdParam> & AuthRequest,
+  res: Response
+) => {
+  const id = +req.params.id;
+  const today = new Date();
+  const startDay = startOfDay(today);
+  const endDay = endOfDay(today);
+  const startMonth = startOfMonth(today);
+  const endMonth = endOfMonth(today);
 
   const [employee, day, month, overall] = await prisma.$transaction([
-    prisma.employee.findUnique({ where: { id }}),
+    prisma.employee.findUnique({ where: { id } }),
     prisma.employee_work_log.aggregate({
       where: { checkInDate: { gte: startDay, lte: endDay } },
       _sum: {
-        totalSeconds: true
-      }
+        totalSeconds: true,
+      },
     }),
     prisma.employee_work_log.aggregate({
-      where: { checkInDate: { gte: startMonth, lte: endMonth }, employeeId: id},
+      where: {
+        checkInDate: { gte: startMonth, lte: endMonth },
+        employeeId: id,
+      },
       _sum: {
-        totalSeconds: true
-      }
+        totalSeconds: true,
+      },
     }),
     prisma.employee_work_log.aggregate({
-      where: {employeeId: id},
+      where: { employeeId: id },
       _sum: {
-        totalSeconds: true
-      }
+        totalSeconds: true,
+      },
     }),
-  ])
+  ]);
 
   if (!employee) {
-    return resp(res, 'Employee not found', 404)
+    return resp(res, "Employee not found", 404);
   }
-  
+
   resp(res, {
     ...employee,
     totalHoursToday: ((day._sum.totalSeconds ?? 0) / 3600).toFixed(2),
     totalHoursMonth: ((month._sum.totalSeconds ?? 0) / 3600).toFixed(2),
     totalHoursOverall: ((overall._sum.totalSeconds ?? 0) / 3600).toFixed(2),
-  })
-}
+  });
+};
 
-export const employeeGetByUrlController = async (req: EmployeeGetByUrlRequest, res: Response) => {
-  const employee = await prisma.employee.findUnique({ where: { shareableUrl: req.params.url } })
+export const employeeGetByUrlController = async (
+  req: EmployeeGetByUrlRequest,
+  res: Response
+) => {
+  const employee = await prisma.employee.findUnique({
+    where: { shareableUrl: req.params.url },
+  });
 
   if (!employee) {
-    return resp(res, 'Invalid link', 400)
+    return resp(res, "Invalid link", 400);
   }
 
   if (employee.urlExpiryDate && employee.urlExpiryDate < new Date()) {
-    return resp(res, 'Link already expired', 400)
+    return resp(res, "Link already expired", 400);
   }
-  
-  resp(res, employee)
-}
 
-export const employeeGetWorkLogsController = async (req: EmployeeGetWorkLogsRequest, res: Response) => {
-  const { role, currentHotelId } = req.auth!
-  let { hotelId, startDate, endDate } = req.query
+  resp(res, employee);
+};
 
-  if (role !== 'agnos_admin' && role !== 'hsk_manager') {
+export const employeeGetWorkLogsController = async (
+  req: EmployeeGetWorkLogsRequest,
+  res: Response
+) => {
+  const { role, currentHotelId } = req.auth!;
+  let { hotelId, startDate, endDate } = req.query;
+
+  if (role !== "agnos_admin" && role !== "hsk_manager") {
     if (!currentHotelId) {
-      return resp(res, 'Unauthorized', 401)
+      return resp(res, "Unauthorized", 401);
     }
-    hotelId = currentHotelId
+    hotelId = currentHotelId;
   }
 
   const employees = await prisma.employee.findMany({
-    where: { hotelId, OR: [
-      { user: { role: { not: 'check_in_assistant' } }},
-      { user: null }
-    ]},
-    select: { id: true, firstName: true, middleName: true, lastName: true, rate: true, status: true, position: true,
+    where: {
+      hotelId,
+      OR: [{ user: { role: { not: "check_in_assistant" } } }, { user: null }],
+    },
+    select: {
+      id: true,
+      firstName: true,
+      middleName: true,
+      lastName: true,
+      rate: true,
+      status: true,
+      position: true,
       workLog: {
         where: { checkInDate: { gte: startDate, lte: endDate } },
-        include: { breaks: true, editLogs: { select: { id: true}, orderBy: { date: 'desc' } } }
-      }},
-  })
+        include: {
+          breaks: true,
+          editLogs: { select: { id: true }, orderBy: { date: "desc" } },
+        },
+      },
+    },
+  });
 
   // Set status to 'Inactive' if workLog is empty or null
-  const employeesFinal = employees.map(emp => ({
+  const employeesFinal = employees.map((emp) => ({
     ...emp,
-    status: !emp.workLog || emp.workLog.length === 0 ? 'Inactive' : emp.status
+    status: !emp.workLog || emp.workLog.length === 0 ? "Inactive" : emp.status,
   }));
-   
-  resp(res, employeesFinal)
-}
 
-export const employeeGetWorkLogsByIdPaginatedController = async (req: EmployeeGetWorkLogsByIdPaginatedRequest, res: Response) => {
-  const employeeId = +req.params.employeeId
-  const { pageNumber = 1, pageSize = 50, startDate, endDate } = req.query
+  resp(res, employeesFinal);
+};
+
+export const employeeGetWorkLogsByMonthController = async (
+  req: EmployeeGetWorkLogsByMonthRequest,
+  res: Response
+) => {
+  const { currentHotelId, role } = req.auth!
+  const today = new Date()
+  const { year = today.getFullYear(), month = today.getMonth() + 1 } = req.query;
+  let hotelId: number | undefined
+
+  if (role !== 'agnos_admin') {
+    if (!currentHotelId) return resp(res, 'Unauthorized', 401)
+    hotelId = currentHotelId
+  } else {
+    hotelId = req.query.hotelId
+  }
+
+  const [workLogs, employees] = await prisma.$transaction([
+    prisma.employee_work_log.groupBy({
+      by: ["employeeId"],
+      where: { employee: { hotelId }, year, month },
+      _sum: { totalSeconds: true, totalSecondsBreak: true, salaryToday: true },
+      orderBy: { employeeId: "asc" },
+    }),
+    prisma.employee.findMany({
+      where: { hotelId },
+      select: {
+        id: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
+        rate: true,
+        position: true,
+        hotelId: true,
+        hotel: { select: { name: true } }
+      },
+    }),
+  ]);
+  const workLogMap = new Map<number, (typeof workLogs[0])>();
+  workLogs.forEach((log) => {
+    workLogMap.set(log.employeeId, log);
+  });
+
+  const employeesWithWorkLog = employees.map((e) => {
+    const workLog = workLogMap.get(e.id) as typeof workLogs[0] || {}
+    return {
+      ...e,
+      year,
+      month,
+      hotel: e.hotel.name,
+      totalSeconds: workLog._sum?.totalSeconds ?? 0,
+      totalSecondsBreak: workLog._sum?.totalSecondsBreak ?? 0,
+      totalSalary: workLog._sum?.salaryToday?.toNumber() ?? 0
+    };
+  });
+
+  resp(res, employeesWithWorkLog)
+};
+
+export const employeeGetWorkLogsByIdPaginatedController = async (
+  req: EmployeeGetWorkLogsByIdPaginatedRequest,
+  res: Response
+) => {
+  const employeeId = +req.params.employeeId;
+  const { pageNumber = 1, pageSize = 50, startDate, endDate } = req.query;
 
   const where = {
     employeeId,
-    checkInDate: { gte: startDate, lte: endDate }
-  }
+    checkInDate: { gte: startDate, lte: endDate },
+  };
 
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
-    include: { hotel: { select: { name: true } } }
-  })
+    include: { hotel: { select: { name: true } } },
+  });
 
   if (!employee) {
-    return resp(res, 'Employee not found', 404)
+    return resp(res, "Employee not found", 404);
   }
 
   const [items, totalItems] = await prisma.$transaction([
@@ -139,57 +239,76 @@ export const employeeGetWorkLogsByIdPaginatedController = async (req: EmployeeGe
       include: { breaks: true },
       skip: (pageNumber - 1) * pageSize,
       take: pageSize,
-      orderBy: { checkInDate: 'desc' }
+      orderBy: { checkInDate: "desc" },
     }),
     prisma.employee_work_log.count({
       where,
-    })
-  ])
+    }),
+  ]);
 
-  resp(res, { employee, items, totalItems, totalPages: Math.ceil(totalItems/pageSize) })
-}
+  resp(res, {
+    employee,
+    items,
+    totalItems,
+    totalPages: Math.ceil(totalItems / pageSize),
+  });
+};
 
-export const employeeGetWorkLogsSummaryDailyController = async (req: EmployeeGetWorkLogsByHotelIdSummaryDailyRequest, res: Response) => {
-  const hotelId = +req.params.hotelId
-  const { startDate, endDate } = req.query
+export const employeeGetWorkLogsSummaryDailyController = async (
+  req: EmployeeGetWorkLogsByHotelIdSummaryDailyRequest,
+  res: Response
+) => {
+  const hotelId = +req.params.hotelId;
+  const { startDate, endDate } = req.query;
 
   const data = await prisma.employee_work_log.groupBy({
-    by: ['date'],
-    where: { employee: { hotelId },  checkInDate: { gte: startDate, lte: endDate } },
-    _sum: { totalSeconds: true, salaryToday: true }
-  })
+    by: ["date"],
+    where: {
+      employee: { hotelId },
+      checkInDate: { gte: startDate, lte: endDate },
+    },
+    _sum: { totalSeconds: true, salaryToday: true },
+  });
 
-  resp(res, data.map(v => ({
-    date: v.date,
-    totalHours: +((v._sum.totalSeconds ?? 0) / 3600).toFixed(2),
-    totalCost: +(v._sum.salaryToday ?? 0) 
-  })))
-}
+  resp(
+    res,
+    data.map((v) => ({
+      date: v.date,
+      totalHours: +((v._sum.totalSeconds ?? 0) / 3600).toFixed(2),
+      totalCost: +(v._sum.salaryToday ?? 0),
+    }))
+  );
+};
 
-export const employeeGetWorkLogEditLogsController = async (req: EmployeeGetWorkLogEditLogsRequest, res: Response) => {
-  const { role, employeeId } = req.auth!
-  const workLogId = +req.params.workLogId
+export const employeeGetWorkLogEditLogsController = async (
+  req: EmployeeGetWorkLogEditLogsRequest,
+  res: Response
+) => {
+  const { role, employeeId } = req.auth!;
+  const workLogId = +req.params.workLogId;
 
   const where: Prisma.employee_work_edit_logWhereInput = {
     workLogId,
-  }
+  };
 
-  if (role !== 'agnos_admin') {
-    if (!employeeId) return resp(res, 'Unauthorized', 401)
+  if (role !== "agnos_admin") {
+    if (!employeeId) return resp(res, "Unauthorized", 401);
     where.workLog = {
-      employeeId
-    }
+      employeeId,
+    };
   }
 
   const logs = await prisma.employee_work_edit_log.findMany({
     where,
-    include: { editor: {
-      select: {
-        username: true,
-        employee: { select: { firstName: true, middleName: true, id: true } }
-      }
-    }},
-    orderBy: { date: 'desc' }
-  })
-  resp(res, logs)
-}
+    include: {
+      editor: {
+        select: {
+          username: true,
+          employee: { select: { firstName: true, middleName: true, id: true } },
+        },
+      },
+    },
+    orderBy: { date: "desc" },
+  });
+  resp(res, logs);
+};

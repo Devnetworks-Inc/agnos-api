@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery, EmployeeGetWorkLogsByHotelIdSummaryDailyParam, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery, EmployeeWorkLogCommentBody, EmployeeGetWorkLogEditLogsParam } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery, EmployeeGetWorkLogsByHotelIdSummaryDailyParam, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery, EmployeeWorkLogCommentBody, EmployeeGetWorkLogEditLogsParam, EmployeeGetWorkLogsByMonthQuery } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -141,6 +141,24 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
       }))),
     },
   });
+
+   registry.registerPath({
+    method: "get",
+    path: employeeBaseUrl+'/work-logs/month',
+    summary: "get employee work logs by month",
+    tags,
+    request: {
+      query: EmployeeGetWorkLogsByMonthQuery
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Hotel Employee Work Logs By Month", z.array(z.object({
+        
+      }))),
+    },
+  });
+
 
   registry.registerPath({
     method: "get",

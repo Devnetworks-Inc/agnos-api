@@ -246,8 +246,14 @@ export const EmployeeGetWorkLogEditLogs = z.object({
   params: EmployeeGetWorkLogEditLogsParam
 })
 
-export const EmployeeUploadProfilePic = z.object({
-  
+export const EmployeeGetWorkLogsByMonthQuery = z.object({
+  year: z.coerce.number().optional(),
+  month: z.coerce.number().optional(),
+  hotelId: z.coerce.number().optional(),
+})
+
+export const EmployeeGetWorkLogsByMonth = z.object({
+  query: EmployeeGetWorkLogsByMonthQuery
 })
 
 export type RateType = TypeOf<typeof RateType>;
@@ -271,6 +277,7 @@ export type EmployeeGetWorkLogsByIdPaginatedParams = TypeOf<typeof EmployeeGetWo
 export type EmployeeGetWorkLogsByIdPaginatedQuery = TypeOf<typeof EmployeeGetWorkLogsByIdPaginatedQuery>;
 export type EmployeeWorkLogCommentBody = TypeOf<typeof EmployeeWorkLogCommentBody>;
 export type EmployeeGetWorkLogEditLogsParam = TypeOf<typeof EmployeeGetWorkLogEditLogsParam>;
+export type EmployeeGetWorkLogsByMonthQuery = TypeOf<typeof EmployeeGetWorkLogsByMonthQuery>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
@@ -284,6 +291,7 @@ export type EmployeeGetWorkLogsByIdPaginatedRequest = Request<EmployeeGetWorkLog
 export type EmployeeGetWorkLogsByHotelIdSummaryDailyRequest = Request<EmployeeGetWorkLogsByHotelIdSummaryDailyParam, {}, {}, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery> & AuthRequest;
 export type EmployeeWorkLogCommentRequest = Request<{}, {}, EmployeeWorkLogCommentBody> & AuthRequest;
 export type EmployeeGetWorkLogEditLogsRequest = Request<EmployeeGetWorkLogEditLogsParam> & AuthRequest;
+export type EmployeeGetWorkLogsByMonthRequest = Request<{}, {}, {}, EmployeeGetWorkLogsByMonthQuery> & AuthRequest;
 
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;
