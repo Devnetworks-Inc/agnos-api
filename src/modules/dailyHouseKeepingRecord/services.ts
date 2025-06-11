@@ -36,8 +36,8 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
         FROM ${db}.employee_work_log ewl
         JOIN ${db}.employee e ON ewl.employeeId = e.id
         WHERE e.hotelId = dhr.hotelId
-          AND EXTRACT(YEAR FROM ewl.checkInDate) = dhr.year
-          AND EXTRACT(MONTH FROM ewl.checkInDate) = dhr.month
+          AND ewl.year = dhr.year
+          AND ewl.month = dhr.month
       ) AS totalSalary
     FROM ${db}.daily_housekeeping_record as dhr
     LEFT JOIN ${db}.hotel as h

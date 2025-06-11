@@ -246,6 +246,10 @@ export const EmployeeGetWorkLogEditLogs = z.object({
   params: EmployeeGetWorkLogEditLogsParam
 })
 
+export const EmployeeUploadProfilePic = z.object({
+  
+})
+
 export type RateType = TypeOf<typeof RateType>;
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;

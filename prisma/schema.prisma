@@ -71,6 +71,7 @@ model employee {
   urlExpiryDate DateTime?
   minimumWeeklyHours Int?
   overtimeRate Float?
+  profilePicId Int?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -79,6 +80,8 @@ model employee {
   hotelId Int  // Employee belongs to a single hotel
   workLog employee_work_log[]
   hotel hotel @relation(fields: [hotelId], references: [id])
+  files file[] @relation("EmployeeFiles")
+  profilePic file? @relation(fields: [profilePicId], references: [id])
 }
 
 model user {
@@ -162,6 +165,7 @@ enum user_role {
   hsk_staff
   hotel_manager
   check_in_assistant
+  gouvernante
 }
 
 model daily_housekeeping_record {
@@ -247,4 +251,26 @@ model service_entry {
 
   dailyRecord  daily_housekeeping_record @relation(fields: [dailyRecordId], references: [id], onDelete: Cascade)
   hotelService hotel_service? @relation(fields: [hotelServiceId], references: [id])
+}
+
+model file {
+  id Int @id @default(autoincrement())
+  filename String
+  originalName String
+  fileFor file_for
+  employeeId Int?
+  mimetype String
+  size Int
+  filePath String
+  folderPath String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  employee employee? @relation("EmployeeFiles", fields: [employeeId], references: [id])
+  profilePicEmployees employee[]
+}
+
+enum file_for {
+  employee_profile_pic
+  employee_file
 }

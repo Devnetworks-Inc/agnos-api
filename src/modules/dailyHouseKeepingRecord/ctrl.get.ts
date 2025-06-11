@@ -29,10 +29,7 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
           salaryToday: true,
         },
         where: {
-          checkInDate: {
-            gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
-            lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
-          },
+          date: record.date,
           employee: {
             hotelId: record.hotelId,
           },
