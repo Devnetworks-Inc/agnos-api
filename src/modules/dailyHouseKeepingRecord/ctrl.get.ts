@@ -35,6 +35,7 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
         where: {
           // date: record.date,
           checkInDate: { gte: startDay, lte: endDay },
+          checkOutDate: { gte: startDay, lte: endDay },
           employee: {
             hotelId: record.hotelId,
           },
