@@ -36,9 +36,14 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
         },
       });
 
+      const workLogsPerDay = await prisma.employee_work_log.findMany({
+        where: { date: record.date }
+      })
+
       return {
         ...record,
         totalSalary: totalSalary._sum.salaryToday ?? 0,
+        workLogsPerDay
       };
     })
   );
