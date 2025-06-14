@@ -46,14 +46,14 @@ employeeRouter.get(
 
 employeeRouter.get(
   '/work-logs/paginated/:employeeId',
-  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff', 'gouvernante']),
   validateRequest(EmployeeGetWorkLogsByIdPaginated),
   employeeGetWorkLogsByIdPaginatedController
 )
 
 employeeRouter.get(
   '/work-logs/edit-logs/:workLogId',
-  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff', 'gouvernante']),
   validateRequest(EmployeeGetWorkLogEditLogs),
   employeeGetWorkLogEditLogsController
 )
@@ -75,7 +75,7 @@ employeeRouter.get(
 
 employeeRouter.get(
   '/:id',
-  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff', 'gouvernante']),
   validateRequest(IdParamRequest), employeeGetByIdController
 )
 
@@ -102,7 +102,7 @@ employeeRouter.patch(
 
 employeeRouter.patch(
   '/work-logs/comment',
-  authorizeRoles(['hsk_staff']),
+  authorizeRoles(['hsk_staff', 'gouvernante']),
   validateRequest(EmployeeWorkLogComment),
   employeeUpdateWorkLogCommentController
 )
@@ -116,7 +116,7 @@ employeeRouter.patch(
 
 employeeRouter.patch(
   '/',
-  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff']),
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'hsk_staff', 'gouvernante']),
   validateRequest(EmployeeUpdate),
   employeeUpdateController
 )
