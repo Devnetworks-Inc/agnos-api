@@ -4,7 +4,7 @@ import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 import { DailyHousekeepingRecordGetRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
-import { subMonths } from "date-fns";
+import { subMonths, endOfDay, startOfDay  } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 
@@ -24,12 +24,17 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
   // Add totalSalary to each record
   const recordsWithSalaries = await Promise.all(
     dailyHousekeepingRecords.map(async (record) => {
+
+      const startDay = startOfDay(record.date);
+      const endDay = endOfDay(record.date);
+
       const totalSalary = await prisma.employee_work_log.aggregate({
         _sum: {
           salaryToday: true,
         },
         where: {
-          date: record.date,
+          // date: record.date,
+          checkInDate: { gte: startDay, lte: endDay },
           employee: {
             hotelId: record.hotelId,
           },
