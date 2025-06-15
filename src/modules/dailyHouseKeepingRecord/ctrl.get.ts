@@ -26,8 +26,11 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
     dailyHousekeepingRecords.map(async (record) => {
 
       console.log(record.date);
-      const startDay = startOfDay(record.date);
-      const endDay = endOfDay(record.date);
+      const rd = record.date.toUTCString().split('-');
+      console.log('splits', rd);
+      const rdUTC = new Date(Date.UTC(+rd[0],+rd[1]-1,+rd[2]))
+      const startDay = startOfDay(rdUTC);
+      const endDay = endOfDay(rdUTC);
       console.log(startDay, endDay);
 
       const totalSalary = await prisma.employee_work_log.aggregate({
