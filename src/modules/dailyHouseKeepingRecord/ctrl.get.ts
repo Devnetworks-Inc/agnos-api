@@ -25,43 +25,34 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
   const recordsWithSalaries = await Promise.all(
     dailyHousekeepingRecords.map(async (record) => {
 
-      console.log(record.date);
-      console.log(record.date.toISOString());
-      const rd = record.date.toISOString().split('-');
-      console.log('splits', rd);
-      const rdUTC = new Date(Date.UTC(+rd[0],+rd[1]-1,+rd[2].split('T')[0]))
-      console.log('rdUTC', rdUTC);
-      const startDay = startOfDay(rdUTC);
-      const endDay = endOfDay(rdUTC);
-      console.log(startDay, endDay);
+      // const startDay = startOfDay(record.date);
+      // const endDay = endOfDay(record.date);
 
       const totalSalary = await prisma.employee_work_log.aggregate({
         _sum: {
           salaryToday: true,
         },
         where: {
-          // date: record.date,
-          checkInDate: { gte: startDay, lte: endDay },
-          checkOutDate: { gte: startDay, lte: endDay },
+          date: record.date,
+          // checkInDate: { gte: startDay, lte: endDay },
+          // checkOutDate: { gte: startDay, lte: endDay },
           employee: {
             hotelId: record.hotelId,
           },
         },
       });
 
-      const workLogsPerDay = await prisma.employee_work_log.findMany({
-        where: {
-          checkInDate: { gte: startDay, lte: endDay },
-          checkOutDate: { gte: startDay, lte: endDay }
-         }
-      })
-
-      console.log(workLogsPerDay)
+      // const workLogsPerDay = await prisma.employee_work_log.findMany({
+      //   where: {
+      //     checkInDate: { gte: startDay, lte: endDay },
+      //     checkOutDate: { gte: startDay, lte: endDay }
+      //    }
+      // })
 
       return {
         ...record,
-        totalSalary: totalSalary._sum.salaryToday ?? 0,
-        workLogsPerDay
+        totalSalary: totalSalary._sum.salaryToday ?? 0
+        // workLogsPerDay
       };
     })
   );
