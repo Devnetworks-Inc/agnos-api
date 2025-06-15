@@ -26,9 +26,11 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
     dailyHousekeepingRecords.map(async (record) => {
 
       console.log(record.date);
-      const rd = record.date.toString().split('-');
+      console.log(record.date.toISOString());
+      const rd = record.date.toISOString().split('-');
       console.log('splits', rd);
       const rdUTC = new Date(Date.UTC(+rd[0],+rd[1]-1,+rd[2]))
+      console.log('rdUTC', rdUTC);
       const startDay = startOfDay(rdUTC);
       const endDay = endOfDay(rdUTC);
       console.log(startDay, endDay);
