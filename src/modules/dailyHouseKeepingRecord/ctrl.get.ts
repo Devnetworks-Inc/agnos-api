@@ -25,8 +25,10 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
   const recordsWithSalaries = await Promise.all(
     dailyHousekeepingRecords.map(async (record) => {
 
+      console.log(record.date);
       const startDay = startOfDay(record.date);
       const endDay = endOfDay(record.date);
+      console.log(startDay, endDay);
 
       const totalSalary = await prisma.employee_work_log.aggregate({
         _sum: {
@@ -43,8 +45,13 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
       });
 
       const workLogsPerDay = await prisma.employee_work_log.findMany({
-        where: { date: record.date }
+        where: {
+          checkInDate: { gte: startDay, lte: endDay },
+          checkOutDate: { gte: startDay, lte: endDay }
+         }
       })
+
+      console.log(workLogsPerDay)
 
       return {
         ...record,
