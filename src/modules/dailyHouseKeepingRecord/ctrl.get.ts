@@ -29,7 +29,7 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
       console.log(record.date.toISOString());
       const rd = record.date.toISOString().split('-');
       console.log('splits', rd);
-      const rdUTC = new Date(Date.UTC(+rd[0],+rd[1]-1,+rd[2]))
+      const rdUTC = new Date(Date.UTC(+rd[0],+rd[1]-1,+rd[2].split('T')[0]))
       console.log('rdUTC', rdUTC);
       const startDay = startOfDay(rdUTC);
       const endDay = endOfDay(rdUTC);
