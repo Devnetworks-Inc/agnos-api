@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import resp from "objectify-response";
 import {
   EditWorkLogDetails,
@@ -13,8 +13,9 @@ import {
 } from "./schema";
 import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
-import { differenceInSeconds, isEqual, secondsToHours, secondsToMinutes } from "date-fns";
+import { differenceInSeconds, isEqual, secondsToHours, secondsToMinutes, startOfYesterday, endOfYesterday, isYesterday } from "date-fns";
 import { calculateSalary, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
+import { checkoutMidnightQuery } from "./services";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
@@ -55,7 +56,7 @@ export const employeeCheckInOutController = async (
 ) => {
   const { role, currentHotelId } = req.auth!;
   const { id, status, date } = req.body;
-  const datetime = new Date(req.body.datetime)
+  let datetime = new Date(req.body.datetime)
 
   if (role !== "agnos_admin" && !currentHotelId) {
     return resp(res, "Unauthorized", 401);
@@ -65,7 +66,10 @@ export const employeeCheckInOutController = async (
 
   const employee = await prisma.employee.findUnique({
     where: { id, hotelId },
-    select: { status: true, rate: true, rateType: true },
+    select: {
+      status: true, rate: true, rateType: true,
+      workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
+    },
   });
 
   if (!employee) {
@@ -75,15 +79,17 @@ export const employeeCheckInOutController = async (
     return resp(res, `Employee not found in ${hotel?.name}`, 404);
   }
 
-  if (employee.status === "on_break") {
+  const employeeStatus = employee.workLog[0]?.status
+
+  if (employeeStatus === "on_break") {
     return resp(res, "Employee is On Break", 400);
   }
 
-  if (employee.status === "checked_in" && status === "check_in") {
+  if (employeeStatus === "checked_in" && status === "check_in") {
     return resp(res, "Employee already check-in", 400);
   }
 
-  if (employee.status === "checked_out" && status === "check_out") {
+  if (employeeStatus === "checked_out" && status === "check_out") {
     return resp(res, "Employee already check-out", 400);
   }
 
@@ -129,6 +135,10 @@ export const employeeCheckInOutController = async (
 
     if (!log) {
       return resp(res, "No check-in in work log found", 404);
+    }
+
+    if (isYesterday(log.checkInDate)) {
+      datetime = endOfYesterday()
     }
 
     if (datetime < log.checkInDate) {
@@ -205,7 +215,7 @@ export const employeeBreakStartEndController = async (
 ) => {
   const { role, currentHotelId } = req.auth!;
   const { id, status } = req.body;
-  const date = new Date(req.body.date);
+  let date = new Date(req.body.date);
 
   if (role !== "agnos_admin" && !currentHotelId) {
     return resp(res, "Unauthorized", 401);
@@ -234,20 +244,22 @@ export const employeeBreakStartEndController = async (
     return resp(res, `Employee not found in ${hotel?.name}`, 404);
   }
 
-  if (employee.status === "checked_out") {
+  if (!employee.workLog.length) {
+    return resp(res, "Employee has not check in", 400);
+  }
+
+  const employeeStatus = employee.workLog[0]?.status
+
+  if (employeeStatus === "checked_out") {
     return resp(res, "Employee already check-out", 400);
   }
 
-  if (employee.status === "on_break" && status === "start_break") {
+  if (employeeStatus === "on_break" && status === "start_break") {
     return resp(res, "Employee already on break", 400);
   }
 
-  if (employee.status === "checked_in" && status === "end_break") {
+  if (employeeStatus === "checked_in" && status === "end_break") {
     return resp(res, "Employee is not on break", 400);
-  }
-
-  if (!employee.workLog.length) {
-    return resp(res, "Employee has not check in", 400);
   }
 
   const workLog = employee.workLog[0];
@@ -291,6 +303,10 @@ export const employeeBreakStartEndController = async (
 
     if (!breakLog) {
       return resp(res, "No start break in log found", 404);
+    }
+
+    if (isYesterday(breakLog.breakStartDate)) {
+      date = endOfYesterday()
     }
 
     if (date < breakLog.breakStartDate) {
@@ -591,4 +607,15 @@ export const employeeUpdateWorkLogCommentController = (req: EmployeeWorkLogComme
     }
     next(e)
   })
+}
+
+export const employeeMidnightCheckoutController = async (req: Request, res: Response) => {
+  const yesterdayStart = startOfYesterday()
+  const yesterdayEnd = endOfYesterday()
+
+  const result = await checkoutMidnightQuery(yesterdayStart, yesterdayEnd)
+
+  console.log(result)
+    
+  resp(res, `${result.count} employees was checked out`)
 }

@@ -318,6 +318,21 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
     },
   });
 
+    registry.registerPath({
+    method: "patch",
+    path: employeeBaseUrl+'/midnight-checkout',
+    summary: "checkout employee in midnight",
+    tags,
+
+    responses: {
+      200: successJsonResponse("Work Log", z.object({
+        id: z.number(),
+        status: EmployeeStatus,
+        workLog: EmployeeWorkLog
+      }),)
+    },
+  });
+
   registry.registerPath({
     method: "delete",
     path: employeeBaseUrl+"/{id}",
