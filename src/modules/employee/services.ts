@@ -40,10 +40,10 @@ export const checkoutMidnightQuery = async (yesterdayStartDate: Date, yesterdayE
     `UPDATE ${db}.employee_work_log AS ewl
     SET ewl.checkOutDate = '${yesterdayEnd}',
       ewl.totalSecondsBreak = (
-        SELECT sum(ebl.totalSeconds) FROM ${db}.employee_break_log AS ebl WHERE ebl.workLogId = ewl.id
-      ),
-      ewl.totalSeconds = TIMESTAMPDIFF(SECOND, ewl.checkInDate, '${yesterdayEnd}') - ewl.totalSecondsBreak,
-      ewl.status = 'checked_out'
+          SELECT sum(ebl.totalSeconds) FROM ${db}.employee_break_log AS ebl WHERE ebl.workLogId = ewl.id
+        ),
+        ewl.totalSeconds = TIMESTAMPDIFF(SECOND, ewl.checkInDate, '${yesterdayEnd}') - ewl.totalSecondsBreak,
+        ewl.status = 'checked_out'
     WHERE ewl.checkOutDate IS null AND ewl.checkInDate >= '${yesterdayStart}';`
   )
 
