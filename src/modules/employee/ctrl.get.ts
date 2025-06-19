@@ -36,9 +36,14 @@ export const employeeGetController = async (
 
   const employees = await prisma.employee.findMany({
     where,
-    include: { hotel: { select: { name: true } } },
+    include: {
+      hotel: { select: { name: true } },
+      workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
+    },
   });
-  resp(res, employees);
+  resp(res, employees.map( e => ({
+    ...e, status: e.workLog[0]?.status ?? 'Inactive'
+  })));
 };
 
 export const employeeGetByIdController = async (
@@ -53,7 +58,10 @@ export const employeeGetByIdController = async (
   const endMonth = endOfMonth(today);
 
   const [employee, day, month, overall] = await prisma.$transaction([
-    prisma.employee.findUnique({ where: { id } }),
+    prisma.employee.findUnique({
+      where: { id },
+      include: { workLog: { take: 1, orderBy: { checkInDate: 'desc' } } }
+    }),
     prisma.employee_work_log.aggregate({
       where: { checkInDate: { gte: startDay, lte: endDay } },
       _sum: {
@@ -83,6 +91,7 @@ export const employeeGetByIdController = async (
 
   resp(res, {
     ...employee,
+    status: employee.workLog[0]?.status ?? 'Inactive',
     totalHoursToday: ((day._sum.totalSeconds ?? 0) / 3600).toFixed(2),
     totalHoursMonth: ((month._sum.totalSeconds ?? 0) / 3600).toFixed(2),
     totalHoursOverall: ((overall._sum.totalSeconds ?? 0) / 3600).toFixed(2),
@@ -133,7 +142,7 @@ export const employeeGetWorkLogsController = async (
       middleName: true,
       lastName: true,
       rate: true,
-      status: true,
+      // status: true,
       position: true,
       workLog: {
         where: { checkInDate: { gte: startDate, lte: endDate } },
@@ -141,6 +150,7 @@ export const employeeGetWorkLogsController = async (
           breaks: true,
           editLogs: { select: { id: true }, orderBy: { date: "desc" } },
         },
+        orderBy: { checkInDate: 'asc' }
       },
     },
   });
@@ -148,7 +158,7 @@ export const employeeGetWorkLogsController = async (
   // Set status to 'Inactive' if workLog is empty or null
   const employeesFinal = employees.map((emp) => ({
     ...emp,
-    status: !emp.workLog || emp.workLog.length === 0 ? "Inactive" : emp.status,
+    status: !emp.workLog || emp.workLog.length === 0 ? "Inactive" : emp.workLog[0].status,
   }));
 
   resp(res, employeesFinal);

@@ -38,6 +38,11 @@ export const isoStringRemoveTime = (isoString: string) => {
   return isoString.split('T')[0]
 }
 
+export const isoStringToDatetime = (isoString: string) => {
+  const [date, time] = isoString.split('T')
+  return `${date} ${time.slice(0, -1)}`
+}
+
 export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
   let rate = new Prisma.Decimal(rateAmount)
   let hourlyRate = rate;

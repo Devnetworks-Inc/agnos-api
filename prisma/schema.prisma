@@ -59,7 +59,10 @@ model employee {
   rateType String @default("hourly")
   employmentType String @default("")
   rate Float @default(0)
+  
+  // status is deprecated
   status employee_status @default(checked_out)
+
   position String @default("")
   activity String @default("") // Tätigkeit
   job String @default("") // Beschäftigung
