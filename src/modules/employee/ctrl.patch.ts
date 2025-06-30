@@ -497,8 +497,20 @@ export const employeeUpdateWorkLogController = async (
     if (checkOutDate < checkInDate) {
       return resp(res, "Check-Out date must be greater than Check-In date", 400);
     }
-    if (breakEndDate && (new Date(breakEndDate) > checkOutDate)) {
-      return resp(res, "Check-Out date must be greater than Break End date", 400);
+    // if (breakEndDate && (new Date(breakEndDate) > checkOutDate)) {
+    //   return resp(res, "Check-Out date must be greater than Break End date", 400);
+    // }
+
+    if (breakEndDate) {
+      const breakEnd = new Date(breakEndDate);
+      const checkOut = new Date(checkOutDate);
+
+      const breakEndTime = breakEnd.getHours() * 3600 + breakEnd.getMinutes() * 60 + breakEnd.getSeconds();
+      const checkOutTime = checkOut.getHours() * 3600 + checkOut.getMinutes() * 60 + checkOut.getSeconds();
+
+      if (breakEndTime > checkOutTime) {
+        return resp(res, "Check-Out time must be greater than Break End time", 400);
+      }
     }
 
     totalSeconds = differenceInSeconds(checkOutDate, checkInDate) - newBreakTotalSeconds
