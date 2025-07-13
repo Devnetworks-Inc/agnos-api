@@ -8,7 +8,8 @@ export const UserRole = z.enum([
   'hsk_staff',
   'hotel_manager',
   'check_in_assistant',
-  'gouvernante'
+  'gouvernante',
+  'public_cleaner'
 ])
 
 export const User = z.object({
