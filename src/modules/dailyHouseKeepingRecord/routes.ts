@@ -11,20 +11,21 @@ import { authorizeRoles } from "src/middlewares/authorization"
 
 const dailyHousekeepingRecordRouter = Router()
 
-dailyHousekeepingRecordRouter.use('/', validateToken)
-dailyHousekeepingRecordRouter.post('/', validateRequest(DailyHousekeepingRecordCreate), dailyHousekeepingRecordCreateController)
-dailyHousekeepingRecordRouter.get('/monthly', validateRequest(MonthlyHousekeepingRecordGet), housekeepingRecordGetMonthlyController)
-dailyHousekeepingRecordRouter.get('/:id', validateRequest(IdParamRequest), dailyHousekeepingRecordGetByIdController)
-dailyHousekeepingRecordRouter.get('/', validateRequest(DailyHousekeepingRecordGet), dailyHousekeepingRecordGetController)
+dailyHousekeepingRecordRouter
+  .use('/', validateToken)
+  .post('/', validateRequest(DailyHousekeepingRecordCreate), dailyHousekeepingRecordCreateController)
+  .get('/monthly', validateRequest(MonthlyHousekeepingRecordGet), housekeepingRecordGetMonthlyController)
+  .get('/:id', validateRequest(IdParamRequest), dailyHousekeepingRecordGetByIdController)
+  .get('/', validateRequest(DailyHousekeepingRecordGet), dailyHousekeepingRecordGetController)
 
-dailyHousekeepingRecordRouter.patch(
-  '/approve/:id',
-  authorizeRoles(['hotel_manager', 'hsk_manager']),
-  validateRequest(IdParamRequest),
-  dailyHousekeepingRecordApproveController
-)
+  .patch(
+    '/approve/:id',
+    authorizeRoles(['hotel_manager', 'hsk_manager']),
+    validateRequest(IdParamRequest),
+    dailyHousekeepingRecordApproveController
+  )
 
-dailyHousekeepingRecordRouter.patch('/',  validateRequest(DailyHousekeepingRecordUpdate), dailyHousekeepingRecordUpdateController)
-dailyHousekeepingRecordRouter.delete('/:id',  validateRequest(IdParamRequest), dailyHousekeepingRecordDeleteController)
+  .patch('/',  validateRequest(DailyHousekeepingRecordUpdate), dailyHousekeepingRecordUpdateController)
+  .delete('/:id',  validateRequest(IdParamRequest), dailyHousekeepingRecordDeleteController)
 
 export default dailyHousekeepingRecordRouter
