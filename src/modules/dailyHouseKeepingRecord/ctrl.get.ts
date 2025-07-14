@@ -9,15 +9,29 @@ import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 
 export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepingRecordGetRequest, res: Response) => {
+  const { role, currentHotelId } = req.auth!
+  let hotelId = currentHotelId ?? undefined
+
+  if (role !== 'agnos_admin') {
+    if (!currentHotelId) {
+      return resp(res, 'Unauthorized', 401)
+    }
+  } else {
+    hotelId = req.query.hotelId
+  }
+
   const { startDate, endDate } = req.query
   const s = startDate?.split('-')
   const e = endDate?.split('-')
 
   const dailyHousekeepingRecords = await prisma.daily_housekeeping_record.findMany({
-    where: { date: {
-      gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
-      lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
-    }},
+    where: {
+      date: {
+        gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
+        lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
+      },
+      hotelId
+    },
     include: { hotel: { select: { name: true } } }
   })
 

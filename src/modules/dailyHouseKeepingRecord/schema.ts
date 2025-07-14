@@ -79,6 +79,7 @@ export const DailyHousekeepingRecordGetQuery = z.object({
   endDate: z.string().refine((val) => isMatch(val, 'yyyy-MM-dd'), {
     message: "Date format must be ''yyyy-MM-dd'",
   }).openapi({ example: '2025-03-01' }).optional(),
+  hotelId: z.coerce.number().optional()
 })
 
 export const DailyHousekeepingRecordGet = z.object({
