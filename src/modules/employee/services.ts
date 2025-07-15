@@ -1,6 +1,6 @@
 import { isoStringRemoveTime, isoStringToDatetime } from "src/utils/helper";
 import prisma from "../prisma";
-import { PrismaPromise } from "@prisma/client";
+import { employee_work_log, Prisma, PrismaPromise } from "@prisma/client";
 const db = process.env.DATABASE_NAME
 
 export const getEmployeesWorkLogGroupByMonthYearHotel = async (startDate: Date, endDate: Date, hotelId?: number | null) => {
@@ -48,4 +48,40 @@ export const checkoutMidnightQuery = async (yesterdayStartDate: Date, yesterdayE
   )
 
   return result as PrismaPromise<any> 
+}
+
+export const paginatedEmployeeTimesheetQuery = async (pageNumber: number, pageSize: number, employeeId: number, startDateString: string, endDateString: string) => {
+  const result = await prisma.$queryRawUnsafe(
+    `WITH recursive date_range AS (
+      SELECT '${startDateString}' AS date
+      UNION ALL 
+      SELECT DATE_ADD(date, INTERVAL 1 DAY) FROM date_range WHERE date < '${endDateString}'
+    )
+    SELECT 
+      date_range.date, id, employeeId, checkInDate, checkOutDate, totalSeconds, status, hourlyRate, rate, rateType, salaryToday, comment, totalSecondsBreak
+    FROM date_range
+    LEFT JOIN
+      (SELECT * from ${db}.employee_work_log WHERE employeeId = ${employeeId}) AS ewl
+    ON date_range.date = ewl.date
+    ORDER BY date_range.date DESC, ewl.checkInDate DESC
+    LIMIT ${pageSize}
+    OFFSET ${(pageNumber - 1) * pageSize};`
+  )
+
+  return result
+}
+
+export const getTotalItemsEmployeeTimesheetQuery = async (employeeId: number, startDateString: string, endDateString: string) => {
+  const result = await prisma.$queryRawUnsafe(
+    `WITH recursive date_range AS (
+      SELECT '${startDateString}' AS date
+      UNION ALL 
+      SELECT DATE_ADD(date, INTERVAL 1 DAY) FROM date_range WHERE date < '${endDateString}'
+    )
+    SELECT COUNT(*) as totalItems FROM date_range
+    LEFT JOIN (SELECT * from ${db}.employee_work_log WHERE employeeId = ${employeeId})
+    AS ewl ON date_range.date = ewl.date;`
+  ) as { totalItems: BigInt }[]
+
+  return +result[0]?.totalItems.toString() || 0
 }

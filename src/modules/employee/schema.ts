@@ -204,10 +204,17 @@ export const EmployeeGetWorkLogsByIdPaginatedParams = z.object({
 })
 
 export const EmployeeGetWorkLogsByIdPaginatedQuery = z.object({
-  pageNumber: z.coerce.number().optional(),
-  pageSize: z.coerce.number().optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional()
+  pageNumber: z.coerce.number().default(1),
+  pageSize: z.coerce.number().default(50),
+  startDate: z.string().refine(
+    (v) => isMatch(v, 'yyyy-MM-dd'),
+    { message: 'Date format must be "yyyy-MM-dd"' }
+  ).openapi({ example: '2025-05-01' }),
+  endDate: z.string().refine(
+    (v) => isMatch(v, 'yyyy-MM-dd'),
+    { message: 'Date format must be "yyyy-MM-dd"' }
+  ).openapi({ example: '2025-05-01' }),
+  includeTotalItems: z.enum(['true', 'false']).default('true')
 })
 
 export const EmployeeGetWorkLogsByIdPaginated = z.object({
