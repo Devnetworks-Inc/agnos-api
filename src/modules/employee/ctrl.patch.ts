@@ -627,7 +627,5 @@ export const employeeMidnightCheckoutController = async (req: Request, res: Resp
 
   const result = await checkoutMidnightQuery(yesterdayStart, yesterdayEnd)
 
-  console.log(result)
-    
   resp(res, `${result.count} employees was checked out`)
 }

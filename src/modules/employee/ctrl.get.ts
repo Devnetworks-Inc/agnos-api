@@ -14,6 +14,7 @@ import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 import { endOfDay, endOfMonth, startOfDay, startOfMonth } from "date-fns";
+import { getTotalItemsEmployeeTimesheetQuery, paginatedEmployeeTimesheetQuery } from "./services";
 
 export const employeeGetController = async (
   req: EmployeeGetRequest,
@@ -227,12 +228,7 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
   res: Response
 ) => {
   const employeeId = +req.params.employeeId;
-  const { pageNumber = 1, pageSize = 50, startDate, endDate } = req.query;
-
-  const where = {
-    employeeId,
-    checkInDate: { gte: startDate, lte: endDate },
-  };
+  const { pageNumber, pageSize, startDate, endDate, includeTotalItems } = req.query;
 
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
@@ -243,24 +239,18 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
     return resp(res, "Employee not found", 404);
   }
 
-  const [items, totalItems] = await prisma.$transaction([
-    prisma.employee_work_log.findMany({
-      where,
-      include: { breaks: true },
-      skip: (pageNumber - 1) * pageSize,
-      take: pageSize,
-      orderBy: { checkInDate: "desc" },
-    }),
-    prisma.employee_work_log.count({
-      where,
-    }),
+  const [items, totalItems] = await Promise.all([
+    paginatedEmployeeTimesheetQuery(pageNumber, pageSize, employeeId, startDate, endDate),
+    includeTotalItems === 'true' ?
+      getTotalItemsEmployeeTimesheetQuery(employeeId, startDate, endDate) :
+      Promise.resolve()
   ]);
 
   resp(res, {
     employee,
     items,
     totalItems,
-    totalPages: Math.ceil(totalItems / pageSize),
+    totalPages: totalItems && Math.ceil(totalItems / pageSize),
   });
 };
 
