@@ -135,7 +135,7 @@ export const employeeGetWorkLogsController = async (
   const employees = await prisma.employee.findMany({
     where: {
       hotelId,
-      OR: [{ user: { role: { not: "check_in_assistant" } } }, { user: null }],
+      OR: [{ user: { role: { notIn: ['check_in_assistant', 'agnos_admin'] } } }, { user: null }],
     },
     select: {
       id: true,
@@ -145,6 +145,7 @@ export const employeeGetWorkLogsController = async (
       rate: true,
       // status: true,
       position: true,
+      user: { select: { role: true } },
       workLog: {
         where: { checkInDate: { gte: startDate, lte: endDate } },
         include: {
