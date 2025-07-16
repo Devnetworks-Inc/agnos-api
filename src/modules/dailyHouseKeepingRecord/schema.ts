@@ -106,14 +106,27 @@ export const HousekeepingRecordGetByMonth = z.object({
   params: HousekeepingRecordGetByMonthParam
 })
 
+export const DailyHousekeepingRecordTimesheetDailyQuery = z.object({
+  date: z.string().refine((val) => isMatch(val, 'yyyy-MM-dd'), {
+    message: "Date format must be ''yyyy-MM-dd'",
+  }).openapi({ example: '2025-03-01' }).optional(),
+  hotelId: z.coerce.number().optional()
+})
+
+export const DailyHousekeepingRecordTimesheetDaily = z.object({
+  query: DailyHousekeepingRecordTimesheetDailyQuery
+})
+
 export type DailyHousekeepingRecord = TypeOf<typeof DailyHousekeepingRecord>
 export type DailyHousekeepingRecordCreateBody = TypeOf<typeof DailyHousekeepingRecordCreateBody>
 export type DailyHousekeepingRecordUpdateBody = TypeOf<typeof DailyHousekeepingRecordUpdateBody>
 export type DailyHousekeepingRecordGetQuery = TypeOf<typeof DailyHousekeepingRecordGetQuery>
 export type HousekeepingRecordGetMonthlyQuery = TypeOf<typeof HousekeepingRecordGetMonthlyQuery>
 export type HousekeepingRecordGetByMonthParam = TypeOf<typeof HousekeepingRecordGetByMonthParam>
+export type DailyHousekeepingRecordTimesheetDailyQuery = TypeOf<typeof DailyHousekeepingRecordTimesheetDailyQuery>
 export type DailyHousekeepingRecordCreateRequest = Request<{}, {}, DailyHousekeepingRecordCreateBody> & AuthRequest
 export type DailyHousekeepingRecordUpdateRequest = Request<{}, {}, DailyHousekeepingRecordUpdateBody> & AuthRequest
 export type DailyHousekeepingRecordGetRequest = Request<{}, {}, {}, DailyHousekeepingRecordGetQuery> & AuthRequest
 export type HousekeepingRecordGetMonthlyRequest = Request<{}, {}, {}, HousekeepingRecordGetMonthlyQuery> & AuthRequest
 export type HousekeepingRecordGetByMonthRequest = Request<HousekeepingRecordGetByMonthParam> & AuthRequest
+export type DailyHousekeepingRecordTimesheetDailyRequest = Request<{}, {}, {}, DailyHousekeepingRecordTimesheetDailyQuery> & AuthRequest
