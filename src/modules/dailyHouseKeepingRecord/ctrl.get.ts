@@ -171,7 +171,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
 
   for (const log of workLogs) {
     const { totalSeconds, salaryToday } = log
-    hours = hours.plus(totalSeconds ?? 0 * 3600).toDecimalPlaces(2)
+    hours = hours.plus((totalSeconds ?? 0) / 3600).toDecimalPlaces(2)
     cost = cost.plus(salaryToday)
   }
 
