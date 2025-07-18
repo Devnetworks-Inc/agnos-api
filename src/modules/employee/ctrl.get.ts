@@ -145,6 +145,7 @@ export const employeeGetWorkLogsController = async (
       rate: true,
       // status: true,
       position: true,
+      hotel: { select: { id: true, name: true } },
       user: { select: { role: true } },
       workLog: {
         where: { checkInDate: { gte: startDate, lte: endDate } },
