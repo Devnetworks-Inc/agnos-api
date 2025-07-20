@@ -136,7 +136,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
   const d = dateSplit && new Date( Date.UTC(+dateSplit[0], +dateSplit[1]-1, +dateSplit[2]) )
 
   const [employees, workLogs, records] = await prisma.$transaction([
-      prisma.employee.aggregate({
+    prisma.employee.aggregate({
       where: {
         hotelId,
         OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
@@ -153,7 +153,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
             { user: null }
           ] 
         },
-      },
+      }
     }),
     prisma.daily_housekeeping_record.aggregate({
       _sum: { totalCleanedRooms: true }, 
@@ -166,13 +166,16 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
 
   let hours = new Prisma.Decimal(0)
   let cost = new Prisma.Decimal(0)
-  const staff = employees._count.id ?? 0
+  // const staff = employees._count.id ?? 0
+  const staff = new Set(workLogs.map(log => log.employeeId)).size;
   const totalCleanedRooms = records._sum.totalCleanedRooms ?? 0
-
+  console.log(`totalCleanedRooms: ${totalCleanedRooms}`);
+  
   for (const log of workLogs) {
     const { totalSeconds, salaryToday } = log
     hours = hours.plus((totalSeconds ?? 0) / 3600).toDecimalPlaces(2)
     cost = cost.plus(salaryToday)
+    console.log(`total cost: ${cost}, salaryToday: ${salaryToday}`)
   }
 
   const ATR = totalCleanedRooms ? (hours.dividedBy(totalCleanedRooms * 60).toDecimalPlaces(2)).toNumber() : 0
