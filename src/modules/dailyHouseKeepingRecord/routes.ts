@@ -1,10 +1,10 @@
 import { Router } from "express"
 import validateRequest from "src/middlewares/validateRequest"
 import { validateToken } from "src/middlewares/validateToken"
-import { DailyHousekeepingRecordCreate, DailyHousekeepingRecordGet, DailyHousekeepingRecordTimesheetDaily, DailyHousekeepingRecordUpdate, MonthlyHousekeepingRecordGet } from "./schema"
+import { DailyHousekeepingRecordCreate, DailyHousekeepingRecordGet, DailyHousekeepingRecordTimesheetDaily, DailyHousekeepingRecordTimesheetMonthly, DailyHousekeepingRecordUpdate, MonthlyHousekeepingRecordGet } from "./schema"
 import { dailyHousekeepingRecordCreateController } from "./ctrl.post"
 import { dailyHousekeepingRecordApproveController, dailyHousekeepingRecordUpdateController } from "./ctrl.patch"
-import { dailyHousekeepingRecordGetController, dailyHousekeepingRecordGetByIdController, housekeepingRecordGetMonthlyController, dailyHousekeepingRecordTimesheetDailyController } from "./ctrl.get"
+import { dailyHousekeepingRecordGetController, dailyHousekeepingRecordGetByIdController, housekeepingRecordGetMonthlyController, dailyHousekeepingRecordTimesheetDailyController, dailyHousekeepingRecordTimesheetMonthlyController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { dailyHousekeepingRecordDeleteController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -16,6 +16,7 @@ dailyHousekeepingRecordRouter
   .post('/', validateRequest(DailyHousekeepingRecordCreate), dailyHousekeepingRecordCreateController)
   .get('/monthly', validateRequest(MonthlyHousekeepingRecordGet), housekeepingRecordGetMonthlyController)
   .get('/timesheet-daily', validateRequest(DailyHousekeepingRecordTimesheetDaily), dailyHousekeepingRecordTimesheetDailyController)
+  .get('/timesheet-monthly', validateRequest(DailyHousekeepingRecordTimesheetMonthly), dailyHousekeepingRecordTimesheetMonthlyController)
   .get('/:id', validateRequest(IdParamRequest), dailyHousekeepingRecordGetByIdController)
   .get('/', validateRequest(DailyHousekeepingRecordGet), dailyHousekeepingRecordGetController)
 

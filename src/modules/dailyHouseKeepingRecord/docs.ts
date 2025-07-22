@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
-import { DailyHousekeepingRecord, DailyHousekeepingRecordCreateBody, DailyHousekeepingRecordGetQuery, DailyHousekeepingRecordTimesheetDailyQuery, DailyHousekeepingRecordUpdateBody, HousekeepingRecordGetMonthlyQuery } from "./schema";
+import { DailyHousekeepingRecord, DailyHousekeepingRecordCreateBody, DailyHousekeepingRecordGetQuery, DailyHousekeepingRecordTimesheetDailyQuery, DailyHousekeepingRecordTimesheetMonthlyQuery, DailyHousekeepingRecordUpdateBody, HousekeepingRecordGetMonthlyQuery } from "./schema";
 import { IdParam } from "../id/schema";
 import { dailyHousekeepingRecordBaseUrl } from "src/router";
 
@@ -70,13 +70,32 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
     },
   });
 
-   registry.registerPath({
+  registry.registerPath({
     method: "get",
     path: dailyHousekeepingRecordBaseUrl+"/timesheet-daily",
     summary: "get ATR, ACR, RPE for timesheet daily",
     tags,
     request: {
       query: DailyHousekeepingRecordTimesheetDailyQuery
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Success", z.object({
+        ATR: z.number(),
+        ACR: z.number(),
+        RPE: z.number(),
+      })),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: dailyHousekeepingRecordBaseUrl+"/timesheet-monthly",
+    summary: "get ATR, ACR, RPE for timesheet monthly",
+    tags,
+    request: {
+      query: DailyHousekeepingRecordTimesheetMonthlyQuery
     },
     security: [{ BearerAuth: []}],
 
