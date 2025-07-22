@@ -14,7 +14,7 @@ export const dailyHousekeepingRecordCreateController = async (
     departureRooms: dr,
     stayOverRooms: sor,
     dirtyRoomsLastDay: drld,
-    dayUseRooms: dur,
+    dayUseRooms: dur = 0,
     extraCleaningRooms: ecr,
     refreshRooms,
     checkedRooms,
