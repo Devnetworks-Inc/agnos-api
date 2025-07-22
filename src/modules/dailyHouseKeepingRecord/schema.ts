@@ -23,7 +23,7 @@ export const DailyHousekeepingRecord = z.object({
   departureRooms: z.coerce.number().gte(0).multipleOf(1),
   stayOverRooms: z.coerce.number().gte(0).multipleOf(1),
   dirtyRoomsLastDay: z.coerce.number().gte(0).multipleOf(1),
-  dayUseRooms: z.coerce.number().gte(0).multipleOf(1),
+  dayUseRooms: z.coerce.number().gte(0).multipleOf(1).default(0),
   extraCleaningRooms: z.coerce.number().gte(0).multipleOf(1),
   checkedRooms: z.coerce.number().gte(0).multipleOf(1),
   noServiceRooms: z.coerce.number().gte(0).multipleOf(1),

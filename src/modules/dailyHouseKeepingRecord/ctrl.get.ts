@@ -175,12 +175,12 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
   
   for (const log of workLogs) {
     const { totalSeconds, salaryToday } = log
-    hours = hours.plus((totalSeconds ?? 0) / 3600).toDecimalPlaces(2)
+    hours = hours.plus((totalSeconds ?? 0) / 3600)
     cost = cost.plus(salaryToday)
     console.log(`total cost: ${cost}, salaryToday: ${salaryToday}`)
   }
 
-  const ATR = totalCleanedRooms ? (hours.dividedBy(totalCleanedRooms * 60).toDecimalPlaces(2)).toNumber() : 0
+  const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
   const ACR = totalCleanedRooms ? (cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2)).toNumber() : 0
   const RPE = totalCleanedRooms ? +(staff / totalCleanedRooms).toFixed(2) : 0
 
@@ -242,11 +242,11 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
 
   for (const log of workLogs) {
     const { totalSeconds, salaryToday } = log
-    hours = hours.plus((totalSeconds ?? 0) / 3600).toDecimalPlaces(2)
+    hours = hours.plus((totalSeconds ?? 0) / 3600)
     cost = cost.plus(salaryToday)
   }
 
-  const ATR = totalCleanedRooms ? (hours.dividedBy(totalCleanedRooms * 60).toDecimalPlaces(2)).toNumber() : 0
+  const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
   const ACR = totalCleanedRooms ? (cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2)).toNumber() : 0
   const RPE = totalCleanedRooms ? +(staff / totalCleanedRooms).toFixed(2) : 0
 
