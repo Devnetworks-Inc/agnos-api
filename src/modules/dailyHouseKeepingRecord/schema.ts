@@ -113,8 +113,19 @@ export const DailyHousekeepingRecordTimesheetDailyQuery = z.object({
   hotelId: z.coerce.number().optional()
 })
 
+export const DailyHousekeepingRecordTimesheetMonthlyQuery = z.object({
+  yearMonth: z.string().refine((val) => isMatch(val, 'yyyy-MM'), {
+    message: "Date format must be ''yyyy-MM'",
+  }).openapi({ example: '2025-03' }).optional(),
+  hotelId: z.coerce.number().optional()
+})
+
 export const DailyHousekeepingRecordTimesheetDaily = z.object({
   query: DailyHousekeepingRecordTimesheetDailyQuery
+})
+
+export const DailyHousekeepingRecordTimesheetMonthly = z.object({
+  query: DailyHousekeepingRecordTimesheetMonthlyQuery
 })
 
 export type DailyHousekeepingRecord = TypeOf<typeof DailyHousekeepingRecord>
@@ -124,9 +135,11 @@ export type DailyHousekeepingRecordGetQuery = TypeOf<typeof DailyHousekeepingRec
 export type HousekeepingRecordGetMonthlyQuery = TypeOf<typeof HousekeepingRecordGetMonthlyQuery>
 export type HousekeepingRecordGetByMonthParam = TypeOf<typeof HousekeepingRecordGetByMonthParam>
 export type DailyHousekeepingRecordTimesheetDailyQuery = TypeOf<typeof DailyHousekeepingRecordTimesheetDailyQuery>
+export type DailyHousekeepingRecordTimesheetMonthlyQuery = TypeOf<typeof DailyHousekeepingRecordTimesheetMonthlyQuery>
 export type DailyHousekeepingRecordCreateRequest = Request<{}, {}, DailyHousekeepingRecordCreateBody> & AuthRequest
 export type DailyHousekeepingRecordUpdateRequest = Request<{}, {}, DailyHousekeepingRecordUpdateBody> & AuthRequest
 export type DailyHousekeepingRecordGetRequest = Request<{}, {}, {}, DailyHousekeepingRecordGetQuery> & AuthRequest
 export type HousekeepingRecordGetMonthlyRequest = Request<{}, {}, {}, HousekeepingRecordGetMonthlyQuery> & AuthRequest
 export type HousekeepingRecordGetByMonthRequest = Request<HousekeepingRecordGetByMonthParam> & AuthRequest
 export type DailyHousekeepingRecordTimesheetDailyRequest = Request<{}, {}, {}, DailyHousekeepingRecordTimesheetDailyQuery> & AuthRequest
+export type DailyHousekeepingRecordTimesheetMonthlyRequest = Request<{}, {}, {}, DailyHousekeepingRecordTimesheetMonthlyQuery> & AuthRequest

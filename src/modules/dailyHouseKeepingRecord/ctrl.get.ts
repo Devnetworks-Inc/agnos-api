@@ -3,7 +3,7 @@ import resp from "objectify-response";
 import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
-import { DailyHousekeepingRecordGetRequest, DailyHousekeepingRecordTimesheetDailyRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
+import { DailyHousekeepingRecordGetRequest, DailyHousekeepingRecordTimesheetDailyRequest, DailyHousekeepingRecordTimesheetMonthlyRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
 import { subMonths, endOfDay, startOfDay, format  } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
@@ -139,6 +139,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
     prisma.employee.aggregate({
       where: {
         hotelId,
+        position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
         OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
       },
       _count: { id: true }
@@ -148,6 +149,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
         date: d,
         employee: {
           hotelId,
+          position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
           OR: [
             { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
             { user: null }
@@ -184,3 +186,70 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
 
   return resp(res, { ATR, ACR, RPE })
 }
+
+export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: DailyHousekeepingRecordTimesheetMonthlyRequest, res: Response) => {
+  const { role, currentHotelId } = req.auth!
+  let hotelId = currentHotelId ?? undefined
+
+  if (role !== 'agnos_admin') {
+    if (!currentHotelId) {
+      return resp(res, 'Unauthorized', 401)
+    }
+  } else {
+    hotelId = req.query.hotelId
+  }
+
+  const { yearMonth = format(new Date(), 'yyyy-MM')} = req.query
+  const [ year, month ] = yearMonth.split('-')
+
+  const [employees, workLogs, records] = await prisma.$transaction([
+      prisma.employee.aggregate({
+      where: {
+        hotelId,
+        position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+        OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
+      },
+      _count: { id: true }
+    }),
+    prisma.employee_work_log.findMany({
+      where: {
+        year: +year,
+        month: +month,
+        employee: {
+          hotelId,
+          position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+          OR: [
+            { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
+            { user: null }
+          ] 
+        },
+      },
+    }),
+    prisma.daily_housekeeping_record.aggregate({
+      _sum: { totalCleanedRooms: true }, 
+      where: {
+        year: +year,
+        month: +month,
+        hotelId
+      },
+    })
+  ])
+
+  let hours = new Prisma.Decimal(0)
+  let cost = new Prisma.Decimal(0)
+  const staff = employees._count.id ?? 0
+  const totalCleanedRooms = records._sum.totalCleanedRooms ?? 0
+
+  for (const log of workLogs) {
+    const { totalSeconds, salaryToday } = log
+    hours = hours.plus((totalSeconds ?? 0) / 3600).toDecimalPlaces(2)
+    cost = cost.plus(salaryToday)
+  }
+
+  const ATR = totalCleanedRooms ? (hours.dividedBy(totalCleanedRooms * 60).toDecimalPlaces(2)).toNumber() : 0
+  const ACR = totalCleanedRooms ? (cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2)).toNumber() : 0
+  const RPE = totalCleanedRooms ? +(staff / totalCleanedRooms).toFixed(2) : 0
+
+  return resp(res, { ATR, ACR, RPE })
+}
+
