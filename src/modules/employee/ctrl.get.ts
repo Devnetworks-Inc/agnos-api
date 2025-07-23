@@ -144,6 +144,7 @@ export const employeeGetWorkLogsController = async (
       lastName: true,
       rate: true,
       // status: true,
+      rateType: true,
       position: true,
       hotel: { select: { id: true, name: true } },
       user: { select: { role: true } },
@@ -198,6 +199,7 @@ export const employeeGetWorkLogsByMonthController = async (
         middleName: true,
         lastName: true,
         rate: true,
+        rateType: true,
         position: true,
         hotelId: true,
         hotel: { select: { name: true } }

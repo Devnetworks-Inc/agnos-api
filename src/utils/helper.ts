@@ -62,7 +62,7 @@ export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
     //   hourlyRate = rate.dividedBy(84); // 10 working days * 8.4 hours = 84 hours
     //   break;
     case 'monthly':
-      hourlyRate = rate.dividedBy(168); // 20 working days * 8.4 hours = 160 hours
+      hourlyRate = rate.dividedBy(168); // 20 working days * 8.4 hours = 168 hours
       break;
     default:
       throw new Error('Invalid rate type');
