@@ -4,7 +4,7 @@ import { validateToken } from "src/middlewares/validateToken"
 import { DailyHousekeepingRecordCreate, DailyHousekeepingRecordGet, DailyHousekeepingRecordTimesheetDaily, DailyHousekeepingRecordTimesheetMonthly, DailyHousekeepingRecordUpdate, MonthlyHousekeepingRecordGet } from "./schema"
 import { dailyHousekeepingRecordCreateController } from "./ctrl.post"
 import { dailyHousekeepingRecordApproveController, dailyHousekeepingRecordUpdateController } from "./ctrl.patch"
-import { dailyHousekeepingRecordGetController, dailyHousekeepingRecordGetByIdController, housekeepingRecordGetMonthlyController, dailyHousekeepingRecordTimesheetDailyController, dailyHousekeepingRecordTimesheetMonthlyController } from "./ctrl.get"
+import { dailyHousekeepingRecordGetController, dailyHousekeepingRecordGetByIdController, housekeepingRecordGetMonthlyController, dailyHousekeepingRecordTimesheetDailyController, dailyHousekeepingRecordTimesheetMonthlyController, houseKeepingRecordGetDailyKPIController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { dailyHousekeepingRecordDeleteController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -17,6 +17,7 @@ dailyHousekeepingRecordRouter
   .get('/monthly', validateRequest(MonthlyHousekeepingRecordGet), housekeepingRecordGetMonthlyController)
   .get('/timesheet-daily', validateRequest(DailyHousekeepingRecordTimesheetDaily), dailyHousekeepingRecordTimesheetDailyController)
   .get('/timesheet-monthly', validateRequest(DailyHousekeepingRecordTimesheetMonthly), dailyHousekeepingRecordTimesheetMonthlyController)
+  .get('/daily-kpi', validateRequest(DailyHousekeepingRecordGet), houseKeepingRecordGetDailyKPIController)
   .get('/:id', validateRequest(IdParamRequest), dailyHousekeepingRecordGetByIdController)
   .get('/', validateRequest(DailyHousekeepingRecordGet), dailyHousekeepingRecordGetController)
 

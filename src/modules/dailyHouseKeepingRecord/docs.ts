@@ -91,6 +91,28 @@ export function registerDailyHousekeepingRecordRoutes(registry: OpenAPIRegistry)
 
   registry.registerPath({
     method: "get",
+    path: dailyHousekeepingRecordBaseUrl+"/daily-kpi",
+    summary: "get daily ATR, ACR, RPE",
+    tags,
+    request: {
+      query: DailyHousekeepingRecordGetQuery
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Success", z.object({
+        ATR: z.number(),
+        ACR: z.number(),
+        RPE: z.number(),
+        year: z.number(),
+        month: z.number(),
+        day: z.number()
+      })),
+    },
+  });
+
+  registry.registerPath({
+    method: "get",
     path: dailyHousekeepingRecordBaseUrl+"/timesheet-monthly",
     summary: "get ATR, ACR, RPE for timesheet monthly",
     tags,

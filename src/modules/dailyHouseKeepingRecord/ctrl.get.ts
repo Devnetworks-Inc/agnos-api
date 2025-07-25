@@ -4,7 +4,7 @@ import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 import { DailyHousekeepingRecordGetRequest, DailyHousekeepingRecordTimesheetDailyRequest, DailyHousekeepingRecordTimesheetMonthlyRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
-import { subMonths, endOfDay, startOfDay, format  } from "date-fns";
+import { subMonths, endOfDay, startOfDay, format, addDays  } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 import { Prisma } from "@prisma/client";
@@ -253,3 +253,91 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
   return resp(res, { ATR, ACR, RPE })
 }
 
+export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekeepingRecordGetRequest, res: Response) => {
+  const { role, currentHotelId } = req.auth!
+  let hotelId = currentHotelId ?? undefined
+
+  if (role !== 'agnos_admin') {
+    if (!currentHotelId) {
+      return resp(res, 'Unauthorized', 401)
+    }
+  } else {
+    hotelId = req.query.hotelId
+  }
+
+  const today = new Date()
+
+  let { startDate, endDate } = req.query
+
+  const sDate = startDate ? new Date(startDate) : new Date(format(today, 'yyyy-MM-dd'))
+  const eDate = endDate ? new Date(endDate) : new Date(format(today, 'yyyy-MM-dd'))
+
+  const employees = await prisma.employee.findMany({
+    where: {
+      hotelId,
+      position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+      OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
+    },
+  })
+
+  const [workLogs, records] = await prisma.$transaction([
+    prisma.employee_work_log.groupBy({
+      by: ['date'],
+      _sum: { totalSeconds: true, salaryToday: true },
+      where: {
+        employeeId: { in: employees.map(e => e.id) },
+        date: { gte: sDate, lte: eDate }
+      },
+      orderBy: { date: 'asc' }
+    }),
+    prisma.daily_housekeeping_record.groupBy({
+      by: ['date'],
+      _sum: { totalCleanedRooms: true }, 
+      where: {
+        date: { gte: sDate, lte: eDate },
+        hotelId
+      },
+      orderBy: { date: 'asc' }
+    })
+  ])
+
+  const workLogsMapByDate = workLogs.reduce(
+    (acc, val) => acc.set(val.date.valueOf(), val),
+    new Map<number, typeof workLogs[0]>()
+  )
+
+  const recordsMapByDate = records.reduce(
+    (acc, val) => acc.set(val.date.valueOf(), val),
+    new Map<number, typeof records[0]>()
+  )
+
+  let dt = sDate
+  const dates = [dt]
+
+  // create array of dates up to end date
+  while (dt < eDate) {
+    dt = addDays(dt, 1)
+    dates.push(dt)
+  }
+
+  const noOfEmployees = employees.length
+
+  const response = dates.map(date => {
+    const [year, month, day] = date.toISOString().split('T')[0].split('-')
+    const dateValue = date.valueOf()
+    const workLog = workLogsMapByDate.get(dateValue)
+    const record = recordsMapByDate.get(dateValue)
+  
+    let hours = new Prisma.Decimal(workLog?._sum?.totalSeconds ?? 0).dividedBy(3600)
+    let cost = workLog?._sum?.salaryToday ?? new Prisma.Decimal(0)
+    const totalCleanedRooms = record?._sum?.totalCleanedRooms ?? 0
+
+    const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
+    const ACR = totalCleanedRooms ? (cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2)).toNumber() : 0
+    const RPE = totalCleanedRooms ? +(noOfEmployees / totalCleanedRooms).toFixed(2) : 0
+    
+    return { ATR, ACR, RPE, year: +year, month: +month, day: +day }
+  })
+
+  resp(res, response)
+}
