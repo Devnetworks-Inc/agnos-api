@@ -69,7 +69,7 @@ employeeRouter.get(
 
 employeeRouter.get(
   '/work-logs',
-  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'gouvernante']),
   validateRequest(EmployeeGetWorkLogs),
   employeeGetWorkLogsController
 )
