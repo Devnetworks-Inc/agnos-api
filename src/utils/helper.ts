@@ -2,6 +2,7 @@ import { Prisma, user_role } from "@prisma/client"
 import jwt from 'jsonwebtoken'
 import { Auth } from "src/modules/auth.schema";
 import { RateType } from "src/modules/employee/schema";
+import { lastDayOfMonth } from 'date-fns';
 
 export const createJwtToken = (data: Auth) => {
   const { id, username, role, currentHotelId, employeeId } = data
@@ -62,7 +63,12 @@ export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
     //   hourlyRate = rate.dividedBy(84); // 10 working days * 8.4 hours = 84 hours
     //   break;
     case 'monthly':
-      hourlyRate = rate.dividedBy(168); // 20 working days * 8.4 hours = 168 hours
+      const today = new Date()
+      const lasDayMonth = lastDayOfMonth(today);
+      const numberOfDays = lasDayMonth.getDate();
+      const monthHours = numberOfDays * 8.4;
+      hourlyRate = rate.dividedBy(monthHours);
+      // hourlyRate = rate.dividedBy(168); // 20 working days * 8.4 hours = 168 hours
       break;
     default:
       throw new Error('Invalid rate type');
