@@ -13,7 +13,7 @@ import {
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
-import { endOfDay, endOfMonth, startOfDay, startOfMonth } from "date-fns";
+import { endOfDay, endOfMonth, format, startOfDay, startOfMonth } from "date-fns";
 import { getTotalItemsEmployeeTimesheetQuery, paginatedEmployeeTimesheetQuery } from "./services";
 
 export const employeeGetController = async (
@@ -231,8 +231,17 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
   req: EmployeeGetWorkLogsByIdPaginatedRequest,
   res: Response
 ) => {
+  const today = new Date()
   const employeeId = +req.params.employeeId;
-  const { pageNumber, pageSize, startDate, endDate, includeTotalItems } = req.query;
+  const { pageNumber = 1, pageSize = 50, startDate = format(today, 'yyyy-MM-dd'), endDate = format(today, 'yyyy-MM-dd'), includeTotalItems } = req.query;
+
+  let month
+
+  const sMonth = startDate?.split('-')[1]
+  const eMonth = endDate?.split('-')[1]
+  if (sMonth === eMonth) {
+    month = +(sMonth || eMonth) 
+  }
 
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
@@ -243,15 +252,32 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
     return resp(res, "Employee not found", 404);
   }
 
-  const [items, totalItems] = await Promise.all([
+  const [items, totalItems, workLog] = await Promise.all([
     paginatedEmployeeTimesheetQuery(pageNumber, pageSize, employeeId, startDate, endDate),
+
     includeTotalItems === 'true' ?
       getTotalItemsEmployeeTimesheetQuery(employeeId, startDate, endDate) :
-      Promise.resolve()
+      Promise.resolve(),
+      
+    month ? prisma.employee_work_log.aggregate({
+      _sum: { totalSeconds: true },
+      where: { month }
+    }) : Promise.resolve(),
   ]);
+
+  const secondsPerHour = 3600
+  const noOvertimeHour = 168
+  const noOvertimeSeconds = noOvertimeHour * secondsPerHour
+  const secondsWork = (workLog?._sum.totalSeconds ?? 0)
+  let overtimeSeconds = 0
+
+  if (secondsWork > noOvertimeSeconds) {
+    overtimeSeconds = secondsWork - overtimeSeconds
+  }
 
   resp(res, {
     employee,
+    overtimeHour: +(overtimeSeconds / secondsPerHour).toFixed(2),
     items,
     totalItems,
     totalPages: totalItems && Math.ceil(totalItems / pageSize),

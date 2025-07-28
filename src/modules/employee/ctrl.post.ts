@@ -62,7 +62,7 @@ export const employeeCreateWorkLogController = async (
   let totalSeconds = 0
   let lastBreak: EmployeeBreakLogCreate | undefined
   let salaryToday: Prisma.Decimal | undefined
-  let hourlyRate = getHourlyRate(employee.rateType as RateType, employee.rate)
+  let hourlyRate = getHourlyRate(employee.rateType as RateType, employee.rate, checkInDate)
   let totalSecondsBreak = 0
 
   const details: EditWorkLogDetails | undefined = { 

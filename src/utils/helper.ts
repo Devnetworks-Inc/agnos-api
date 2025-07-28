@@ -44,7 +44,7 @@ export const isoStringToDatetime = (isoString: string) => {
   return `${date} ${time.slice(0, -1)}`
 }
 
-export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
+export const getHourlyRate = (rateType: RateType, rateAmount: number, date: Date) => {
   let rate = new Prisma.Decimal(rateAmount)
   let hourlyRate = rate;
 
@@ -63,8 +63,7 @@ export const getHourlyRate = (rateType: RateType, rateAmount: number) => {
     //   hourlyRate = rate.dividedBy(84); // 10 working days * 8.4 hours = 84 hours
     //   break;
     case 'monthly':
-      const today = new Date()
-      const lasDayMonth = lastDayOfMonth(today);
+      const lasDayMonth = lastDayOfMonth(date);
       const numberOfDays = lasDayMonth.getDate();
       const monthHours = numberOfDays * 8.4;
       hourlyRate = rate.dividedBy(monthHours);
