@@ -109,6 +109,12 @@ employeeRouter.patch(
 )
 
 employeeRouter.patch(
+  '/work-logs/monthly-recalculate',
+  authorizeRoles(['agnos_admin']),
+  employeeBreakStartEndController
+)
+
+employeeRouter.patch(
   '/work-logs',
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
   validateRequest(EmployeeWorkLogUpdate),

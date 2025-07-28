@@ -94,7 +94,7 @@ export const employeeCheckInOutController = async (
   }
 
   const { rate, rateType } = employee
-  const hourlyRate = getHourlyRate(rateType as RateType, rate)
+  const hourlyRate = getHourlyRate(rateType as RateType, rate, datetime)
 
   if (status === "check_in") {
     const [workLog] = await prisma.$transaction([
@@ -371,13 +371,12 @@ export const employeeUpdateWorkLogController = async (
   }
   rate = rate ?? workLog.rate
   rateType = rateType ?? workLog.rateType as RateType
+  const checkInDate = rCheckInDate ? new Date(rCheckInDate) : workLog.checkInDate
 
-  let hourlyRate = getHourlyRate(rateType, rate)
+  let hourlyRate = getHourlyRate(rateType, rate, checkInDate)
   let salaryToday: Prisma.Decimal | undefined
   let status: employee_status = 'checked_in'
   let hasUpdate = false
-
-  const checkInDate = rCheckInDate ? new Date(rCheckInDate) : workLog.checkInDate
 
   const checkOutDate =
     req.body.checkOutDate ? new Date(req.body.checkOutDate) :
@@ -628,4 +627,8 @@ export const employeeMidnightCheckoutController = async (req: Request, res: Resp
   const result = await checkoutMidnightQuery(yesterdayStart, yesterdayEnd)
 
   resp(res, `${result.count} employees was checked out`)
+}
+
+export const employeeMonthlyRateRecalculateController = async (req: Request, res: Response) => {
+
 }
