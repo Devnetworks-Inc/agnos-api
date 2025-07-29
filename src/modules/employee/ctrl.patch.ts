@@ -15,7 +15,7 @@ import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds, isEqual, secondsToHours, secondsToMinutes, startOfYesterday, endOfYesterday, isYesterday } from "date-fns";
 import { calculateSalary, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
-import { checkoutMidnightQuery } from "./services";
+import { checkoutMidnightQuery, recalculateMonthlyRateWorkLogsSalary } from "./services";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
@@ -630,5 +630,6 @@ export const employeeMidnightCheckoutController = async (req: Request, res: Resp
 }
 
 export const employeeMonthlyRateRecalculateController = async (req: Request, res: Response) => {
-
+  await recalculateMonthlyRateWorkLogsSalary()
+  return resp(res, 'Successfully recalculated monthly rate work logs')
 }
