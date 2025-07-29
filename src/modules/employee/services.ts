@@ -85,3 +85,15 @@ export const getTotalItemsEmployeeTimesheetQuery = async (employeeId: number, st
 
   return +result[0]?.totalItems.toString() || 0
 }
+
+export const recalculateMonthlyRateWorkLogsSalary = async () => {
+  await  prisma.$queryRawUnsafe(`SET SQL_SAFE_UPDATES = 0;`)
+
+  return prisma.$queryRawUnsafe(
+    `UPDATE ${db}.employee_work_log AS ewl
+    SET 
+      ewl.hourlyRate = ROUND( ewl.rate / (DAY(LAST_DAY(ewl.date)) * 8.4), 2),
+      ewl.salaryToday = ewl.hourlyRate * ROUND(ewl.totalSeconds / 3600, 2)
+    WHERE ewl.rateType = 'monthly' AND ewl.checkOutDate IS NOT NULL;`
+  )
+}

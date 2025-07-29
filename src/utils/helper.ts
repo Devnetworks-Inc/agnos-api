@@ -66,7 +66,7 @@ export const getHourlyRate = (rateType: RateType, rateAmount: number, date: Date
       const lasDayMonth = lastDayOfMonth(date);
       const numberOfDays = lasDayMonth.getDate();
       const monthHours = numberOfDays * 8.4;
-      hourlyRate = rate.dividedBy(monthHours);
+      hourlyRate = rate.dividedBy(monthHours).toDecimalPlaces(2);
       // hourlyRate = rate.dividedBy(168); // 20 working days * 8.4 hours = 168 hours
       break;
     default:

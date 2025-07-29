@@ -318,7 +318,7 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
     },
   });
 
-    registry.registerPath({
+  registry.registerPath({
     method: "patch",
     path: employeeBaseUrl+'/midnight-checkout',
     summary: "checkout employee in midnight",
@@ -331,6 +331,18 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
         workLog: EmployeeWorkLog
       }),)
     },
+  });
+
+  registry.registerPath({
+    method: "patch",
+    path: employeeBaseUrl+'/work-logs/monthly-recalculate',
+    summary: "recalculate monthly rate work logs salary",
+    tags,
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Success message", z.literal('Successfully recalculated monthly rate work logs'))
+    }
   });
 
   registry.registerPath({
