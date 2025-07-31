@@ -190,7 +190,7 @@ export const EmployeeUrlSubmit = z.object({
 })
 
 export const EmployeeGetWorkLogsQuery = z.object({
-  hotelId: z.number().optional(),
+  hotelId: z.coerce.number().optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional()
 })
