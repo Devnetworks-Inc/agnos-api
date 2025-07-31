@@ -233,7 +233,7 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
 ) => {
   const today = new Date()
   const employeeId = +req.params.employeeId;
-  const { pageNumber = 1, pageSize = 50, startDate = format(today, 'yyyy-MM-dd'), endDate = format(today, 'yyyy-MM-dd'), includeTotalItems } = req.query;
+  const { pageNumber = 1, pageSize = 50, startDate = format(today, 'yyyy-MM-dd'), endDate = format(today, 'yyyy-MM-dd'), includeTotalItems = 'true'} = req.query;
 
   let month
 
