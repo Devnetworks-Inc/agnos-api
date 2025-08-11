@@ -140,7 +140,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
       where: {
         hotelId,
         position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-        OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
+        // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
       },
       _count: { id: true }
     }),
@@ -150,10 +150,10 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
         employee: {
           hotelId,
           position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-          OR: [
-            { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
-            { user: null }
-          ] 
+          // OR: [
+          //   { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
+          //   { user: null }
+          // ] 
         },
       }
     }),
@@ -207,7 +207,7 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
       where: {
         hotelId,
         position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-        OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
+        // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
       },
       _count: { id: true }
     }),
@@ -218,10 +218,10 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
         employee: {
           hotelId,
           position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-          OR: [
-            { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
-            { user: null }
-          ] 
+          // OR: [
+          //   { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
+          //   { user: null }
+          // ] 
         },
       },
     }),
@@ -276,7 +276,7 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
     where: {
       hotelId,
       position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-      OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
+      // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
     },
   })
 
