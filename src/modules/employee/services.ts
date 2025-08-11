@@ -63,7 +63,7 @@ export const paginatedEmployeeTimesheetQuery = async (pageNumber: number, pageSi
     LEFT JOIN
       (SELECT * from ${db}.employee_work_log WHERE employeeId = ${employeeId}) AS ewl
     ON date_range.date = ewl.date
-    ORDER BY date_range.date DESC, ewl.checkInDate DESC
+    ORDER BY date_range.date ASC, ewl.checkInDate ASC
     LIMIT ${pageSize}
     OFFSET ${(pageNumber - 1) * pageSize};`
   )
