@@ -4,6 +4,10 @@ ALTER TABLE `user` DROP FOREIGN KEY `user_employeeId_fkey`;
 -- DropIndex
 DROP INDEX `user_employeeId_key` ON `user`;
 
+-- AlterTable
+ALTER TABLE `employee_work_log` ADD COLUMN `positionId` INTEGER NULL,
+    MODIFY `employeeId` INTEGER NULL;
+
 -- CreateTable
 CREATE TABLE `position` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
@@ -23,6 +27,9 @@ ALTER TABLE `position` ADD CONSTRAINT `position_employeeId_fkey` FOREIGN KEY (`e
 
 -- AddForeignKey
 ALTER TABLE `position` ADD CONSTRAINT `position_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `employee_work_log` ADD CONSTRAINT `employee_work_log_positionId_fkey` FOREIGN KEY (`positionId`) REFERENCES `position`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `user` ADD CONSTRAINT `user_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employee`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
