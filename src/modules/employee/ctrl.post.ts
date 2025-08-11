@@ -4,17 +4,22 @@ import prisma from "../prisma";
 import { EditWorkLogDetails, EmployeeBreakLogCreate, EmployeeCreateRequest, EmployeeCreateShareableUrlRequest, EmployeeWorkLogCreateRequest, RateType } from "./schema";
 import { nanoid } from "nanoid";
 import { employee_status, Prisma } from "@prisma/client";
-import { compareAsc, differenceInSeconds } from "date-fns";
+import { differenceInSeconds } from "date-fns";
 import { calculateSalary, getHourlyRate } from "src/utils/helper";
 
 export const employeeCreateController = async (req: EmployeeCreateRequest, res: Response, next: NextFunction) => {
-  const { hotelId } = req.body
+  const { hotelId, rate, rateType, position } = req.body
 
   const employee = await prisma.employee.create({
     data: {
       ...req.body,
       hotelId,
       status: "checked_out",
+      positions: {
+        create: {
+          rate, rateType, role: position
+        }
+      }
     }
   })
 

@@ -6,6 +6,8 @@ import { Id } from "../id/schema";
 
 export const RateType = z.enum(['hourly', 'daily', 'weekly', '15days', 'monthly'])
 
+export const Position = z.enum(['agnos_admin', 'hsk_manager', 'hsk_staff', 'hotel_manager', 'check_in_assistant', 'gouvernante', 'public_cleaner'])
+
 export const EmployeeWorkLog = z.object({
   id: z.number(),
   date: z.string().refine(
@@ -102,7 +104,7 @@ export const Employee = z.object({
   rateType: RateType,
   employmentType: z.string().optional(),
   rate: z.coerce.number(),
-  position: z.string().optional(),
+  position: Position,
   activity: z.string().optional(),
   job: z.string().optional(),
   profession: z.string().optional(),
