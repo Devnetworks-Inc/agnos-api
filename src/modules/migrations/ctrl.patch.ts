@@ -51,10 +51,10 @@ export const migrationUpdateContoller = async (req: Request & AuthRequest, res: 
     }
   }
 
-  const result = await prisma.position.createMany({
+  const positions = await prisma.position.createMany({
     data: positionData,
     skipDuplicates: true
   })
 
-  resp(res, `Updated ${result.count} positions`)
+  resp(res, `Created ${positions.count} positions`)
 }
