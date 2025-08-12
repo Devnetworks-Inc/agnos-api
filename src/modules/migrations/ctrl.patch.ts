@@ -3,6 +3,7 @@ import { AuthRequest } from "../auth.schema";
 import prisma from "../prisma";
 import { role } from "@prisma/client";
 import resp from "objectify-response";
+import { updateEmployeeWorkLogsPosition } from "./services";
 
 const ROLE = {
   'Admin': 'agnos_admin',
@@ -56,5 +57,10 @@ export const migrationUpdateContoller = async (req: Request & AuthRequest, res: 
     skipDuplicates: true
   })
 
-  resp(res, `Created ${positions.count} positions`)
+  const [workLogsCount, totalRowsUpdated] = await Promise.all([
+    prisma.employee_work_log.count(),
+    updateEmployeeWorkLogsPosition()
+  ])
+
+  resp(res, `Created ${positions.count} positions, Updated ${totalRowsUpdated} work logs of ${workLogsCount} total work logs`)
 }

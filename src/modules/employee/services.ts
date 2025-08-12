@@ -58,7 +58,7 @@ export const paginatedEmployeeTimesheetQuery = async (pageNumber: number, pageSi
       SELECT DATE_ADD(date, INTERVAL 1 DAY) FROM date_range WHERE date < '${endDateString}'
     )
     SELECT 
-      date_range.date, id, employeeId, checkInDate, checkOutDate, totalSeconds, status, hourlyRate, rate, rateType, salaryToday, comment, totalSecondsBreak
+      date_range.date, id, employeeId, checkInDate, checkOutDate, totalSeconds, status, hourlyRate, rate, rateType, salaryToday, comment, totalSecondsBreak, role
     FROM date_range
     LEFT JOIN
       (SELECT * from ${db}.employee_work_log WHERE employeeId = ${employeeId}) AS ewl
