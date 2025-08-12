@@ -98,7 +98,7 @@ model position {
   rate Float @default(0)
   rateType String @default("hourly")
 
-  employee employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   user user? @relation(fields: [userId], references: [id])
   workLogs employee_work_log[]
 
@@ -134,6 +134,7 @@ model employee_work_log {
   checkOutDate DateTime?
   totalSeconds Int?
   totalSecondsBreak Int?
+  role role?
   rate Float
   rateType String
   hourlyRate Decimal @db.Decimal(8,2)
@@ -143,7 +144,7 @@ model employee_work_log {
   month Int @db.UnsignedTinyInt // 1 as january - 12 as december
   comment String?
   employee employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  position position? @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  position position? @relation(fields: [positionId], references: [id])
 
   breaks employee_break_log[]
   editLogs employee_work_edit_log[]
