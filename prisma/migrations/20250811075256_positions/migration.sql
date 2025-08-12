@@ -5,8 +5,7 @@ ALTER TABLE `user` DROP FOREIGN KEY `user_employeeId_fkey`;
 DROP INDEX `user_employeeId_key` ON `user`;
 
 -- AlterTable
-ALTER TABLE `employee_work_log` ADD COLUMN `positionId` INTEGER NULL,
-    MODIFY `employeeId` INTEGER NULL;
+ALTER TABLE `employee_work_log` ADD COLUMN `positionId` INTEGER NULL;
 
 -- CreateTable
 CREATE TABLE `position` (

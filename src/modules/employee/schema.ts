@@ -14,7 +14,8 @@ export const EmployeeWorkLog = z.object({
     (v) => isMatch(v, 'yyyy-MM-dd'),
     { message: 'Date format must be "yyyy-MM-dd"' }
   ).openapi({ example: '2025-05-01' }),
-  employeeId: z.number(),
+  // employeeId: z.number(),
+  positionId: z.number(),
   checkInDate: z.string().datetime(),
   checkOutDate: z.string().datetime().nullable().optional(),
   totalSeconds: z.number().optional(),

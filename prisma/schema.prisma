@@ -128,7 +128,7 @@ model user {
 model employee_work_log {
   id Int @id @default(autoincrement())
   date DateTime
-  employeeId Int?
+  employeeId Int
   positionId Int?
   checkInDate DateTime
   checkOutDate DateTime?

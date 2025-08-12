@@ -46,7 +46,7 @@ export const employeeCreateWorkLogController = async (
   next: NextFunction
 ) => {
   const { id: userId } = req.auth!
-  let { breaks = [], employeeId, comment } = req.body;
+  let { breaks = [], positionId, comment } = req.body;
   let status: employee_status = 'checked_in'
 
   const date = req.body.date+"T00:00:00.000Z"
@@ -54,20 +54,25 @@ export const employeeCreateWorkLogController = async (
   const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
   const newBreaks: (EmployeeBreakLogCreate & { totalSeconds?: number })[] = []
 
-  const employee = await prisma.employee.findUnique({ where: { id: employeeId }, select: {
+  const employeePosition = await prisma.position.findUnique({ where: { id: positionId }, select: {
     rate: true,
     rateType: true,
-    workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
+    employee: { select: {
+      id: true,
+      workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
+    }}
   }})
 
-  if (!employee) {
-    return resp(res, 'Employee not found', 404)
+  if (!employeePosition) {
+    return resp(res, 'Employee Position not found', 404)
   }
+
+  const employee = employeePosition.employee!
 
   let totalSeconds = 0
   let lastBreak: EmployeeBreakLogCreate | undefined
   let salaryToday: Prisma.Decimal | undefined
-  let hourlyRate = getHourlyRate(employee.rateType as RateType, employee.rate, checkInDate)
+  let hourlyRate = getHourlyRate(employeePosition.rateType as RateType, employeePosition.rate, checkInDate)
   let totalSecondsBreak = 0
 
   const details: EditWorkLogDetails | undefined = { 
@@ -152,10 +157,11 @@ export const employeeCreateWorkLogController = async (
   const transaction: Prisma.PrismaPromise<any>[]  = [
     prisma.employee_work_log.create({
       data: {
-        employeeId,
+        employeeId: employee.id,
+        positionId,
         date,
-        rate: employee.rate,
-        rateType: employee.rateType,
+        rate: employeePosition.rate,
+        rateType: employeePosition.rateType,
         hourlyRate,
         salaryToday,
         month: +yearMonthDayArr[1],
@@ -186,7 +192,7 @@ export const employeeCreateWorkLogController = async (
   if (!lastCheckIn || lastCheckIn < checkInDate) {
     transaction.push(
       prisma.employee.update({
-        where: { id: employeeId },
+        where: { id: employee.id },
         data: {
           status,
         },
