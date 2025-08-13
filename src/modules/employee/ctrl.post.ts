@@ -54,9 +54,7 @@ export const employeeCreateWorkLogController = async (
   const checkOutDate = req.body.checkOutDate && new Date(req.body.checkOutDate)
   const newBreaks: (EmployeeBreakLogCreate & { totalSeconds?: number })[] = []
 
-  const employeePosition = await prisma.position.findUnique({ where: { id: positionId }, select: {
-    rate: true,
-    rateType: true,
+  const employeePosition = await prisma.position.findUnique({ where: { id: positionId }, include: {
     employee: { select: {
       id: true,
       workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
@@ -157,6 +155,7 @@ export const employeeCreateWorkLogController = async (
   const transaction: Prisma.PrismaPromise<any>[]  = [
     prisma.employee_work_log.create({
       data: {
+        role: employeePosition.role,
         employeeId: employee.id,
         positionId,
         date,

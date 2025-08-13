@@ -139,7 +139,8 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
     prisma.employee.aggregate({
       where: {
         hotelId,
-        position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+        positions: { some: { role: { in: ['hotel_manager', 'hsk_staff'] } } }
+        // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
         // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
       },
       _count: { id: true }
@@ -147,9 +148,10 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
     prisma.employee_work_log.findMany({
       where: {
         date: d,
+        role: { notIn: ['agnos_admin', 'hsk_manager', 'gouvernante', 'public_cleaner', 'check_in_assistant'] },
         employee: {
           hotelId,
-          position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+          // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
           // OR: [
           //   { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
           //   { user: null }
@@ -206,7 +208,8 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
       prisma.employee.aggregate({
       where: {
         hotelId,
-        position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+        positions: { some: { role: { in: ['hotel_manager', 'hsk_staff'] } } }
+        // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
         // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
       },
       _count: { id: true }
@@ -215,9 +218,10 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
       where: {
         year: +year,
         month: +month,
+        role: { in: ['hotel_manager', 'hsk_staff'] },
         employee: {
           hotelId,
-          position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+          // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
           // OR: [
           //   { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
           //   { user: null }
@@ -275,7 +279,8 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
   const employees = await prisma.employee.findMany({
     where: {
       hotelId,
-      position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+      positions: { some: { role: { in: ['hotel_manager', 'hsk_staff'] } } },
+      // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
       // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
     },
   })

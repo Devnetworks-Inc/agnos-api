@@ -9,13 +9,17 @@ export const getEmployeesWorkLogGroupByMonthYearHotel = async (startDate: Date, 
 
   const result = await prisma.$queryRawUnsafe(
     `SELECT
-      e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, e.position, sum(ewl.totalSeconds) as totalSeconds, sum(ewl.salaryToday) as cost
-    FROM ${db}.employee as e
+      e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, p.role, sum(ewl.totalSeconds) as totalSeconds, sum(ewl.salaryToday) as cost
+    FROM ${db}.position as p
+    LEFT JOIN
+      ${db}.employee as e
+    ON
+      p.employeeId = e.id
     LEFT JOIN 
       ( SELECT * FROM ${db}.employee_work_log WHERE date BETWEEN '${sd}' AND '${ed}' ) as ewl
     ON e.id = ewl.employeeId
     ${hotelId ? `WHERE e.hotelId=${hotelId}` : ''}
-    GROUP BY e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, e.position
+    GROUP BY e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, p.role
     ORDER BY year ASC, month ASC;`
   );
   return result
