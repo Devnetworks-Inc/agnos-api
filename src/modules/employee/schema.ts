@@ -48,11 +48,12 @@ export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
 })
 
 export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.partial().extend({
+  employeeId: z.number(),
   workLogId: z.number(),
   rate: z.number().optional(),
   rateType: RateType.optional(),
   comment: z.string()
-}).omit({ date: true })
+}).omit({ date: true, positionId: true })
 
 export const EmployeeWorkLogCreate = z.object({
   body: EmployeeWorkLogCreateBody
@@ -153,6 +154,7 @@ export const EmployeeGetByUrl = z.object({
 
 export const EmployeeCheckInOutBody = z.object({
   id: z.number(),
+  positionId: z.number().optional(),
   status: z.enum(['check_in', 'check_out']),
   date: z.string().refine(
     (v) => isMatch(v, 'yyyy-MM-dd'),
