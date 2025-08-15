@@ -23,3 +23,22 @@ export const employeeDeleteController = (req: Request<IdParam> & AuthRequest, re
     next(e)
   })
 }
+
+export const employeeDeletePositionController = (req: Request<IdParam> & AuthRequest, res: Response, next: NextFunction) => {
+  prisma.position.delete({ where: { id: +req.params.id }})
+  .then(() => {
+    resp(res, 'Employee Position has been deleted')
+  })
+  .catch(e => {
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === 'P2025') {
+        return resp(
+          res,
+          'Record to delete does not exist.',
+          400
+        )
+      }
+    }
+    next(e)
+  })
+}

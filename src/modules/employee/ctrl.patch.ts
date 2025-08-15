@@ -15,14 +15,13 @@ import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds, isEqual, secondsToHours, secondsToMinutes, startOfYesterday, endOfYesterday, isYesterday } from "date-fns";
 import { calculateSalary, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
-import { checkoutMidnightQuery, recalculateMonthlyRateWorkLogsSalary } from "./services";
+import { checkoutMidnightQuery, recalculateMonthlyRateWorkLogsSalary, upsertPositions } from "./services";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
   res: Response,
-  next: NextFunction
 ) => {
-  const { id } = req.body;
+  const { id, positions, ...data } = req.body;
   const { role, currentHotelId } = req.auth!
 
   if (role !== 'agnos_admin' && !currentHotelId)
@@ -30,24 +29,24 @@ export const employeeUpdateController = async (
 
   const hotelId = currentHotelId ?? undefined
 
-  prisma.employee
+  const employee = prisma.employee.findUnique({ where: { id } })
+
+  if (!employee) {
+    return resp(res, "Employee to update does not exist.", 400);
+  }
+
+  if (positions) {
+    await upsertPositions(positions, id)
+  }
+
+  const updatedEmployee =  await prisma.employee
     .update({
       where: { id, hotelId },
-      data: {
-        ...req.body,
-      },
+      data,
+      include: { positions: true }
     })
-    .then((employee) => {
-      resp(res, employee);
-    })
-    .catch((e) => {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2025") {
-          return resp(res, "Record to update does not exist.", 400);
-        }
-      }
-      next(e);
-    });
+
+  resp(res, updatedEmployee);
 };
 
 export const employeeCheckInOutController = async (

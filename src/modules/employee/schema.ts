@@ -103,10 +103,17 @@ export const Employee = z.object({
   bankAccount: z.string().optional(),
   iban: z.string().optional(),
   hiredDate: z.string().datetime().optional(),
-  rateType: RateType,
+  // rateType: RateType,
   employmentType: z.string().optional(),
-  rate: z.coerce.number(),
-  position: Position,
+  // rate: z.coerce.number(),
+  // position: Position,
+  positions: z.array(z.object({
+    id: z.number().optional(),
+    userId: z.number().optional(),
+    role: Position,
+    rateType: RateType,
+    rate: z.coerce.number(),
+  })),
   activity: z.string().optional(),
   job: z.string().optional(),
   profession: z.string().optional(),
@@ -186,7 +193,7 @@ export const EmployeeCreateShareableUrl = z.object({
   body: EmployeeCreateShareableUrlBody
 })
 
-export const EmployeeUrlSubmitBody = EmployeeCreateBody.omit({ hotelId: true }).extend({
+export const EmployeeUrlSubmitBody = EmployeeCreateBody.omit({ hotelId: true, positions: true }).extend({
   shareableUrl: z.string(),
 })
 

@@ -359,6 +359,21 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
       200: successJsonResponse("Success Message", z.literal('Employee has been deleted')),
     },
   });
+  
+    registry.registerPath({
+    method: "delete",
+    path: employeeBaseUrl+"position/{id}",
+    summary: "delete employee position by position id",
+    tags,
+    request: {
+      params: IdParam,
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Success Message", z.literal('Employee Position has been deleted')),
+    },
+  });
 
   return registry;
 }

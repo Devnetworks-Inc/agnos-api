@@ -1,6 +1,7 @@
 import { isoStringRemoveTime, isoStringToDatetime } from "src/utils/helper";
 import prisma from "../prisma";
-import { employee_work_log, Prisma, PrismaPromise } from "@prisma/client";
+import { PrismaPromise } from "@prisma/client";
+import { Employee } from "./schema";
 const db = process.env.DATABASE_NAME
 
 export const getEmployeesWorkLogGroupByMonthYearHotel = async (startDate: Date, endDate: Date, hotelId?: number | null) => {
@@ -99,5 +100,15 @@ export const recalculateMonthlyRateWorkLogsSalary = async () => {
       ewl.hourlyRate = ROUND( ewl.rate / (DAY(LAST_DAY(ewl.date)) * 8.4), 2),
       ewl.salaryToday = ewl.hourlyRate * ROUND(ewl.totalSeconds / 3600, 2)
     WHERE ewl.rateType = 'monthly' AND ewl.checkOutDate IS NOT NULL;`
+  )
+}
+
+export const upsertPositions = (positions: Employee['positions'], employeeId: number) => {
+  return prisma.$queryRawUnsafe(
+    `REPLACE INTO ${db}.position (id, userId, employeeId, role, rate, rateType)
+    VALUES 
+      ${positions.map(p => {
+        return `(${p.id ?? null}, ${p.userId ?? null}, ${employeeId}, '${p.role}', '${p.rate}', '${p.rateType}')`
+      }).join(', ')};`
   )
 }
