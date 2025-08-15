@@ -6,7 +6,7 @@ import { employeeCreateController, employeeCreateShareableUrlController, employe
 import { employeeBreakStartEndController, employeeCheckInOutController, employeeMidnightCheckoutController, employeeMonthlyRateRecalculateController, employeeUpdateController, employeeUpdateWorkLogCommentController, employeeUpdateWorkLogController, employeeUrlSubmitController } from "./ctrl.patch"
 import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController, employeeGetWorkLogsByIdPaginatedController, employeeGetWorkLogsSummaryDailyController, employeeGetWorkLogEditLogsController, employeeGetWorkLogsByMonthController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
-import { employeeDeleteController } from "./ctrl.delete"
+import { employeeDeleteController, employeeDeletePositionController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
 
 const employeeRouter = Router()
@@ -133,6 +133,13 @@ employeeRouter.delete(
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
   validateRequest(IdParamRequest),
   employeeDeleteController
+)
+
+employeeRouter.delete(
+  '/position/:id',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager']),
+  validateRequest(IdParamRequest),
+  employeeDeletePositionController
 )
 
 export default employeeRouter

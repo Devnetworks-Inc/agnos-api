@@ -8,7 +8,7 @@ import { differenceInSeconds } from "date-fns";
 import { calculateSalary, getHourlyRate } from "src/utils/helper";
 
 export const employeeCreateController = async (req: EmployeeCreateRequest, res: Response, next: NextFunction) => {
-  const { hotelId, rate, rateType, position } = req.body
+  const { hotelId, positions } = req.body
 
   const employee = await prisma.employee.create({
     data: {
@@ -16,9 +16,7 @@ export const employeeCreateController = async (req: EmployeeCreateRequest, res: 
       hotelId,
       status: "checked_out",
       positions: {
-        create: {
-          rate, rateType, role: position
-        }
+        create: positions
       }
     }
   })
