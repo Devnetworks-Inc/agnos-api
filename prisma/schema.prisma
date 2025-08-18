@@ -97,6 +97,8 @@ model position {
   role role
   rate Float @default(0)
   rateType String @default("hourly")
+  overtimeRate Float?
+  minimumWeeklyHours Int?
 
   employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   user user? @relation(fields: [userId], references: [id])
@@ -139,6 +141,9 @@ model employee_work_log {
   rateType String
   hourlyRate Decimal @db.Decimal(8,2)
   salaryToday Decimal @db.Decimal(10,2) @default(0)
+  overtimeRate Float?
+  overtimeSeconds Int?
+
   status employee_status @default(checked_out)
   year Int @db.UnsignedSmallInt
   month Int @db.UnsignedTinyInt // 1 as january - 12 as december

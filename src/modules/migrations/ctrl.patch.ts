@@ -24,7 +24,9 @@ export const migrationUpdateContoller = async (req: Request & AuthRequest, res: 
       position: true,
       rate: true,
       rateType: true,
-      user: true
+      user: true,
+      minimumWeeklyHours: true,
+      overtimeRate: true,
     }
   })
 
@@ -33,20 +35,24 @@ export const migrationUpdateContoller = async (req: Request & AuthRequest, res: 
     userId?: number,
     role: role,
     rate: number,
-    rateType: string
+    rateType: string,
+    minimumWeeklyHours?: number | null,
+    overtimeRate?: number | null,
   }[] = []
   
   for (const employee of employees) {
-    const { position, id, user, rate, rateType } = employee
+    const { position, id, user, rate, rateType, minimumWeeklyHours, overtimeRate } = employee
     const userId = user.length ? user[0].id : undefined
 
     if (ROLE[position as RoleKey]) {
       const data = {
-        employeeId: employee.id,
+        employeeId: id,
         userId,
         role: ROLE[position as RoleKey] as role,
         rate,
-        rateType
+        rateType,
+        minimumWeeklyHours,
+        overtimeRate,
       }
       positionData.push(data)
     }
