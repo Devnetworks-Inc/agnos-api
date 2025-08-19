@@ -362,7 +362,7 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
   
     registry.registerPath({
     method: "delete",
-    path: employeeBaseUrl+"position/{id}",
+    path: employeeBaseUrl+"/position/{id}",
     summary: "delete employee position by position id",
     tags,
     request: {

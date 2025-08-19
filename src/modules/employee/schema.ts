@@ -109,11 +109,13 @@ export const Employee = z.object({
   // position: Position,
   positions: z.array(z.object({
     id: z.number().optional(),
-    userId: z.number().optional(),
+    userId: z.number().nullable().optional(),
     role: Position,
     rateType: RateType,
     rate: z.coerce.number(),
-  })),
+    minimumWeeklyHours: z.coerce.number().nullable().optional(),
+    overtimeRate: z.coerce.number().nullable().optional()
+  })).min(1, { message: "Employee must have at least 1 position" }),
   activity: z.string().optional(),
   job: z.string().optional(),
   profession: z.string().optional(),
@@ -123,8 +125,8 @@ export const Employee = z.object({
   hotelId: z.coerce.number(),  // Single hotel ID
   shareableUrl: z.string().optional(),
   urlExpiryDate: z.string().datetime().optional(),
-  minimumWeeklyHours: z.coerce.number().nullable().optional(),
-  overtimeRate: z.coerce.number().nullable().optional()
+  // minimumWeeklyHours: z.coerce.number().nullable().optional(),
+  // overtimeRate: z.coerce.number().nullable().optional()
 });
 
 export const EmployeeCreateBody = Employee.omit({ id: true, shareableUrl: true, urlExpiryDate: true }).extend({
