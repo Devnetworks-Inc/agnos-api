@@ -19,7 +19,8 @@ export const userLoginController = async (req: LoginRequest, res: Response) => {
       password: true,
       role: true,
       currentHotelId: true,
-      employeeId: true
+      // employeeId: true,
+      position: true
     }
   })
 
@@ -27,18 +28,19 @@ export const userLoginController = async (req: LoginRequest, res: Response) => {
     return resp(res, 'Invalid username or password', 401)
   }
 
-  if (user.role !== 'agnos_admin' && !user.employeeId) {
-    return resp(res, 'Unauthorized', 401)
+  if (user.role !== 'agnos_admin' && !user.position) {
+    return resp(res, 'Unauthorized. User has no position', 401)
   }
 
-  if (user.role !== 'agnos_admin' && !user.currentHotelId && user.employeeId) {
+  if (user.role !== 'agnos_admin' && !user.currentHotelId && user.position) {
     const hotel = await prisma.hotel.findFirst({
-      where: { employees: { some: { id: user.employeeId } } }
+      where: { employees: { some: { id: user.position.employeeId } } }
     })
     if (!hotel) {
       return resp(res, 'Unauthorized', 401)
     }
     user.currentHotelId = hotel.id
+    user.role = user.position.role
   }
 
   const { password: p, ...rest } = user
@@ -50,11 +52,7 @@ export const userLoginController = async (req: LoginRequest, res: Response) => {
 };
 
 export const userCreateController = async (req: UserCreateRequest, res: Response, next: NextFunction) => {
-  const { password, employeeId, role } = req.body
-
-  if (role !== 'agnos_admin' && !employeeId) {
-    return resp(res, 'Employee Id is required', 400)
-  }
+  const { password, positionId, username } = req.body
 
   // const existingUser = await prisma.user.findUnique({
   //   where: { employeeId }
@@ -64,10 +62,31 @@ export const userCreateController = async (req: UserCreateRequest, res: Response
   //   return resp(res, 'A user with this employee already exists', 400);
   // }  
 
-  prisma.user.create({
+  const position = await prisma.position.findUnique({
+    where: { id: positionId },
+    include: { employee: { select: { hotelId: true } } }
+  }) 
+
+  if (!position) {
+    return resp(res, 'Employee position not found', 404)
+  }
+
+  if (position.userId) {
+    return resp(res, 'Employee with this position already has a user account', 400);
+  }
+
+  prisma.position.update({
+    where: { id: positionId },
     data: {
-      ...req.body,
-      password: encrypt(password),
+      user: {
+        create: {
+          username,
+          role: position.role,
+          currentHotelId: position.employee.hotelId,
+          employeeId: position.employeeId,
+          password: encrypt(password),
+        }
+      }
     }
   })
   .then((user) => {

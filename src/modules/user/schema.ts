@@ -14,10 +14,10 @@ export const UserRole = z.enum([
 
 export const User = z.object({
   id: z.number(),
-  employeeId: z.number().optional(),
+  positionId: z.number(),
   username: z.string(),
   password: z.string(),
-  role: UserRole
+  // role: UserRole
 })
 
 export const LoginBody = z.object({

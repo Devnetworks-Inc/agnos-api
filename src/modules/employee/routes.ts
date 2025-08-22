@@ -4,7 +4,7 @@ import { validateToken } from "src/middlewares/validateToken"
 import { EmployeeBreakStartEnd, EmployeeCheckInOut, EmployeeCreate, EmployeeCreateShareableUrl, EmployeeGet, EmployeeGetWorkLogs, EmployeeGetByUrl, EmployeeUpdate, EmployeeUrlSubmit, EmployeeWorkLogCreate, EmployeeWorkLogUpdate, EmployeeGetWorkLogsByIdPaginated, EmployeeGetWorkLogsByHotelIdSummaryDaily, EmployeeGetWorkLogEditLogs, EmployeeWorkLogComment, EmployeeGetWorkLogsByMonth } from "./schema"
 import { employeeCreateController, employeeCreateShareableUrlController, employeeCreateWorkLogController } from "./ctrl.post"
 import { employeeBreakStartEndController, employeeCheckInOutController, employeeMidnightCheckoutController, employeeMonthlyRateRecalculateController, employeeUpdateController, employeeUpdateWorkLogCommentController, employeeUpdateWorkLogController, employeeUrlSubmitController } from "./ctrl.patch"
-import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController, employeeGetWorkLogsByIdPaginatedController, employeeGetWorkLogsSummaryDailyController, employeeGetWorkLogEditLogsController, employeeGetWorkLogsByMonthController } from "./ctrl.get"
+import { employeeGetWorkLogsController, employeeGetByIdController, employeeGetByUrlController, employeeGetController, employeeGetWorkLogsByIdPaginatedController, employeeGetWorkLogsSummaryDailyController, employeeGetWorkLogEditLogsController, employeeGetWorkLogsByMonthController, employeeGetAsOptionsController } from "./ctrl.get"
 import { IdParamRequest } from "../id/schema"
 import { employeeDeleteController, employeeDeletePositionController } from "./ctrl.delete"
 import { authorizeRoles } from "src/middlewares/authorization"
@@ -72,6 +72,12 @@ employeeRouter.get(
   authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'gouvernante']),
   validateRequest(EmployeeGetWorkLogs),
   employeeGetWorkLogsController
+)
+
+employeeRouter.get(
+  '/as-options',
+  authorizeRoles(['agnos_admin', 'hsk_manager', 'hotel_manager', 'gouvernante']),
+  employeeGetAsOptionsController
 )
 
 employeeRouter.get(
