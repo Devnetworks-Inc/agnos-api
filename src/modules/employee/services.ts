@@ -105,10 +105,10 @@ export const recalculateMonthlyRateWorkLogsSalary = async () => {
 
 export const upsertPositions = (positions: Employee['positions'], employeeId: number) => {
   return prisma.$queryRawUnsafe(
-    `REPLACE INTO ${db}.position (id, userId, employeeId, role, rate, rateType)
+    `REPLACE INTO ${db}.position (id, userId, employeeId, role, rate, rateType, minimumWeeklyHours, overtimeRate)
     VALUES 
       ${positions.map(p => {
-        return `(${p.id ?? null}, ${p.userId ?? null}, ${employeeId}, '${p.role}', '${p.rate}', '${p.rateType}')`
+        return `(${p.id ?? null}, ${p.userId ?? null}, ${employeeId}, '${p.role}', ${p.rate}, '${p.rateType}', ${p.minimumWeeklyHours ?? null}, ${p.overtimeRate ?? null})`
       }).join(', ')};`
   )
 }

@@ -1,5 +1,14 @@
 import { Request } from "express";
 import { TypeOf, z } from "zod";
+import { Id } from "../id/schema";
+
+export const HotelIdParam = z.object({
+  hotelId: Id
+})
+
+export const HotelIdParamRequest = z.object({
+  params: HotelIdParam
+})
 
 export const Hotel = z.object({
   id: z.number(),
@@ -25,6 +34,7 @@ export const HotelUpdate = z.object({
   body: HotelUpdateBody
 })
 
+export type HotelIdParam = TypeOf<typeof HotelIdParam>
 export type Hotel = TypeOf<typeof Hotel>
 export type HotelCreateBody = TypeOf<typeof HotelCreateBody>
 export type HotelUpdateBody = TypeOf<typeof HotelUpdateBody>

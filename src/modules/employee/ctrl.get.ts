@@ -9,6 +9,7 @@ import {
   EmployeeGetWorkLogsByHotelIdSummaryDailyRequest,
   EmployeeGetWorkLogEditLogsRequest,
   EmployeeGetWorkLogsByMonthRequest,
+  EmployeeGetAsOptionsRequest,
 } from "./schema";
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
@@ -387,3 +388,47 @@ export const employeeGetWorkLogEditLogsController = async (
   });
   resp(res, logs);
 };
+
+export const employeeGetAsOptionsController = async (req: EmployeeGetAsOptionsRequest, res: Response) => {
+  const { role, currentHotelId } = req.auth!
+  const { includePositionId } = req.query
+
+  let hotelId = currentHotelId ?? undefined
+
+   if (role !== "agnos_admin" && role !== "hsk_manager") {
+    if (!hotelId) {
+      return resp(res, "Unauthorized", 401);
+    }
+  }
+
+  const employeeOR: Prisma.employeeWhereInput[] = [
+    { positions: { some: { userId: null } } }
+  ]
+
+  const positionsOR: Prisma.positionWhereInput[] = [{ userId: null }]
+
+  if (includePositionId) {
+    const where: Prisma.employeeWhereInput = {}
+    const positions = { some: { id: +includePositionId } } 
+    where.positions = positions
+    employeeOR.push(where)
+  }
+
+  if (includePositionId) {
+    positionsOR.push({ id: +includePositionId })
+  }
+
+  const options = await prisma.employee.findMany({
+    where: {
+      OR: employeeOR,
+      hotelId
+    },
+    select: {
+      id: true,
+      firstName: true, middleName: true, lastName: true,
+      positions: { where: { OR: positionsOR } }
+    }
+  })
+
+  return resp(res, options)
+}
