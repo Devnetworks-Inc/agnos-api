@@ -291,7 +291,10 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
 
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
-    include: { hotel: { select: { name: true } } },
+    include: {
+      hotel: { select: { name: true } },
+      positions: { select: { role: true } }
+    },
   });
 
   if (!employee) {
