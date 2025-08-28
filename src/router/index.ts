@@ -9,6 +9,8 @@ import serviceEntryRouter from "src/modules/seriviceEntry/routes"
 import serviceRouter from "src/modules/service/routes"
 import userRouter from "src/modules/user/routes"
 import webauthnRouter from "src/modules/webAuthn/routes"
+import { migrationBaseUrl } from "src/modules/migrations/docs"
+import migrationRouter from "src/modules/migrations/routes"
 
 const router = Router()
 
@@ -39,8 +41,7 @@ export const hotelServiceBaseUrl = '/hotel-services'
 router.use(base+hotelServiceBaseUrl, hotelServiceRouter)
 
 router.use(base+fileBaseUrl, fileRouter)
-
-
+router.use(base+migrationBaseUrl, migrationRouter)
 router.use(base, webauthnRouter)
 
 export default router

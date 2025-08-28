@@ -6,13 +6,16 @@ import { Id } from "../id/schema";
 
 export const RateType = z.enum(['hourly', 'daily', 'weekly', '15days', 'monthly'])
 
+export const Position = z.enum(['agnos_admin', 'hsk_manager', 'hsk_staff', 'hotel_manager', 'check_in_assistant', 'gouvernante', 'public_cleaner'])
+
 export const EmployeeWorkLog = z.object({
   id: z.number(),
   date: z.string().refine(
     (v) => isMatch(v, 'yyyy-MM-dd'),
     { message: 'Date format must be "yyyy-MM-dd"' }
   ).openapi({ example: '2025-05-01' }),
-  employeeId: z.number(),
+  // employeeId: z.number(),
+  positionId: z.number(),
   checkInDate: z.string().datetime(),
   checkOutDate: z.string().datetime().nullable().optional(),
   totalSeconds: z.number().optional(),
@@ -45,11 +48,12 @@ export const EmployeeWorkLogCreateBody = EmployeeWorkLog.omit({
 })
 
 export const EmployeeWorkLogUpdateBody = EmployeeWorkLogCreateBody.partial().extend({
+  employeeId: z.number(),
   workLogId: z.number(),
   rate: z.number().optional(),
   rateType: RateType.optional(),
   comment: z.string()
-}).omit({ date: true })
+}).omit({ date: true, positionId: true })
 
 export const EmployeeWorkLogCreate = z.object({
   body: EmployeeWorkLogCreateBody
@@ -99,10 +103,19 @@ export const Employee = z.object({
   bankAccount: z.string().optional(),
   iban: z.string().optional(),
   hiredDate: z.string().datetime().optional(),
-  rateType: RateType,
+  // rateType: RateType,
   employmentType: z.string().optional(),
-  rate: z.coerce.number(),
-  position: z.string().optional(),
+  // rate: z.coerce.number(),
+  // position: Position,
+  positions: z.array(z.object({
+    id: z.number().optional(),
+    userId: z.number().nullable().optional(),
+    role: Position,
+    rateType: RateType,
+    rate: z.coerce.number(),
+    minimumWeeklyHours: z.coerce.number().nullable().optional(),
+    overtimeRate: z.coerce.number().nullable().optional()
+  })).min(1, { message: "Employee must have at least 1 position" }),
   activity: z.string().optional(),
   job: z.string().optional(),
   profession: z.string().optional(),
@@ -112,8 +125,8 @@ export const Employee = z.object({
   hotelId: z.coerce.number(),  // Single hotel ID
   shareableUrl: z.string().optional(),
   urlExpiryDate: z.string().datetime().optional(),
-  minimumWeeklyHours: z.coerce.number().nullable().optional(),
-  overtimeRate: z.coerce.number().nullable().optional()
+  // minimumWeeklyHours: z.coerce.number().nullable().optional(),
+  // overtimeRate: z.coerce.number().nullable().optional()
 });
 
 export const EmployeeCreateBody = Employee.omit({ id: true, shareableUrl: true, urlExpiryDate: true }).extend({
@@ -150,6 +163,7 @@ export const EmployeeGetByUrl = z.object({
 
 export const EmployeeCheckInOutBody = z.object({
   id: z.number(),
+  positionId: z.number().optional(),
   status: z.enum(['check_in', 'check_out']),
   date: z.string().refine(
     (v) => isMatch(v, 'yyyy-MM-dd'),
@@ -181,7 +195,7 @@ export const EmployeeCreateShareableUrl = z.object({
   body: EmployeeCreateShareableUrlBody
 })
 
-export const EmployeeUrlSubmitBody = EmployeeCreateBody.omit({ hotelId: true }).extend({
+export const EmployeeUrlSubmitBody = EmployeeCreateBody.omit({ hotelId: true, positions: true }).extend({
   shareableUrl: z.string(),
 })
 
@@ -263,6 +277,14 @@ export const EmployeeGetWorkLogsByMonth = z.object({
   query: EmployeeGetWorkLogsByMonthQuery
 })
 
+export const EmployeeGetAsOptionsQuery = z.object({
+  includePositionId: z.coerce.number().optional(),
+})
+
+export const EmployeeGetAsOptions = z.object({
+  query: EmployeeGetAsOptionsQuery
+})
+
 export type RateType = TypeOf<typeof RateType>;
 export type Employee = TypeOf<typeof Employee>;
 export type EmployeeCreateBody = TypeOf<typeof EmployeeCreateBody>;
@@ -285,6 +307,7 @@ export type EmployeeGetWorkLogsByIdPaginatedQuery = TypeOf<typeof EmployeeGetWor
 export type EmployeeWorkLogCommentBody = TypeOf<typeof EmployeeWorkLogCommentBody>;
 export type EmployeeGetWorkLogEditLogsParam = TypeOf<typeof EmployeeGetWorkLogEditLogsParam>;
 export type EmployeeGetWorkLogsByMonthQuery = TypeOf<typeof EmployeeGetWorkLogsByMonthQuery>;
+export type EmployeeGetAsOptionsQuery = TypeOf<typeof EmployeeGetAsOptionsQuery>;
 export type EmployeeCreateRequest = Request<{}, {}, EmployeeCreateBody> & AuthRequest;
 export type EmployeeUpdateRequest = Request<{}, {}, EmployeeUpdateBody> & AuthRequest;
 export type EmployeeGetRequest = Request<{}, {}, {}, EmployeeGetQuery> & AuthRequest;
@@ -299,6 +322,7 @@ export type EmployeeGetWorkLogsByHotelIdSummaryDailyRequest = Request<EmployeeGe
 export type EmployeeWorkLogCommentRequest = Request<{}, {}, EmployeeWorkLogCommentBody> & AuthRequest;
 export type EmployeeGetWorkLogEditLogsRequest = Request<EmployeeGetWorkLogEditLogsParam> & AuthRequest;
 export type EmployeeGetWorkLogsByMonthRequest = Request<{}, {}, {}, EmployeeGetWorkLogsByMonthQuery> & AuthRequest;
+export type EmployeeGetAsOptionsRequest = Request<{}, {}, {}, EmployeeGetAsOptionsQuery> & AuthRequest;
 
 export type EmployeeGetByUrlRequest = Request<EmployeeGetByUrlParam>
 export type EmployeeUrlSubmitRequest = Request<{}, {}, EmployeeUrlSubmitBody>;

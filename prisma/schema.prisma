@@ -41,7 +41,7 @@ model employee {
   religion String @default("") // Konfession
   civilStatus String @default("") // Zivilstand
   nationality String @default("") // Nationalität
-  children Json @default("[]") // Kinder 
+  children Json @default("[]") // Kinder
   mobileNumber String @default("") // Mobile
   telephoneNumber String @default("") // Telefon
   email String @default("")
@@ -56,14 +56,17 @@ model employee {
   bankAccount String @default("")
   iban String @default("")
   hiredDate DateTime? @db.Date
-  rateType String @default("hourly")
   employmentType String @default("")
+
+  // deprecated
+  rateType String @default("hourly")
+  // deprecated
   rate Float @default(0)
-  
   // status is deprecated
   status employee_status @default(checked_out)
 
   position String @default("")
+  positions position[]
   activity String @default("") // Tätigkeit
   job String @default("") // Beschäftigung
   profession String @default("") // Beruf
@@ -79,7 +82,7 @@ model employee {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  user user?
+  user user[]
   hotelId Int  // Employee belongs to a single hotel
   workLog employee_work_log[]
   hotel hotel @relation(fields: [hotelId], references: [id])
@@ -87,12 +90,29 @@ model employee {
   profilePic file? @relation(fields: [profilePicId], references: [id])
 }
 
+model position {
+  id Int @id @default(autoincrement())
+  employeeId Int
+  userId Int? @unique
+  role role
+  rate Float @default(0)
+  rateType String @default("hourly")
+  overtimeRate Float?
+  minimumWeeklyHours Int?
+
+  employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  user user? @relation(fields: [userId], references: [id])
+  workLogs employee_work_log[]
+
+  @@unique([employeeId, role])
+}
+
 model user {
   id Int @id @default(autoincrement())
-  employeeId Int? @unique
+  employeeId Int?
   username String @unique
   password String
-  role user_role
+  role role
   currentHotelId Int?
 
   createdAt DateTime  @default(now())
@@ -103,25 +123,34 @@ model user {
   hskManagerHousekeepingRecords daily_housekeeping_record[] @relation("HskManagerRecords")
   hotelManagerHousekeepingRecords daily_housekeeping_record[] @relation("HotelManagerRecords")
   editedWorkLogs employee_work_edit_log[]
+  // position position? @relation(fields: [positionId], references: [id])
+  position position?
 }
 
 model employee_work_log {
   id Int @id @default(autoincrement())
   date DateTime
   employeeId Int
+  positionId Int?
   checkInDate DateTime
   checkOutDate DateTime?
   totalSeconds Int?
   totalSecondsBreak Int?
+  role role?
   rate Float
   rateType String
   hourlyRate Decimal @db.Decimal(8,2)
   salaryToday Decimal @db.Decimal(10,2) @default(0)
+  overtimeRate Float?
+  overtimeSeconds Int?
+
   status employee_status @default(checked_out)
   year Int @db.UnsignedSmallInt
   month Int @db.UnsignedTinyInt // 1 as january - 12 as december
   comment String?
-  employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  position position? @relation(fields: [positionId], references: [id])
+
   breaks employee_break_log[]
   editLogs employee_work_edit_log[]
 
@@ -162,7 +191,7 @@ enum gender {
   other // andere
 }
 
-enum user_role {
+enum role {
   agnos_admin
   hsk_manager
   hsk_staff

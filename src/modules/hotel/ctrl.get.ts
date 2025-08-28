@@ -3,6 +3,7 @@ import resp from "objectify-response";
 import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
+import { HotelIdParam } from "./schema";
 
 export const hotelGetAllController = async (req: Request & AuthRequest, res: Response) => {
   const hotels = await prisma.hotel.findMany({});
@@ -24,4 +25,19 @@ export const hotelGetByIdController = async (req: Request<IdParam> & AuthRequest
   }
 
   resp(res, hotel)
+}
+
+export const hotelGetEmployeesAsOptionsController = async (req: Request<HotelIdParam> & AuthRequest, res: Response) => {
+  const hotelId = +req.params.hotelId
+
+  const options = await prisma.employee.findMany({
+    where: { positions: { some: { userId: null } }, hotelId },
+    select: {
+      id: true,
+      firstName: true, middleName: true, lastName: true,
+      positions: { where: { userId: null } }
+    }
+  })
+
+  return resp(res, options)
 }

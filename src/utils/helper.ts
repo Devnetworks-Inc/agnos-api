@@ -1,4 +1,4 @@
-import { Prisma, user_role } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import jwt from 'jsonwebtoken'
 import { Auth } from "src/modules/auth.schema";
 import { RateType } from "src/modules/employee/schema";

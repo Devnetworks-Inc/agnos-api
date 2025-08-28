@@ -1,6 +1,7 @@
 import { isoStringRemoveTime, isoStringToDatetime } from "src/utils/helper";
 import prisma from "../prisma";
-import { employee_work_log, Prisma, PrismaPromise } from "@prisma/client";
+import { PrismaPromise } from "@prisma/client";
+import { Employee } from "./schema";
 const db = process.env.DATABASE_NAME
 
 export const getEmployeesWorkLogGroupByMonthYearHotel = async (startDate: Date, endDate: Date, hotelId?: number | null) => {
@@ -9,13 +10,17 @@ export const getEmployeesWorkLogGroupByMonthYearHotel = async (startDate: Date, 
 
   const result = await prisma.$queryRawUnsafe(
     `SELECT
-      e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, e.position, sum(ewl.totalSeconds) as totalSeconds, sum(ewl.salaryToday) as cost
-    FROM ${db}.employee as e
+      e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, p.role, sum(ewl.totalSeconds) as totalSeconds, sum(ewl.salaryToday) as cost
+    FROM ${db}.position as p
+    LEFT JOIN
+      ${db}.employee as e
+    ON
+      p.employeeId = e.id
     LEFT JOIN 
       ( SELECT * FROM ${db}.employee_work_log WHERE date BETWEEN '${sd}' AND '${ed}' ) as ewl
     ON e.id = ewl.employeeId
     ${hotelId ? `WHERE e.hotelId=${hotelId}` : ''}
-    GROUP BY e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, e.position
+    GROUP BY e.id, e.firstName, e.middleName, e.lastName, e.rate, e.hotelId, ewl.month, ewl.year, p.role
     ORDER BY year ASC, month ASC;`
   );
   return result
@@ -58,12 +63,12 @@ export const paginatedEmployeeTimesheetQuery = async (pageNumber: number, pageSi
       SELECT DATE_ADD(date, INTERVAL 1 DAY) FROM date_range WHERE date < '${endDateString}'
     )
     SELECT 
-      date_range.date, id, employeeId, checkInDate, checkOutDate, totalSeconds, status, hourlyRate, rate, rateType, salaryToday, comment, totalSecondsBreak
+      date_range.date, id, employeeId, checkInDate, checkOutDate, totalSeconds, status, hourlyRate, rate, rateType, salaryToday, comment, totalSecondsBreak, role
     FROM date_range
     LEFT JOIN
       (SELECT * from ${db}.employee_work_log WHERE employeeId = ${employeeId}) AS ewl
     ON date_range.date = ewl.date
-    ORDER BY date_range.date DESC, ewl.checkInDate DESC
+    ORDER BY date_range.date ASC, ewl.checkInDate ASC
     LIMIT ${pageSize}
     OFFSET ${(pageNumber - 1) * pageSize};`
   )
@@ -95,5 +100,15 @@ export const recalculateMonthlyRateWorkLogsSalary = async () => {
       ewl.hourlyRate = ROUND( ewl.rate / (DAY(LAST_DAY(ewl.date)) * 8.4), 2),
       ewl.salaryToday = ewl.hourlyRate * ROUND(ewl.totalSeconds / 3600, 2)
     WHERE ewl.rateType = 'monthly' AND ewl.checkOutDate IS NOT NULL;`
+  )
+}
+
+export const upsertPositions = (positions: Employee['positions'], employeeId: number) => {
+  return prisma.$queryRawUnsafe(
+    `REPLACE INTO ${db}.position (id, userId, employeeId, role, rate, rateType, minimumWeeklyHours, overtimeRate)
+    VALUES 
+      ${positions.map(p => {
+        return `(${p.id ?? null}, ${p.userId ?? null}, ${employeeId}, '${p.role}', ${p.rate}, '${p.rateType}', ${p.minimumWeeklyHours ?? null}, ${p.overtimeRate ?? null})`
+      }).join(', ')};`
   )
 }

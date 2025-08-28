@@ -9,6 +9,7 @@ import {
   EmployeeGetWorkLogsByHotelIdSummaryDailyRequest,
   EmployeeGetWorkLogEditLogsRequest,
   EmployeeGetWorkLogsByMonthRequest,
+  EmployeeGetAsOptionsRequest,
 } from "./schema";
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
@@ -38,6 +39,7 @@ export const employeeGetController = async (
   const employees = await prisma.employee.findMany({
     where,
     include: {
+      positions: true,
       hotel: { select: { name: true } },
       workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
     },
@@ -61,7 +63,7 @@ export const employeeGetByIdController = async (
   const [employee, day, month, overall] = await prisma.$transaction([
     prisma.employee.findUnique({
       where: { id },
-      include: { workLog: { take: 1, orderBy: { checkInDate: 'desc' } } }
+      include: { positions: true, workLog: { take: 1, orderBy: { checkInDate: 'desc' } } }
     }),
     prisma.employee_work_log.aggregate({
       where: { checkInDate: { gte: startDay, lte: endDay } },
@@ -132,32 +134,67 @@ export const employeeGetWorkLogsController = async (
     hotelId = currentHotelId;
   }
 
-  const employees = await prisma.employee.findMany({
+  // const employees = await prisma.employee.findMany({
+  //   where: {
+  //     hotelId,
+  //     position: { notIn: ['check_in_assistant', 'agnos_admin'] },
+  //     // OR: [{ user: { role: { notIn: ['check_in_assistant', 'agnos_admin'] } } }, { user: null }],
+  //   },
+  //   select: {
+  //     id: true,
+  //     firstName: true,
+  //     middleName: true,
+  //     lastName: true,
+  //     rate: true,
+  //     // status: true,
+  //     rateType: true,
+  //     position: true,
+  //     hotel: { select: { id: true, name: true } },
+  //     user: { select: { role: true } },
+  //     workLog: {
+  //       where: { checkInDate: { gte: startDate, lte: endDate } },
+  //       include: {
+  //         breaks: true,
+  //         editLogs: { select: { id: true }, orderBy: { date: "desc" } },
+  //       },
+  //       orderBy: { checkInDate: 'asc' }
+  //     },
+  //   },
+  // });
+
+  const positions = await prisma.position.findMany({
     where: {
-      hotelId,
-      OR: [{ user: { role: { notIn: ['check_in_assistant', 'agnos_admin'] } } }, { user: null }],
+      role: { notIn: ['check_in_assistant', 'agnos_admin'] },
+      employee: { hotelId },
     },
-    select: {
-      id: true,
-      firstName: true,
-      middleName: true,
-      lastName: true,
-      rate: true,
-      // status: true,
-      rateType: true,
-      position: true,
-      hotel: { select: { id: true, name: true } },
-      user: { select: { role: true } },
-      workLog: {
+    include: {
+      workLogs: {
         where: { checkInDate: { gte: startDate, lte: endDate } },
         include: {
           breaks: true,
           editLogs: { select: { id: true }, orderBy: { date: "desc" } },
         },
         orderBy: { checkInDate: 'asc' }
-      },
-    },
-  });
+      }, 
+      employee: { select: {
+        id: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
+        hotel: { select: { id: true, name: true } },
+        user: { select: { role: true } },
+      }}
+    }
+  })
+
+  const employees = positions.map(({ id, rate, rateType, role: position, employee, workLogs }) => ({
+    ...employee,
+    rate,
+    rateType,
+    position,
+    workLog: workLogs,
+    positionId: id
+  }))
 
   // Set status to 'Inactive' if workLog is empty or null
   const employeesFinal = employees.map((emp) => ({
@@ -184,40 +221,49 @@ export const employeeGetWorkLogsByMonthController = async (
     hotelId = req.query.hotelId
   }
 
-  const [workLogs, employees] = await prisma.$transaction([
+  const [workLogs, positions] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
-      by: ["employeeId"],
+      by: ["employeeId", "positionId"],
       where: { employee: { hotelId }, year, month },
       _sum: { totalSeconds: true, totalSecondsBreak: true, salaryToday: true },
       orderBy: { employeeId: "asc" },
     }),
-    prisma.employee.findMany({
-      where: { hotelId },
+    prisma.position.findMany({
+      where: { employee: { hotelId } },
       select: {
         id: true,
-        firstName: true,
-        middleName: true,
-        lastName: true,
         rate: true,
         rateType: true,
-        position: true,
-        hotelId: true,
-        hotel: { select: { name: true } }
+        role: true,
+        employee: { select: {
+          id: true,
+          firstName: true,
+          middleName: true,
+          lastName: true,
+          // rate: true,
+          // rateType: true,
+          // position: true,
+          hotelId: true,
+          hotel: { select: { name: true } }
+        }}
       },
     }),
   ]);
-  const workLogMap = new Map<number, (typeof workLogs[0])>();
+  const workLogMap = new Map<string, (typeof workLogs[0])>();
   workLogs.forEach((log) => {
-    workLogMap.set(log.employeeId, log);
+    workLogMap.set(`${log.employeeId}${log.positionId}`, log);
   });
 
-  const employeesWithWorkLog = employees.map((e) => {
-    const workLog = workLogMap.get(e.id) as typeof workLogs[0] || {}
+  const employeesWithWorkLog = positions.map((p) => {
+    const workLog = workLogMap.get(`${p.employee.id}${p.id}`) as typeof workLogs[0] || {}
     return {
-      ...e,
+      ...p.employee,
+      rate: p.rate,
+      rateType: p.rateType,
+      position: p.role,
       year,
       month,
-      hotel: e.hotel.name,
+      hotel: p.employee.hotel.name,
       totalSeconds: workLog._sum?.totalSeconds ?? 0,
       totalSecondsBreak: workLog._sum?.totalSecondsBreak ?? 0,
       totalSalary: workLog._sum?.salaryToday?.toNumber() ?? 0
@@ -245,7 +291,10 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
 
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
-    include: { hotel: { select: { name: true } } },
+    include: {
+      hotel: { select: { name: true } },
+      positions: { select: { role: true } }
+    },
   });
 
   if (!employee) {
@@ -261,7 +310,7 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
       
     month ? prisma.employee_work_log.aggregate({
       _sum: { totalSeconds: true },
-      where: { month }
+      where: { month, employeeId }
     }) : Promise.resolve(),
   ]);
 
@@ -342,3 +391,47 @@ export const employeeGetWorkLogEditLogsController = async (
   });
   resp(res, logs);
 };
+
+export const employeeGetAsOptionsController = async (req: EmployeeGetAsOptionsRequest, res: Response) => {
+  const { role, currentHotelId } = req.auth!
+  const { includePositionId } = req.query
+
+  let hotelId = currentHotelId ?? undefined
+
+   if (role !== "agnos_admin" && role !== "hsk_manager") {
+    if (!hotelId) {
+      return resp(res, "Unauthorized", 401);
+    }
+  }
+
+  const employeeOR: Prisma.employeeWhereInput[] = [
+    { positions: { some: { userId: null } } }
+  ]
+
+  const positionsOR: Prisma.positionWhereInput[] = [{ userId: null }]
+
+  if (includePositionId) {
+    const where: Prisma.employeeWhereInput = {}
+    const positions = { some: { id: +includePositionId } } 
+    where.positions = positions
+    employeeOR.push(where)
+  }
+
+  if (includePositionId) {
+    positionsOR.push({ id: +includePositionId })
+  }
+
+  const options = await prisma.employee.findMany({
+    where: {
+      OR: employeeOR,
+      hotelId
+    },
+    select: {
+      id: true,
+      firstName: true, middleName: true, lastName: true,
+      positions: { where: { OR: positionsOR } }
+    }
+  })
+
+  return resp(res, options)
+}

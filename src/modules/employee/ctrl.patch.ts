@@ -15,14 +15,13 @@ import prisma from "../prisma";
 import { employee_status, Prisma } from "@prisma/client";
 import { differenceInSeconds, isEqual, secondsToHours, secondsToMinutes, startOfYesterday, endOfYesterday, isYesterday } from "date-fns";
 import { calculateSalary, getHourlyRate, toDecimalPlaces } from "src/utils/helper";
-import { checkoutMidnightQuery, recalculateMonthlyRateWorkLogsSalary } from "./services";
+import { checkoutMidnightQuery, recalculateMonthlyRateWorkLogsSalary, upsertPositions } from "./services";
 
 export const employeeUpdateController = async (
   req: EmployeeUpdateRequest,
   res: Response,
-  next: NextFunction
 ) => {
-  const { id } = req.body;
+  const { id, positions, ...data } = req.body;
   const { role, currentHotelId } = req.auth!
 
   if (role !== 'agnos_admin' && !currentHotelId)
@@ -30,56 +29,71 @@ export const employeeUpdateController = async (
 
   const hotelId = currentHotelId ?? undefined
 
-  prisma.employee
+  const employee = prisma.employee.findUnique({ where: { id } })
+
+  if (!employee) {
+    return resp(res, "Employee to update does not exist.", 400);
+  }
+
+  if (positions) {
+    await upsertPositions(positions, id)
+  }
+
+  const updatedEmployee =  await prisma.employee
     .update({
       where: { id, hotelId },
-      data: {
-        ...req.body,
-      },
+      data,
+      include: { positions: true }
     })
-    .then((employee) => {
-      resp(res, employee);
-    })
-    .catch((e) => {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2025") {
-          return resp(res, "Record to update does not exist.", 400);
-        }
-      }
-      next(e);
-    });
+
+  resp(res, updatedEmployee);
 };
 
 export const employeeCheckInOutController = async (
   req: EmployeeCheckInOutRequest,
   res: Response
 ) => {
-  const { role, currentHotelId } = req.auth!;
-  const { id, status, date } = req.body;
+  const { role: userRole, currentHotelId } = req.auth!;
+  const { id, status, date, positionId } = req.body;
   let datetime = new Date(req.body.datetime)
 
-  if (role !== "agnos_admin" && !currentHotelId) {
+  if (userRole !== "agnos_admin" && !currentHotelId) {
     return resp(res, "Unauthorized", 401);
   }
 
   const hotelId = currentHotelId ?? undefined;
 
-  const employee = await prisma.employee.findUnique({
-    where: { id, hotelId },
-    select: {
-      status: true, rate: true, rateType: true,
-      workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
-    },
-  });
+  // const employee = await prisma.employee.findUnique({
+  //   where: { id, hotelId },
+  //   select: {
+  //     status: true, rate: true, rateType: true,
+  //     workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
+  //   },
+  // });
 
-  if (!employee) {
+  const employeePosition = await prisma.position.findFirst({
+    where: { employeeId: id, id: positionId, employee: { hotelId } },
+    include: {
+      employee: {
+        select: {
+          status: true, // rate: true, rateType: true,
+          workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
+        },
+      }
+    },
+    orderBy: { id: 'asc' }
+  })
+
+  if (!employeePosition) {
     const hotel = await prisma.hotel.findUnique({
       where: { id: hotelId }
     });
     return resp(res, `Employee not found in ${hotel?.name}`, 404);
   }
 
-  const employeeStatus = employee.workLog[0]?.status
+  const employee = employeePosition.employee
+  const lastLog = employee.workLog[0]
+  const employeeStatus = lastLog?.status
 
   if (employeeStatus === "on_break") {
     return resp(res, "Employee is On Break", 400);
@@ -93,13 +107,15 @@ export const employeeCheckInOutController = async (
     return resp(res, "Employee already check-out", 400);
   }
 
-  const { rate, rateType } = employee
+  const { rate, rateType, role } = employeePosition
   const hourlyRate = getHourlyRate(rateType as RateType, rate, datetime)
 
   if (status === "check_in") {
     const [workLog] = await prisma.$transaction([
       prisma.employee_work_log.create({
         data: {
+          positionId: employeePosition.id,
+          role,
           rate,
           rateType,
           hourlyRate,
@@ -126,33 +142,34 @@ export const employeeCheckInOutController = async (
 
   if (status === "check_out") {
     // get latest check in
-    const log = await prisma.employee_work_log.findFirst({
-      where: { checkOutDate: null, employeeId: id },
-      select: { id: true, breaks: true, checkInDate: true, hourlyRate: true, totalSecondsBreak: true },
-      take: 1,
-      orderBy: { checkInDate: "desc" },
-    });
+    // const log = await prisma.employee_work_log.findFirst({
+    //   where: { checkOutDate: null, employeeId: id },
+    //   select: { id: true, breaks: true, checkInDate: true, hourlyRate: true, totalSecondsBreak: true },
+    //   take: 1,
+    //   orderBy: { checkInDate: "desc" },
+    // });
 
-    if (!log) {
+    // if no last log in or last log was already checked-out
+    if (!lastLog || lastLog.checkOutDate) {
       return resp(res, "No check-in in work log found", 404);
     }
 
-    if (isYesterday(log.checkInDate)) {
+    if (isYesterday(lastLog.checkInDate)) {
       datetime = endOfYesterday()
     }
 
-    if (datetime < log.checkInDate) {
+    if (datetime < lastLog.checkInDate) {
       return resp(res, "Date must be greater than work log check in date");
     }
 
-    const totalSecondsBreak = log.totalSecondsBreak ?? 0
+    const totalSecondsBreak = lastLog.totalSecondsBreak ?? 0
 
     const totalSeconds =
-      differenceInSeconds(datetime, log.checkInDate) - totalSecondsBreak;
+      differenceInSeconds(datetime, lastLog.checkInDate) - totalSecondsBreak;
 
     const [workLog] = await prisma.$transaction([
       prisma.employee_work_log.update({
-        where: { id: log.id },
+        where: { id: lastLog.id },
         data: {
           checkOutDate: datetime,
           totalSeconds,

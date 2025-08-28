@@ -8,6 +8,7 @@ import { registerServiceEntryRoutes } from "src/modules/seriviceEntry/docs";
 import { registerServiceRoutes } from "src/modules/service/docs";
 import { registerHotelServiceRoutes } from "src/modules/hotelService/docs";
 import { registerFileRoutes } from "src/modules/file/docs";
+import { registerMigrationRoutes } from "src/modules/migrations/docs";
 
 let registry = new OpenAPIRegistry()
 
@@ -20,6 +21,7 @@ registerHotelRoutes(registry)
 registerHotelServiceRoutes(registry)
 registerServiceRoutes(registry)
 registerServiceEntryRoutes(registry)
+registerMigrationRoutes(registry)
 
 function getOpenApiDocumentation() {
   const generator = new OpenApiGeneratorV31(registry.definitions);

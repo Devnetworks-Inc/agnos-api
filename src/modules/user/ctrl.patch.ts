@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { position, Prisma } from "@prisma/client";
 import { NextFunction, Response } from "express";
 import resp from "objectify-response";
 import { encrypt } from "src/utils/crypter";
@@ -6,15 +6,30 @@ import { UserUpdateRequest } from "./schema";
 import prisma from "../prisma";
 
 export const userUpdateController = async (req: UserUpdateRequest, res: Response, next: NextFunction) => {
-  const { password, id } = req.body
-  const data = {...req.body}
+  let { password, id, positionId, username } = req.body
+
   if (password) {
-    data.password = encrypt(password)
+    password = encrypt(password)
   }
 
+  let position: position | undefined | null
+
+  if (positionId) {
+    position = await prisma.position.findUnique({ where: { id: positionId } })
+    if (!position) {
+      return resp(res, 'Employee position does not exist', 404)
+    }
+  }
+  
   prisma.user.update({
     where: { id },
-    data,
+    data: {
+      username,
+      password,
+      employeeId: position?.employeeId ?? undefined,
+      role: position?.role ?? undefined,
+      position: { connect: { id: positionId } }
+    },
     omit: { password: true }
   })
   .then((user) => resp(res, user))

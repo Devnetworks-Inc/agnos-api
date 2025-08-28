@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
 import { employeeBaseUrl } from "src/router";
-import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery, EmployeeGetWorkLogsByHotelIdSummaryDailyParam, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery, EmployeeWorkLogCommentBody, EmployeeGetWorkLogEditLogsParam, EmployeeGetWorkLogsByMonthQuery } from "./schema";
+import { Employee, EmployeeBreakLog, EmployeeBreakStartEndBody, EmployeeCheckInOutBody, EmployeeCreateBody, EmployeeCreateShareableUrlBody, EmployeeGetWorkLogsQuery, EmployeeGetByUrlParam, EmployeeGetQuery, EmployeeStatus, EmployeeUpdateBody, EmployeeUrlSubmitBody, EmployeeWorkLog, EmployeeWorkLogCreateBody, EmployeeWorkLogUpdateBody, EmployeeGetWorkLogsByIdPaginatedParams, EmployeeGetWorkLogsByIdPaginatedQuery, EmployeeGetWorkLogsByHotelIdSummaryDailyParam, EmployeeGetWorkLogsByHotelIdSummaryDailyQuery, EmployeeWorkLogCommentBody, EmployeeGetWorkLogEditLogsParam, EmployeeGetWorkLogsByMonthQuery, Position } from "./schema";
 import { IdParam } from "../id/schema";
 
 const tags = ["Employee"]
@@ -225,6 +225,23 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
     },
   });
 
+    registry.registerPath({
+    method: "get",
+    path: employeeBaseUrl+'/as-options',
+    summary: "get employees as options",
+    tags,
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse(
+        "Employees as options",
+        Employee.pick({
+          id: true, firstName: true, middleName: true, lastName: true, positions: true
+        })
+      )
+    },
+  });
+
   registry.registerPath({
     method: "patch",
     path: employeeBaseUrl+'/check-in-out/{id}',
@@ -357,6 +374,21 @@ export function registerEmployeeRoutes(registry: OpenAPIRegistry) {
 
     responses: {
       200: successJsonResponse("Success Message", z.literal('Employee has been deleted')),
+    },
+  });
+  
+    registry.registerPath({
+    method: "delete",
+    path: employeeBaseUrl+"/position/{id}",
+    summary: "delete employee position by position id",
+    tags,
+    request: {
+      params: IdParam,
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Success Message", z.literal('Employee Position has been deleted')),
     },
   });
 
