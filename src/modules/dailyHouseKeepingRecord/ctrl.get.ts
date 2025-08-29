@@ -135,16 +135,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
   const dateSplit = date.split('-')
   const d = dateSplit && new Date( Date.UTC(+dateSplit[0], +dateSplit[1]-1, +dateSplit[2]) )
 
-  const [employees, workLogs, records] = await prisma.$transaction([
-    prisma.employee.aggregate({
-      where: {
-        hotelId,
-        positions: { some: { role: { in: ['hotel_manager', 'hsk_staff'] } } }
-        // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-        // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
-      },
-      _count: { id: true }
-    }),
+  const [workLogs, records] = await prisma.$transaction([
     prisma.employee_work_log.findMany({
       where: {
         date: d,
@@ -170,17 +161,21 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
 
   let hours = new Prisma.Decimal(0)
   let cost = new Prisma.Decimal(0)
-  // const staff = employees._count.id ?? 0
+
   const staff = new Set(workLogs.map(log => log.employeeId)).size;
   const totalCleanedRooms = records._sum.totalCleanedRooms ?? 0
   console.log(`totalCleanedRooms: ${totalCleanedRooms}`);
   
   for (const log of workLogs) {
-    const { totalSeconds, salaryToday } = log
-    hours = hours.plus((totalSeconds ?? 0) / 3600)
+    const { totalSeconds, salaryToday, checkInDate } = log
+    if (checkInDate.getHours() < 15) {
+      hours = hours.plus((totalSeconds ?? 0) / 3600)
+    }
     cost = cost.plus(salaryToday)
-    console.log(`total cost: ${cost}, salaryToday: ${salaryToday}`)
+    console.log({checkInDate: checkInDate.toString()})
   }
+
+  console.log({ hours, cost })
 
   const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
   const ACR = totalCleanedRooms ? (cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2)).toNumber() : 0
@@ -204,16 +199,16 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
   const { yearMonth = format(new Date(), 'yyyy-MM')} = req.query
   const [ year, month ] = yearMonth.split('-')
 
-  const [employees, workLogs, records] = await prisma.$transaction([
-      prisma.employee.aggregate({
-      where: {
-        hotelId,
-        positions: { some: { role: { in: ['hotel_manager', 'hsk_staff'] } } }
-        // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-        // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
-      },
-      _count: { id: true }
-    }),
+  const [workLogs, records] = await prisma.$transaction([
+    //   prisma.employee.aggregate({
+    //   where: {
+    //     hotelId,
+    //     positions: { some: { role: { in: ['hotel_manager', 'hsk_staff'] } } }
+    //     // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
+    //     // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
+    //   },
+    //   _count: { id: true }
+    // }),
     prisma.employee_work_log.findMany({
       where: {
         year: +year,
@@ -241,12 +236,15 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
 
   let hours = new Prisma.Decimal(0)
   let cost = new Prisma.Decimal(0)
-  const staff = employees._count.id ?? 0
+  // const staff = employees._count.id ?? 0
+  const staff = new Set(workLogs.map(log => log.employeeId)).size;
   const totalCleanedRooms = records._sum.totalCleanedRooms ?? 0
 
   for (const log of workLogs) {
-    const { totalSeconds, salaryToday } = log
-    hours = hours.plus((totalSeconds ?? 0) / 3600)
+    const { totalSeconds, salaryToday, checkInDate } = log
+    if (checkInDate.getHours() < 15) {
+      hours = hours.plus((totalSeconds ?? 0) / 3600)
+    }
     cost = cost.plus(salaryToday)
   }
 
@@ -287,10 +285,10 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   const [workLogs, records] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
-      by: ['date'],
+      by: ['date', 'checkInDate'],
       _sum: { totalSeconds: true, salaryToday: true },
       where: {
-        employeeId: { in: employees.map(e => e.id) },
+        role: { in: ['hotel_manager', 'hsk_staff'] },
         date: { gte: sDate, lte: eDate }
       },
       orderBy: { date: 'asc' }
@@ -307,8 +305,27 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
   ])
 
   const workLogsMapByDate = workLogs.reduce(
-    (acc, val) => acc.set(val.date.valueOf(), val),
-    new Map<number, typeof workLogs[0]>()
+    (acc, val) => {
+      const dateValue = val.date.valueOf()
+      const log = acc.get(dateValue)
+
+      if (log) {
+        if (val.checkInDate.getHours() < 15 ) {
+          log.totalSeconds = log.totalSeconds + (val._sum?.totalSeconds ?? 0)
+        }
+        log.cost = log.cost.plus(val._sum?.salaryToday ?? 0)
+        return acc.set(dateValue, log)
+      }
+
+      return acc.set(dateValue, {
+        totalSeconds: val.checkInDate.getHours() < 15 ? (val._sum?.totalSeconds ?? 0) : 0,
+        cost: val._sum?.salaryToday ?? new Prisma.Decimal(0)
+      })
+    },
+    new Map<number, {
+      totalSeconds: number,
+      cost: Prisma.Decimal
+    }>()
   )
 
   const recordsMapByDate = records.reduce(
@@ -333,8 +350,8 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
     const workLog = workLogsMapByDate.get(dateValue)
     const record = recordsMapByDate.get(dateValue)
   
-    let hours = new Prisma.Decimal(workLog?._sum?.totalSeconds ?? 0).dividedBy(3600)
-    let cost = workLog?._sum?.salaryToday ?? new Prisma.Decimal(0)
+    let hours = new Prisma.Decimal(workLog?.totalSeconds ?? 0).dividedBy(3600)
+    let cost = workLog?.cost ?? new Prisma.Decimal(0)
     const totalCleanedRooms = record?._sum?.totalCleanedRooms ?? 0
 
     const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
