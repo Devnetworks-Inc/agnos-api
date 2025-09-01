@@ -8,6 +8,7 @@ import { subMonths, endOfDay, startOfDay, format, addDays  } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 import { Prisma } from "@prisma/client";
+import { LATE_SHIFT_START_HOUR } from "src/utils/constants";
 
 export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepingRecordGetRequest, res: Response) => {
   const { role, currentHotelId } = req.auth!
@@ -168,7 +169,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
   
   for (const log of workLogs) {
     const { totalSeconds, salaryToday, checkInDate } = log
-    if (checkInDate.getHours() < 15) {
+    if (checkInDate.getHours() < LATE_SHIFT_START_HOUR) {
       hours = hours.plus((totalSeconds ?? 0) / 3600)
     }
     cost = cost.plus(salaryToday)
@@ -242,7 +243,7 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
 
   for (const log of workLogs) {
     const { totalSeconds, salaryToday, checkInDate } = log
-    if (checkInDate.getHours() < 15) {
+    if (checkInDate.getHours() < LATE_SHIFT_START_HOUR) {
       hours = hours.plus((totalSeconds ?? 0) / 3600)
     }
     cost = cost.plus(salaryToday)
@@ -310,7 +311,7 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       const log = acc.get(dateValue)
 
       if (log) {
-        if (val.checkInDate.getHours() < 15 ) {
+        if (val.checkInDate.getHours() < LATE_SHIFT_START_HOUR ) {
           log.totalSeconds = log.totalSeconds + (val._sum?.totalSeconds ?? 0)
         }
         log.cost = log.cost.plus(val._sum?.salaryToday ?? 0)
@@ -318,7 +319,7 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       }
 
       return acc.set(dateValue, {
-        totalSeconds: val.checkInDate.getHours() < 15 ? (val._sum?.totalSeconds ?? 0) : 0,
+        totalSeconds: val.checkInDate.getHours() < LATE_SHIFT_START_HOUR ? (val._sum?.totalSeconds ?? 0) : 0,
         cost: val._sum?.salaryToday ?? new Prisma.Decimal(0)
       })
     },

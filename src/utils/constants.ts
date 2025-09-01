@@ -1,0 +1,1 @@
+export const LATE_SHIFT_START_HOUR = 15
