@@ -325,8 +325,10 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
   }
 
   resp(res, {
-    employee,
-    overtimeHour: +(overtimeSeconds / secondsPerHour).toFixed(2),
+    employee: {
+      ...employee,
+      overtimeHours: +(overtimeSeconds / secondsPerHour).toFixed(2),
+    },
     items,
     totalItems,
     totalPages: totalItems && Math.ceil(totalItems / pageSize),
