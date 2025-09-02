@@ -11,6 +11,8 @@ import userRouter from "src/modules/user/routes"
 import webauthnRouter from "src/modules/webAuthn/routes"
 import { migrationBaseUrl } from "src/modules/migrations/docs"
 import migrationRouter from "src/modules/migrations/routes"
+import { timesheetBaseUrl } from "src/modules/timesheet/docs"
+import timesheetRouter from "src/modules/timesheet/routes"
 
 const router = Router()
 
@@ -41,6 +43,8 @@ export const hotelServiceBaseUrl = '/hotel-services'
 router.use(base+hotelServiceBaseUrl, hotelServiceRouter)
 
 router.use(base+fileBaseUrl, fileRouter)
+router.use(base+timesheetBaseUrl, timesheetRouter)
+
 router.use(base+migrationBaseUrl, migrationRouter)
 router.use(base, webauthnRouter)
 
