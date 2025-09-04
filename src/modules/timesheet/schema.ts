@@ -36,6 +36,18 @@ export const TimesheetGetDaily = z.object({
   query: TimesheetGetDailyQuery
 })
 
+export const TimesheetGetMonthlyQuery = z.object({
+  year: z.coerce.number().optional(),
+  month: z.coerce.number().optional(),
+  hotelId: z.coerce.number().optional(),
+})
+
+export const TimesheetGetMonthly = z.object({
+  query: TimesheetGetMonthlyQuery
+})
+
 export type TimesheetData = TypeOf<typeof TimesheetData>
 export type TimesheetGetDailyQuery = TypeOf<typeof TimesheetGetDailyQuery>
+export type TimesheetGetMonthlyQuery = TypeOf<typeof TimesheetGetMonthlyQuery>
+export type TimesheetGetMonthlyRequest = Request<{}, {}, {}, TimesheetGetMonthlyQuery> & AuthRequest
 export type TimesheetGetDailyRequest = Request<{}, {}, {}, TimesheetGetDailyQuery> & AuthRequest
