@@ -16,6 +16,7 @@ import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 import { endOfDay, endOfMonth, format, startOfDay, startOfMonth } from "date-fns";
 import { getTotalItemsEmployeeTimesheetQuery, paginatedEmployeeTimesheetQuery } from "./services";
+import { LATE_SHIFT_START_HOUR } from "src/utils/constants";
 
 export const employeeGetController = async (
   req: EmployeeGetRequest,
@@ -192,7 +193,7 @@ export const employeeGetWorkLogsController = async (
     rate,
     rateType,
     position,
-    workLog: workLogs,
+    workLog: workLogs.map(v => ({ ...v, isLateShift: v.checkInDate.getHours() >= LATE_SHIFT_START_HOUR })),
     positionId: id
   }))
 
@@ -329,7 +330,7 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
       ...employee,
       overtimeHours: +(overtimeSeconds / secondsPerHour).toFixed(2),
     },
-    items,
+    items: (items as any).map((item: any) => ({ ...item, isLateShift: item.checkInDate.getHours() >= LATE_SHIFT_START_HOUR })),
     totalItems,
     totalPages: totalItems && Math.ceil(totalItems / pageSize),
   });

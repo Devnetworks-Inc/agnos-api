@@ -10,7 +10,10 @@ import getOpenApiDocumentation from './docs'
 import { errorHandler } from './middlewares/errorHandler'
 import router from './router'
 
-process.env.TZ = 'Europe/Berlin'
+// set this in .env file in production only
+// process.env.TZ = 'Europe/Berlin'
+
+console.log('Timezone:', process.env.TZ)
 
 const app = express()
 const docs = getOpenApiDocumentation()

@@ -5,6 +5,7 @@ import { employee_break_log, employee_status, Prisma, role } from "@prisma/clien
 import { TimesheetGetDailyRequest } from "./schema";
 import { Response } from "express";
 import { format } from "date-fns";
+import { LATE_SHIFT_START_HOUR } from "src/utils/constants";
 
 type TimesheetData = {
   workLogId?: number;
@@ -38,7 +39,8 @@ type TimesheetData = {
     middleName: string;
     lastName: string;
     hotel: { id: number, name: string },
-  }
+  };
+  isLateShift?: boolean;
 }
 
 export const timesheetGetDailyController = async (
@@ -119,7 +121,8 @@ export const timesheetGetDailyController = async (
         positionId: id,
         employeeName: `${employee.firstName} ${employee.lastName}`,
         hotelName: employee.hotel.name,
-        employee
+        employee,
+        isLateShift: log.checkInDate.getHours() >= LATE_SHIFT_START_HOUR,
       })
     }
   })
