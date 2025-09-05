@@ -330,7 +330,10 @@ export const employeeGetWorkLogsByIdPaginatedController = async (
       ...employee,
       overtimeHours: +(overtimeSeconds / secondsPerHour).toFixed(2),
     },
-    items: (items as any).map((item: any) => ({ ...item, isLateShift: item.checkInDate.getHours() >= LATE_SHIFT_START_HOUR })),
+    items: (items as any).map((item: any) => ({
+      ...item,
+      isLateShift: item.checkInDate && item.checkInDate.getHours() >= LATE_SHIFT_START_HOUR
+    })),
     totalItems,
     totalPages: totalItems && Math.ceil(totalItems / pageSize),
   });
