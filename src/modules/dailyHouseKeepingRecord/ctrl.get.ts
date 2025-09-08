@@ -4,7 +4,7 @@ import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 import { DailyHousekeepingRecordGetRequest, DailyHousekeepingRecordTimesheetDailyRequest, DailyHousekeepingRecordTimesheetMonthlyRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
-import { subMonths, endOfDay, startOfDay, format, addDays  } from "date-fns";
+import { subMonths, format, addDays  } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 import { Prisma } from "@prisma/client";
@@ -140,14 +140,9 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
     prisma.employee_work_log.findMany({
       where: {
         date: d,
-        role: { notIn: ['agnos_admin', 'hsk_manager', 'gouvernante', 'public_cleaner', 'check_in_assistant'] },
+        role: { in: ['hotel_manager', 'hsk_staff'] },
         employee: {
           hotelId,
-          // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-          // OR: [
-          //   { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
-          //   { user: null }
-          // ] 
         },
       }
     }),
@@ -201,15 +196,6 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
   const [ year, month ] = yearMonth.split('-')
 
   const [workLogs, records] = await prisma.$transaction([
-    //   prisma.employee.aggregate({
-    //   where: {
-    //     hotelId,
-    //     positions: { some: { role: { in: ['hotel_manager', 'hsk_staff'] } } }
-    //     // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-    //     // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
-    //   },
-    //   _count: { id: true }
-    // }),
     prisma.employee_work_log.findMany({
       where: {
         year: +year,
@@ -217,11 +203,6 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
         role: { in: ['hotel_manager', 'hsk_staff'] },
         employee: {
           hotelId,
-          // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-          // OR: [
-          //   { user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } },
-          //   { user: null }
-          // ] 
         },
       },
     }),
@@ -275,18 +256,9 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
   const sDate = startDate ? new Date(startDate) : new Date(format(today, 'yyyy-MM-dd'))
   const eDate = endDate ? new Date(endDate) : new Date(format(today, 'yyyy-MM-dd'))
 
-  const employees = await prisma.employee.findMany({
-    where: {
-      hotelId,
-      positions: { some: { role: { in: ['hotel_manager', 'hsk_staff'] } } },
-      // position: { notIn: ['HSK Manager', 'Gouvernante', 'Public Cleaner'] },
-      // OR: [{ user: { role: { notIn: ["check_in_assistant", 'hsk_manager', 'gouvernante', 'public_cleaner', 'agnos_admin'] } } }, { user: null }],
-    },
-  })
-
   const [workLogs, records] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
-      by: ['date', 'checkInDate'],
+      by: ['date', 'checkInDate', 'employeeId'],
       _sum: { totalSeconds: true, salaryToday: true },
       where: {
         role: { in: ['hotel_manager', 'hsk_staff'] },
@@ -307,6 +279,7 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   const workLogsMapByDate = workLogs.reduce(
     (acc, val) => {
+      // employeeIdSet.add(val.employeeId)
       const dateValue = val.date.valueOf()
       const log = acc.get(dateValue)
 
@@ -315,17 +288,20 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
           log.totalSeconds = log.totalSeconds + (val._sum?.totalSeconds ?? 0)
         }
         log.cost = log.cost.plus(val._sum?.salaryToday ?? 0)
+        log.employeeIdSet.add(val.employeeId)
         return acc.set(dateValue, log)
       }
 
       return acc.set(dateValue, {
         totalSeconds: val.checkInDate.getHours() < LATE_SHIFT_START_HOUR ? (val._sum?.totalSeconds ?? 0) : 0,
-        cost: val._sum?.salaryToday ?? new Prisma.Decimal(0)
+        cost: val._sum?.salaryToday ?? new Prisma.Decimal(0),
+        employeeIdSet: new Set([val.employeeId])
       })
     },
     new Map<number, {
       totalSeconds: number,
-      cost: Prisma.Decimal
+      cost: Prisma.Decimal,
+      employeeIdSet: Set<number>,
     }>()
   )
 
@@ -343,8 +319,6 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
     dates.push(dt)
   }
 
-  const noOfEmployees = employees.length
-
   const response = dates.map(date => {
     const [year, month, day] = date.toISOString().split('T')[0].split('-')
     const dateValue = date.valueOf()
@@ -353,6 +327,7 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
   
     let hours = new Prisma.Decimal(workLog?.totalSeconds ?? 0).dividedBy(3600)
     let cost = workLog?.cost ?? new Prisma.Decimal(0)
+    let noOfEmployees = workLog?.employeeIdSet.size ?? 0
     const totalCleanedRooms = record?._sum?.totalCleanedRooms ?? 0
 
     const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
