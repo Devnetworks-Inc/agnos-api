@@ -181,7 +181,6 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
 
   const staff = new Set(workLogs.map(log => log.employeeId)).size;
   const totalCleanedRooms = records._sum.totalCleanedRooms ?? 0
-  console.log(`totalCleanedRooms: ${totalCleanedRooms}`);
   
   for (const log of workLogs) {
     const { totalSeconds, salaryToday, checkInDate } = log
@@ -189,10 +188,7 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
       hours = hours.plus((totalSeconds ?? 0) / 3600)
     }
     cost = cost.plus(salaryToday)
-    console.log({checkInDate: checkInDate.toString()})
   }
-
-  console.log({ hours, cost })
 
   const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
   const ACR = totalCleanedRooms ? (cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2)).toNumber() : 0

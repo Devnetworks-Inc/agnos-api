@@ -136,7 +136,6 @@ webauthnRouter.post(
         };
 
         USERS.push(user)
-        console.log({ user })
         return resp(res, { verified: verification.verified });
       }
     } catch (error) {

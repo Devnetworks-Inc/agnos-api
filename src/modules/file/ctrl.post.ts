@@ -44,7 +44,6 @@ export const fileUploadProfilePicController = async (req: FileEmployeeUploadRequ
 export const fileUploadEmployeeFilesController = async (req: FileEmployeeUploadRequest, res: Response) => {
   const employeeId = +req.params.employeeId
   const files = req.files as Express.Multer.File[]
-  console.log(files)
   if (!files || !files.length) {
     return resp(res, 'No files uploaded', 400);
   }
