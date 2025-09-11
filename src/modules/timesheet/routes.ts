@@ -3,7 +3,8 @@ import { authorizeRoles } from "src/middlewares/authorization";
 import validateRequest from "src/middlewares/validateRequest";
 import { validateToken } from "src/middlewares/validateToken";
 import { timesheetGetDailyController } from "./ctrl.get";
-import { TimesheetGetDaily, TimesheetGetMonthly } from "./schema";
+import { TimesheetCreateInactiveLogs, TimesheetGetDaily } from "./schema";
+import { timesheetCreateInactiveLogs } from "./ctrl.post";
 
 const timesheetRouter = Router()
 
@@ -21,5 +22,11 @@ timesheetRouter
   //   validateRequest(TimesheetGetMonthly),
   //   timesheetGetDailyController
   // )
+  .post(
+    '/missing-dates',
+    authorizeRoles(['agnos_admin']),
+    validateRequest(TimesheetCreateInactiveLogs),
+    timesheetCreateInactiveLogs
+  )
 
 export default timesheetRouter

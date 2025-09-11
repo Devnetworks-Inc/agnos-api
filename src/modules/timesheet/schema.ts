@@ -46,8 +46,25 @@ export const TimesheetGetMonthly = z.object({
   query: TimesheetGetMonthlyQuery
 })
 
+export const TimesheetCreateInactiveLogsBody = z.object({
+  startDate: z.string().refine(
+    (v) => isMatch(v, 'yyyy-MM-dd'),
+    { message: 'Date format must be "yyyy-MM-dd"' }
+  ).openapi({ example: '2025-05-01' }),
+  endDate: z.string().refine(
+    (v) => isMatch(v, 'yyyy-MM-dd'),
+    { message: 'Date format must be "yyyy-MM-dd"' }
+  ).openapi({ example: '2025-05-01' }),
+})
+
+export const TimesheetCreateInactiveLogs = z.object({
+  body: TimesheetCreateInactiveLogsBody
+})
+
 export type TimesheetData = TypeOf<typeof TimesheetData>
 export type TimesheetGetDailyQuery = TypeOf<typeof TimesheetGetDailyQuery>
 export type TimesheetGetMonthlyQuery = TypeOf<typeof TimesheetGetMonthlyQuery>
+export type TimesheetCreateInactiveLogsBody = TypeOf<typeof TimesheetCreateInactiveLogsBody>
 export type TimesheetGetMonthlyRequest = Request<{}, {}, {}, TimesheetGetMonthlyQuery> & AuthRequest
 export type TimesheetGetDailyRequest = Request<{}, {}, {}, TimesheetGetDailyQuery> & AuthRequest
+export type TimesheetCreateInactiveLogsRequest = Request<{}, {}, TimesheetCreateInactiveLogsBody> & AuthRequest

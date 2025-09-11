@@ -103,9 +103,21 @@ model position {
   employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   user user? @relation(fields: [userId], references: [id])
   workLogs employee_work_log[]
+  // rateChanges position_rate_change[]
 
   @@unique([employeeId, role])
 }
+
+// model position_rate_change {
+//   id Int @id @default(autoincrement())
+//   positionId Int?
+//   rate Float @default(0)
+//   effectivityDate DateTime @db.Date
+
+//   position position? @relation(fields: [positionId], references: [id])
+
+//   @@unique([positionId, effectivityDate])
+// }
 
 model user {
   id Int @id @default(autoincrement())
@@ -130,9 +142,12 @@ model user {
 model employee_work_log {
   id Int @id @default(autoincrement())
   date DateTime
-  employeeId Int
+  employeeId Int?
   positionId Int?
-  checkInDate DateTime
+  employeeFirstName String @default("")
+  employeeMiddleName String @default("")
+  employeeLastName String @default("")
+  checkInDate DateTime?
   checkOutDate DateTime?
   totalSeconds Int?
   totalSecondsBreak Int?
@@ -148,7 +163,7 @@ model employee_work_log {
   year Int @db.UnsignedSmallInt
   month Int @db.UnsignedTinyInt // 1 as january - 12 as december
   comment String?
-  employee employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee employee? @relation(fields: [employeeId], references: [id])
   position position? @relation(fields: [positionId], references: [id])
 
   breaks employee_break_log[]
@@ -182,7 +197,7 @@ enum employee_status {
   checked_out
   on_break
   absent
-  day_off
+  inactive
 }
 
 enum gender {

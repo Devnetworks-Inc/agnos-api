@@ -164,11 +164,11 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
   
   for (const log of workLogs) {
     const { totalSeconds, salaryToday, checkInDate } = log
-    if (checkInDate.getHours() < LATE_SHIFT_START_HOUR) {
+    if (checkInDate && checkInDate.getHours() < LATE_SHIFT_START_HOUR) {
       hours = hours.plus((totalSeconds ?? 0) / 3600)
     }
     cost = cost.plus(salaryToday)
-    console.log({checkInDate: checkInDate.toString()})
+    console.log({checkInDate: checkInDate?.toString()})
   }
 
   console.log({ hours, cost })
@@ -224,7 +224,7 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (req: Dai
 
   for (const log of workLogs) {
     const { totalSeconds, salaryToday, checkInDate } = log
-    if (checkInDate.getHours() < LATE_SHIFT_START_HOUR) {
+    if (checkInDate && checkInDate.getHours() < LATE_SHIFT_START_HOUR) {
       hours = hours.plus((totalSeconds ?? 0) / 3600)
     }
     cost = cost.plus(salaryToday)
@@ -284,18 +284,18 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       const log = acc.get(dateValue)
 
       if (log) {
-        if (val.checkInDate.getHours() < LATE_SHIFT_START_HOUR ) {
+        if (val.checkInDate && val.checkInDate.getHours() < LATE_SHIFT_START_HOUR ) {
           log.totalSeconds = log.totalSeconds + (val._sum?.totalSeconds ?? 0)
         }
         log.cost = log.cost.plus(val._sum?.salaryToday ?? 0)
-        log.employeeIdSet.add(val.employeeId)
+        val.employeeId && log.employeeIdSet.add(val.employeeId)
         return acc.set(dateValue, log)
       }
 
       return acc.set(dateValue, {
-        totalSeconds: val.checkInDate.getHours() < LATE_SHIFT_START_HOUR ? (val._sum?.totalSeconds ?? 0) : 0,
+        totalSeconds: (val.checkInDate && val.checkInDate.getHours() < LATE_SHIFT_START_HOUR) ? (val._sum?.totalSeconds ?? 0) : 0,
         cost: val._sum?.salaryToday ?? new Prisma.Decimal(0),
-        employeeIdSet: new Set([val.employeeId])
+        employeeIdSet: new Set(val.employeeId ? [val.employeeId] : [])
       })
     },
     new Map<number, {
