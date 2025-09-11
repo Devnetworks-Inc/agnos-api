@@ -10,9 +10,9 @@ import { LATE_SHIFT_START_HOUR } from "src/utils/constants";
 type TimesheetData = {
   workLogId?: number;
   date: Date;
-  employeeId: number;
+  employeeId: number | null;
   positionId: number;
-  checkInDate?: Date;
+  checkInDate?: Date | null;
   checkOutDate?: Date | null;
   totalSeconds?: number | null;
   totalSecondsBreak?: number | null;
@@ -122,7 +122,7 @@ export const timesheetGetDailyController = async (
         employeeName: `${employee.firstName} ${employee.lastName}`,
         hotelName: employee.hotel.name,
         employee,
-        isLateShift: log.checkInDate.getHours() >= LATE_SHIFT_START_HOUR,
+        isLateShift: log.checkInDate ? log.checkInDate.getHours() >= LATE_SHIFT_START_HOUR : false,
       })
     }
   })

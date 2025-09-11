@@ -77,7 +77,7 @@ export const employeeCheckInOutController = async (
       employee: {
         select: {
           status: true, // rate: true, rateType: true,
-          workLog: { take: 1, orderBy: { checkInDate: 'desc' } }
+          workLog: { where: { checkInDate: { not: null } },  take: 1, orderBy: { checkInDate: 'desc' } }
         },
       }
     },
@@ -150,7 +150,7 @@ export const employeeCheckInOutController = async (
     // });
 
     // if no last log in or last log was already checked-out
-    if (!lastLog || lastLog.checkOutDate) {
+    if (!lastLog || lastLog.checkOutDate || !lastLog.checkInDate) {
       return resp(res, "No check-in in work log found", 404);
     }
 
@@ -158,7 +158,7 @@ export const employeeCheckInOutController = async (
       datetime = endOfYesterday()
     }
 
-    if (datetime < lastLog.checkInDate) {
+    if (datetime < lastLog.checkInDate!) {
       return resp(res, "Date must be greater than work log check in date");
     }
 
@@ -388,7 +388,8 @@ export const employeeUpdateWorkLogController = async (
   }
   rate = rate ?? workLog.rate
   rateType = rateType ?? workLog.rateType as RateType
-  const checkInDate = rCheckInDate ? new Date(rCheckInDate) : workLog.checkInDate
+  const workLogDate = workLog.date
+  const checkInDate = rCheckInDate ? new Date(rCheckInDate) : new Date(workLogDate.getUTCFullYear(), workLogDate.getUTCMonth(), workLogDate.getUTCDate())
 
   let hourlyRate = getHourlyRate(rateType, rate, checkInDate)
   let salaryToday: Prisma.Decimal | undefined
@@ -409,7 +410,7 @@ export const employeeUpdateWorkLogController = async (
     action: 'update'
   }
 
-  if (!isEqual(checkInDate, workLog.checkInDate)) {
+  if (workLog.checkInDate && !isEqual(checkInDate, workLog.checkInDate)) {
     details.newCheckIn = checkInDate.toISOString()
     details.prevCheckIn = workLog.checkInDate.toISOString()
     hasUpdate = true
@@ -589,7 +590,7 @@ export const employeeUpdateWorkLogController = async (
     }),
   ]
 
-  if (!lastWorkLog || !(checkInDate < lastWorkLog.checkInDate)) {
+  if (!lastWorkLog?.checkInDate || !(checkInDate < lastWorkLog.checkInDate)) {
     transaction.push(
       prisma.employee.update({
         where: { id: employeeId },
@@ -642,8 +643,36 @@ export const employeeMidnightCheckoutController = async (req: Request, res: Resp
   const yesterdayEnd = endOfYesterday()
 
   const result = await checkoutMidnightQuery(yesterdayStart, yesterdayEnd)
+  const positions = await prisma.position.findMany({
+    where: { workLogs: { none: { checkInDate: { gte: yesterdayStart, lte: yesterdayEnd } } } },
+    include: { employee: { select: { firstName: true, middleName: true, lastName: true } } }
+  })
 
-  resp(res, `${result.count} employees was checked out`)
+  const created = await prisma.employee_work_log.createMany({
+    data: positions.map((pos) => {
+      const hourlyRate = getHourlyRate(pos.rateType as RateType, pos.rate, yesterdayStart)
+      const salaryToday = pos.rateType === 'monthly' ? hourlyRate.times(8.4).toDecimalPlaces(2) : 0
+
+      return {
+        date: new Date(Date.UTC(yesterdayStart.getFullYear(), yesterdayStart.getMonth(), yesterdayStart.getDate())),
+        employeeId: pos.employeeId,
+        positionId: pos.id,
+        employeeFirstName: pos.employee.firstName,
+        employeeMiddleName: pos.employee.middleName,
+        employeeLastName: pos.employee.lastName,
+        role: pos.role,
+        rate: pos.rate,
+        rateType: pos.rateType,
+        hourlyRate,
+        salaryToday,
+        status: 'inactive',
+        year: yesterdayStart.getFullYear(),
+        month: yesterdayStart.getMonth() + 1
+      }
+    })
+  })
+
+  resp(res, `${result.count ?? 0} employees was checked out, ${created.count ?? 0} monthly employee logs was created as 'inactive'`)
 }
 
 export const employeeMonthlyRateRecalculateController = async (req: Request, res: Response) => {

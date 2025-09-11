@@ -193,7 +193,7 @@ export const employeeGetWorkLogsController = async (
     rate,
     rateType,
     position,
-    workLog: workLogs.map(v => ({ ...v, isLateShift: v.checkInDate.getHours() >= LATE_SHIFT_START_HOUR })),
+    workLog: workLogs.map(v => ({ ...v, isLateShift: v.checkInDate ? v.checkInDate.getHours() >= LATE_SHIFT_START_HOUR : false })),
     positionId: id
   }))
 
