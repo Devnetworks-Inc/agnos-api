@@ -4,11 +4,12 @@ import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 import { DailyHousekeepingRecordGetRequest, DailyHousekeepingRecordTimesheetDailyRequest, DailyHousekeepingRecordTimesheetMonthlyRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
-import { subMonths, format, addDays  } from "date-fns";
+import { subMonths, format, addDays, lastDayOfMonth  } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 import { Prisma } from "@prisma/client";
 import { LATE_SHIFT_START_HOUR } from "src/utils/constants";
+import { getMonthlyDailyRate } from "src/utils/helper";
 
 export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepingRecordGetRequest, res: Response) => {
   const { role, currentHotelId } = req.auth!
@@ -65,9 +66,29 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
       //    }
       // })
 
+      const monthlyPositions = await prisma.position.findMany({
+        where: {
+          role: { notIn: ['check_in_assistant', 'agnos_admin'] },
+          employee: { hotelId },
+          rateType: 'monthly',
+          workLogs: {
+            none: { date: record.date } // ensures no workLogs exist for that date
+          }
+        }
+      })
+
+      const monthLastDate = lastDayOfMonth(record.date).getDate();
+      const totalDailyCostForMonthlyPositions = monthlyPositions.reduce(
+        (sum, pos) => {
+          const dailyRate = getMonthlyDailyRate(pos.rate ?? 0, monthLastDate)
+          return sum.plus(new Prisma.Decimal(dailyRate))
+        },
+        new Prisma.Decimal(0)
+      );
+
       return {
         ...record,
-        totalSalary: totalSalary._sum.salaryToday ?? 0
+        totalSalary: (totalSalary._sum.salaryToday ?? Prisma.Decimal(0)).plus(new Prisma.Decimal(totalDailyCostForMonthlyPositions))
         // workLogsPerDay
       };
     })
@@ -160,7 +181,6 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
 
   const staff = new Set(workLogs.map(log => log.employeeId)).size;
   const totalCleanedRooms = records._sum.totalCleanedRooms ?? 0
-  console.log(`totalCleanedRooms: ${totalCleanedRooms}`);
   
   for (const log of workLogs) {
     const { totalSeconds, salaryToday, checkInDate } = log
@@ -170,8 +190,6 @@ export const dailyHousekeepingRecordTimesheetDailyController = async (req: Daily
     cost = cost.plus(salaryToday)
     console.log({checkInDate: checkInDate?.toString()})
   }
-
-  console.log({ hours, cost })
 
   const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
   const ACR = totalCleanedRooms ? (cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2)).toNumber() : 0

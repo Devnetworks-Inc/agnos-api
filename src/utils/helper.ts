@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import { Auth } from "src/modules/auth.schema";
 import { RateType } from "src/modules/employee/schema";
 import { lastDayOfMonth } from 'date-fns';
+import { DAILY_HOURS } from "src/utils/constants";
 
 export const createJwtToken = (data: Auth) => {
   const { id, username, role, currentHotelId, employeeId } = data
@@ -88,4 +89,14 @@ export const toDecimalPlaces = (num: number, decimals: number) => {
 
 export const decimal = (num: number) => {
   return new Prisma.Decimal(num)
+}
+
+export const getMonthlyHourlyRate = (rate:number, monthDays:number) => {
+    const dayRate = toDecimalPlaces(rate / monthDays, 2)
+    const hourRate = dayRate / DAILY_HOURS
+    return toDecimalPlaces(hourRate, 2)
+}
+
+export const getMonthlyDailyRate = (rate:number, monthDays:number) => {
+    return toDecimalPlaces(getMonthlyHourlyRate(rate, monthDays) * DAILY_HOURS, 2)
 }
