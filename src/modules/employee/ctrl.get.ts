@@ -225,12 +225,16 @@ export const employeeGetWorkLogsByMonthController = async (
   const [workLogs, positions] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
       by: ["employeeId", "positionId"],
-      where: { employee: { hotelId }, year, month },
+      where: { 
+        year, month,
+        employee: { hotelId },
+        position: { role: { notIn: ['check_in_assistant', 'agnos_admin'] } } 
+      },
       _sum: { totalSeconds: true, totalSecondsBreak: true, salaryToday: true },
       orderBy: { employeeId: "asc" },
     }),
     prisma.position.findMany({
-      where: { employee: { hotelId } },
+      where: { employee: { hotelId }, role: { notIn: ['check_in_assistant', 'agnos_admin'] } },
       select: {
         id: true,
         rate: true,
