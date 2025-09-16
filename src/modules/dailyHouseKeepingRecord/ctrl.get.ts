@@ -275,8 +275,10 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   let { startDate, endDate } = req.query
 
-  const sDate = startDate ? new Date(startDate) : new Date(format(today, 'yyyy-MM-dd'))
-  const eDate = endDate ? new Date(endDate) : new Date(format(today, 'yyyy-MM-dd'))
+  // const sDate = startDate ? new Date(startDate) : new Date(format(today, 'yyyy-MM-dd'))
+  // const eDate = endDate ? new Date(endDate) : new Date(format(today, 'yyyy-MM-dd'))
+  const sDate = new Date(format(new Date(startDate ?? today), "yyyy-MM-dd"));
+  const eDate = new Date(format(new Date(endDate ?? today), "yyyy-MM-dd"));
 
   console.log(sDate, eDate)
 
