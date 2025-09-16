@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { requestBody, successJsonResponse } from "src/utils/docsHelper";
 import { z } from "zod";
-import { TimesheetCreateInactiveLogsBody, TimesheetData, TimesheetGetDailyQuery } from "./schema";
+import { TimesheetCreateInactiveLogsBody, TimesheetData, TimesheetGetDailyQuery, TimesheetGetMonthlyQuery } from "./schema";
 
 const tags = ["Timesheet"]
 
@@ -24,7 +24,22 @@ export function registerTimesheetRoutes(registry: OpenAPIRegistry) {
     },
   });
 
-    registry.registerPath({
+  registry.registerPath({
+    method: "get",
+    path: timesheetBaseUrl+"/monthly",
+    summary: "get monthly timesheet",
+    tags,
+    request: {
+      query: TimesheetGetMonthlyQuery,
+    },
+    security: [{ BearerAuth: []}],
+
+    responses: {
+      200: successJsonResponse("Monthly Timesheet", z.array(TimesheetData)),
+    },
+  });
+
+  registry.registerPath({
     method: "post",
     path: timesheetBaseUrl+"/missing-dates",
     summary: 'create missing date work logs for monthly rate type employees',

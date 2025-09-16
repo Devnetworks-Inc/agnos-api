@@ -78,6 +78,7 @@ model employee {
   minimumWeeklyHours Int?
   overtimeRate Float?
   profilePicId Int?
+  isInactive Boolean @default(false)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -99,25 +100,40 @@ model position {
   rateType String @default("hourly")
   overtimeRate Float?
   minimumWeeklyHours Int?
+  isInactive Boolean @default(false)
 
-  employee employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  createdAt DateTime?
+  updatedAt DateTime?  @updatedAt
+
+  employee employee @relation(fields: [employeeId], references: [id])
   user user? @relation(fields: [userId], references: [id])
   workLogs employee_work_log[]
-  // rateChanges position_rate_change[]
+  rateChanges position_rate_change[]
 
   @@unique([employeeId, role])
 }
 
-// model position_rate_change {
-//   id Int @id @default(autoincrement())
-//   positionId Int?
-//   rate Float @default(0)
-//   effectivityDate DateTime @db.Date
+model position_rate_change {
+  id Int @id @default(autoincrement())
+  positionId Int
+  rate Float
+  effectivityStartDate DateTime
+  effectivityEndDate DateTime?
+  effectivityStartYear Int @db.UnsignedSmallInt
+  effectivityStartMonth Int @db.UnsignedSmallInt
+  effectivityStartDay Int @db.UnsignedSmallInt
+  effectivityEndYear Int? @db.UnsignedSmallInt
+  effectivityEndMonth Int? @db.UnsignedSmallInt
+  effectivityEndDay Int? @db.UnsignedSmallInt
+  rateType String
+  overtimeRate Float?
+  minimumWeeklyHours Int?
 
-//   position position? @relation(fields: [positionId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-//   @@unique([positionId, effectivityDate])
-// }
+  position position? @relation(fields: [positionId], references: [id])
+}
 
 model user {
   id Int @id @default(autoincrement())
@@ -163,8 +179,11 @@ model employee_work_log {
   year Int @db.UnsignedSmallInt
   month Int @db.UnsignedTinyInt // 1 as january - 12 as december
   comment String?
-  employee employee? @relation(fields: [employeeId], references: [id])
-  position position? @relation(fields: [positionId], references: [id])
+  employee employee? @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  position position? @relation(fields: [positionId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?  @updatedAt
 
   breaks employee_break_log[]
   editLogs employee_work_edit_log[]
@@ -179,6 +198,9 @@ model employee_break_log {
   breakEndDate DateTime?
   totalSeconds Int?
   workLog employee_work_log @relation(fields: [workLogId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?  @updatedAt
 }
 
 model employee_work_edit_log {
