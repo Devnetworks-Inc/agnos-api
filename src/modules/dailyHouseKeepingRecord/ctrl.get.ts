@@ -267,7 +267,6 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
     hotelId = req.query.hotelId
   }
 
-  console.log(role, currentHotelId)
   console.log(req.query)
   console.log(hotelId)
 
@@ -280,7 +279,14 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
   const sDate = new Date(format(new Date(startDate ?? today), "yyyy-MM-dd"));
   const eDate = new Date(format(new Date(endDate ?? today), "yyyy-MM-dd"));
 
-  console.log(sDate, eDate)
+  // startDate = format(startDate ?? today, 'yyyy-MM-dd')
+  // endDate = format(startDate ?? today, 'yyyy-MM-dd')
+  // const startDate_DateSplit = startDate.split('-')
+  // const startDate_Records = startDate_DateSplit && new Date( Date.UTC(+startDate_DateSplit[0], +startDate_DateSplit[1]-1, +startDate_DateSplit[2]) )
+  // const endDate_DateSplit = endDate.split('-')
+  // const endDate_Records = endDate_DateSplit && new Date( Date.UTC(+endDate_DateSplit[0], +endDate_DateSplit[1]-1, +endDate_DateSplit[2]) )
+
+  // console.log(startDate_Records, endDate_Records)
 
   const [workLogs, records] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
@@ -296,15 +302,15 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       by: ['date'],
       _sum: { totalCleanedRooms: true }, 
       where: {
-        date: { gte: sDate, lte: eDate },
+        date: { gte: new Date(startDate), lte: new Date(endDate) },
         hotelId
       },
       orderBy: { date: 'asc' }
     })
   ])
 
-  console.log('workLogs', workLogs)
-  console.log('records', records)
+  console.log('workLogs', workLogs.length)
+  console.log('records', records.length)
 
   const workLogsMapByDate = workLogs.reduce(
     (acc, val) => {
@@ -339,8 +345,8 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
     new Map<number, typeof records[0]>()
   )
 
-  console.log('workLogsMapByDate', workLogsMapByDate)
-  console.log('recordsMapByDate', recordsMapByDate)
+  // console.log('workLogsMapByDate', workLogsMapByDate)
+  // console.log('recordsMapByDate', recordsMapByDate)
 
   let dt = sDate
   const dates = [dt]
@@ -353,14 +359,14 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   const response = dates.map(date => {
     const [year, month, day] = date.toISOString().split('T')[0].split('-')
-    console.log('date.toISOString()', date.toISOString())
-    console.log(year, month, day)
+    // console.log('date.toISOString()', date.toISOString())
+    // console.log(year, month, day)
     const dateValue = date.valueOf()
-    console.log('dateValue', dateValue)
+    // console.log('dateValue', dateValue)
     const workLog = workLogsMapByDate.get(dateValue)
     const record = recordsMapByDate.get(dateValue)
-    console.log('workLog', workLog)
-    console.log('record', record)
+    // console.log('workLog', workLog)
+    // console.log('record', record)
   
     let hours = new Prisma.Decimal(workLog?.totalSeconds ?? 0).dividedBy(3600)
     let cost = workLog?.cost ?? new Prisma.Decimal(0)
