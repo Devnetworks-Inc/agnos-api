@@ -274,6 +274,11 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   let { startDate, endDate } = req.query
 
+  const s = startDate?.split('-')
+  const e = endDate?.split('-')
+
+  console.log(s,e);
+
   // const sDate = startDate ? new Date(startDate) : new Date(format(today, 'yyyy-MM-dd'))
   // const eDate = endDate ? new Date(endDate) : new Date(format(today, 'yyyy-MM-dd'))
   const sDate = new Date(format(new Date(startDate ?? today), "yyyy-MM-dd"));
@@ -287,9 +292,6 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
   // const endDate_Records = endDate_DateSplit && new Date( Date.UTC(+endDate_DateSplit[0], +endDate_DateSplit[1]-1, +endDate_DateSplit[2]) )
 
   // console.log(startDate_Records, endDate_Records)
-
-  const s = startDate?.split('-')
-  const e = endDate?.split('-')
 
   const [workLogs, records] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
