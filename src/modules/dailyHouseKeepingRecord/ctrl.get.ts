@@ -274,7 +274,7 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   let { startDate, endDate } = req.query
 
-  const s = startDate?.split('-')
+  let s = startDate?.split('-')
   const e = endDate?.split('-')
 
   console.log(s,e);
@@ -293,10 +293,12 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   // console.log(startDate_Records, endDate_Records)
 
+  s = undefined;
+
   const records2 = await prisma.daily_housekeeping_record.findMany({
     where: {
       date: {
-        //gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
+        gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
         lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
       },
       hotelId
@@ -309,7 +311,7 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       _sum: { totalCleanedRooms: true }, 
       where: {
         date: {
-          //gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
+          gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
           lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
         },
         hotelId
