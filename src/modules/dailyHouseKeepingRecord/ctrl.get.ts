@@ -270,8 +270,6 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
   console.log(req.query)
   console.log(hotelId)
 
-  const today = new Date()
-
   let { startDate, endDate } = req.query
 
   let s = startDate?.split('-')
@@ -304,6 +302,8 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       },
       orderBy: { date: 'asc' }
     });
+
+  const today = new Date()
 
   // const sDate = startDate ? new Date(startDate) : new Date(format(today, 'yyyy-MM-dd'))
   // const eDate = endDate ? new Date(endDate) : new Date(format(today, 'yyyy-MM-dd'))
