@@ -4,7 +4,7 @@ import prisma from "../prisma";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
 import { DailyHousekeepingRecordGetRequest, DailyHousekeepingRecordTimesheetDailyRequest, DailyHousekeepingRecordTimesheetMonthlyRequest, HousekeepingRecordGetMonthlyRequest } from "./schema";
-import { subMonths, format, addDays, lastDayOfMonth  } from "date-fns";
+import { subMonths, format, addDays, lastDayOfMonth, parse  } from "date-fns";
 import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
 import { getEmployeesWorkLogGroupByMonthYearHotel } from "../employee/services";
 import { Prisma } from "@prisma/client";
@@ -288,6 +288,14 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   // console.log(startDate_Records, endDate_Records)
 
+  const a = format(startDate ?? today, 'yyyy-MM-dd');
+  const [year, month, day] = a?.split('-');
+  const aa = new Date(Date.UTC(+year, +month - 1, +day));
+
+  const b = format(endDate ?? today, 'yyyy-MM-dd');
+  const [yearb, monthb, dayb] = a?.split('-');
+  const bb = new Date(Date.UTC(+yearb, +monthb - 1, +dayb));
+
   const [workLogs, records] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
       by: ['date', 'checkInDate', 'employeeId'],
@@ -302,7 +310,7 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       by: ['date'],
       _sum: { totalCleanedRooms: true }, 
       where: {
-        date: { gte: new Date(startDate), lte: new Date(endDate) },
+        date: { gte: aa, lte: bb },
         hotelId
       },
       orderBy: { date: 'asc' }
