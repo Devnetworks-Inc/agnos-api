@@ -288,13 +288,8 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   // console.log(startDate_Records, endDate_Records)
 
-  const a = format(startDate ?? today, 'yyyy-MM-dd');
-  const [year, month, day] = a?.split('-');
-  const aa = new Date(Date.UTC(+year, +month - 1, +day));
-
-  const b = format(endDate ?? today, 'yyyy-MM-dd');
-  const [yearb, monthb, dayb] = a?.split('-');
-  const bb = new Date(Date.UTC(+yearb, +monthb - 1, +dayb));
+  const s = startDate?.split('-')
+  const e = endDate?.split('-')
 
   const [workLogs, records] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
@@ -310,7 +305,10 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       by: ['date'],
       _sum: { totalCleanedRooms: true }, 
       where: {
-        date: { gte: aa, lte: bb },
+        date: {
+          gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
+          lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
+        },
         hotelId
       },
       orderBy: { date: 'asc' }
