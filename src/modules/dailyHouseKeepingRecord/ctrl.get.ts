@@ -293,30 +293,6 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
 
   // console.log(startDate_Records, endDate_Records)
 
-  const [workLogs] = await prisma.$transaction([
-    prisma.employee_work_log.groupBy({
-      by: ['date', 'checkInDate', 'employeeId'],
-      _sum: { totalSeconds: true, salaryToday: true },
-      where: {
-        role: { in: ['hotel_manager', 'hsk_staff'] },
-        date: { gte: sDate, lte: eDate }
-      },
-      orderBy: { date: 'asc' }
-    }),
-    // prisma.daily_housekeeping_record.groupBy({
-    //   by: ['date'],
-    //   _sum: { totalCleanedRooms: true }, 
-    //   where: {
-    //     date: {
-    //       gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
-    //       lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
-    //     },
-    //     hotelId
-    //   },
-    //   orderBy: { date: 'asc' }
-    // })
-  ])
-
   const records2 = await prisma.daily_housekeeping_record.findMany({
     where: {
       date: {
@@ -340,6 +316,30 @@ export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekee
       },
       orderBy: { date: 'asc' }
     })
+
+  const [workLogs] = await prisma.$transaction([
+    prisma.employee_work_log.groupBy({
+      by: ['date', 'checkInDate', 'employeeId'],
+      _sum: { totalSeconds: true, salaryToday: true },
+      where: {
+        role: { in: ['hotel_manager', 'hsk_staff'] },
+        date: { gte: sDate, lte: eDate }
+      },
+      orderBy: { date: 'asc' }
+    }),
+    // prisma.daily_housekeeping_record.groupBy({
+    //   by: ['date'],
+    //   _sum: { totalCleanedRooms: true }, 
+    //   where: {
+    //     date: {
+    //       gte: s && new Date(Date.UTC(+s[0],+s[1]-1,+s[2])),
+    //       lte: e && new Date(Date.UTC(+e[0],+e[1]-1,+e[2])),
+    //     },
+    //     hotelId
+    //   },
+    //   orderBy: { date: 'asc' }
+    // })
+  ])
 
 
   console.log('workLogs', workLogs.length)
