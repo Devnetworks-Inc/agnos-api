@@ -27,6 +27,8 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
   const s = startDate?.split('-')
   const e = endDate?.split('-')
 
+  console.log(s,e)
+
   const dailyHousekeepingRecords = await prisma.daily_housekeeping_record.findMany({
     where: {
       date: {
@@ -37,6 +39,8 @@ export const dailyHousekeepingRecordGetController = async (req: DailyHousekeepin
     },
     include: { hotel: { select: { name: true } } }
   })
+
+  console.log('dailyHousekeepingRecords', dailyHousekeepingRecords.length)
 
   // Add totalSalary to each record
   const recordsWithSalaries = await Promise.all(
