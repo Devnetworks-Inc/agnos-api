@@ -241,8 +241,8 @@ export const EmployeeGetWorkLogsByHotelIdSummaryDailyParam = z.object({
 })
 
 export const EmployeeGetWorkLogsByHotelIdSummaryDailyQuery = z.object({
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional()
+  year: z.coerce.number().optional(),
+  month: z.coerce.number().gte(1).lte(12).optional(),
 })
 
 export const EmployeeGetWorkLogsByHotelIdSummaryDaily = z.object({

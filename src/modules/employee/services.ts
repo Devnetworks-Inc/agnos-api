@@ -2,6 +2,7 @@ import { isoStringRemoveTime, isoStringToDatetime } from "src/utils/helper";
 import prisma from "../prisma";
 import { PrismaPromise } from "@prisma/client";
 import { Employee } from "./schema";
+import { endOfMonth } from "date-fns";
 const db = process.env.DATABASE_NAME
 
 export const getEmployeesWorkLogGroupByMonthYearHotel = async (startDate: Date, endDate: Date, hotelId?: number | null) => {
@@ -111,4 +112,55 @@ export const upsertPositions = (positions: Employee['positions'], employeeId: nu
         return `(${p.id ?? null}, ${p.userId ?? null}, ${employeeId}, '${p.role}', ${p.rate}, '${p.rateType}', ${p.minimumWeeklyHours ?? null}, ${p.overtimeRate ?? null})`
       }).join(', ')};`
   )
+}
+
+export const getMonthlyRateTypeWithChanges = async (year: number, month: number, hotelId?: number) => {
+  const lastOfMonth = endOfMonth(new Date(year, month - 1, 1))
+
+  const monthlyPositions = await prisma.position.findMany({
+    where: {
+      role: { notIn: ["check_in_assistant", "agnos_admin"] },
+      employee: { hotelId },
+      AND: [
+        { OR: [
+          {
+            rateChanges: {
+              some: {
+                rateType: "monthly",
+                effectivityStartYear: { lte: year} ,
+                effectivityStartMonth: { lte: month },
+                // OR: [
+                //   { effectivityEndDate: null },
+                //   {
+                //     effectivityEndYear: { gte: year },
+                //     effectivityEndMonth: { gt: month },
+                //   },
+                // ],
+              },
+            },
+          },
+          {
+            rateType: "monthly",
+            rateChanges: { none: { rateType: { not: "monthly" } } },
+          },
+        ]},
+        { OR: [
+          { createdAt: { lte: lastOfMonth } },
+          { createdAt: null, employee: {  createdAt: { lte: lastOfMonth  } } }
+        ]}
+      ]
+    },
+    include: {
+      rateChanges: {
+        where: {
+          effectivityStartYear: { lte: year },
+          effectivityStartMonth: { lte: month },
+        },
+        take: 1,
+        orderBy: [{ effectivityStartDate: "desc"}, {createdAt: "desc"}],
+      },
+    },
+  });
+
+  return monthlyPositions
 }

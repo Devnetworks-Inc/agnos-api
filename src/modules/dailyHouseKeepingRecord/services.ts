@@ -2,6 +2,32 @@ import { isoStringRemoveTime } from "src/utils/helper";
 import prisma from "../prisma";
 const db = process.env.DATABASE_NAME
 
+export type HousekeepingRecordGroupByMonthlyYear = {
+  year: number;
+  month: number;
+  hotelId: number;
+  name: string;
+  occupancyPercentage: number;
+  ttcPercent: number;
+  departureRooms: BigInt;
+  stayOverRooms: BigInt;
+  dirtyRoomsLastDay: BigInt;
+  dayUseRooms: BigInt
+  extraCleaningRooms: BigInt;
+  checkedRooms: BigInt;
+  noServiceRooms: BigInt;
+  lateCheckoutRooms: BigInt;
+  refreshRooms: BigInt;
+  roomsCarryOver: BigInt;
+  totalCleanedRooms: BigInt;
+  totalRefreshRooms: BigInt;
+  totalHousekeepingManagerCost: BigInt;
+  totalHousekeepingCleanerCost: BigInt;
+  totalCleanedRoomsCost: BigInt;
+  totalCheckedRoomsCost: BigInt;
+  totalHourlySalary: BigInt;
+}[]
+
 export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date, endDate: Date, hotelId?: number | null) => {
   const sd = isoStringRemoveTime(startDate.toISOString())
   const ed = isoStringRemoveTime(endDate.toISOString())
@@ -38,7 +64,8 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
         WHERE e.hotelId = dhr.hotelId
           AND ewl.year = dhr.year
           AND ewl.month = dhr.month
-      ) AS totalSalary
+          AND ewl.rateType = 'hourly'
+      ) AS totalHourlySalary
     FROM ${db}.daily_housekeeping_record as dhr
     LEFT JOIN ${db}.hotel as h
     ON dhr.hotelId = h.id
@@ -46,5 +73,5 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
     GROUP BY dhr.year, dhr.month, dhr.hotelId, h.name
     ORDER BY year ASC, month ASC;`
   );
-  return result
+  return result as HousekeepingRecordGroupByMonthlyYear
 }
