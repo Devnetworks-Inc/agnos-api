@@ -52,9 +52,9 @@ export const timesheetGetDailyController = async (
   let { hotelId, date = format(new Date(), 'yyyy-MM-dd') } = req.query;
   const [year, month, day] = date?.split('-')
   const dateUtc = new Date(Date.UTC(+year, +month - 1, +day))
-  const endOfDay = new Date(+year, +month - 1, +day, 23, 59, 59, 999)
+  const lastOfMonth = lastDayOfMonth(new Date(+year, +month - 1, +day))
   
-  const lastDateOfMonth = lastDayOfMonth(endOfDay).getDate()
+  const lastDateOfMonth = lastOfMonth.getDate()
 
   if (role !== "agnos_admin" && role !== "hsk_manager") {
     if (!currentHotelId) {
@@ -92,8 +92,8 @@ export const timesheetGetDailyController = async (
       employee: { hotelId },
       // isInactive: false,
       OR: [
-        { createdAt: { lte: endOfDay } },
-        { createdAt: null, employee: {  createdAt: { lte: endOfDay  } } }
+        { createdAt: { lte: lastOfMonth } },
+        { createdAt: null, employee: {  createdAt: { lte: lastOfMonth  } } }
       ]
     },
     include: {

@@ -14,8 +14,8 @@ import {
 import { Prisma } from "@prisma/client";
 import { IdParam } from "../id/schema";
 import { AuthRequest } from "../auth.schema";
-import { endOfDay, endOfMonth, format, startOfDay, startOfMonth } from "date-fns";
-import { getTotalItemsEmployeeTimesheetQuery, paginatedEmployeeTimesheetQuery } from "./services";
+import { addDays, endOfDay, endOfMonth, format, lastDayOfMonth, startOfDay, startOfMonth } from "date-fns";
+import { getMonthlyRateTypeWithChanges, getTotalItemsEmployeeTimesheetQuery, paginatedEmployeeTimesheetQuery } from "./services";
 import { LATE_SHIFT_START_HOUR } from "src/utils/constants";
 
 export const employeeGetController = async (
@@ -347,25 +347,92 @@ export const employeeGetWorkLogsSummaryDailyController = async (
   req: EmployeeGetWorkLogsByHotelIdSummaryDailyRequest,
   res: Response
 ) => {
+  const today = new Date()
   const hotelId = +req.params.hotelId;
-  const { startDate, endDate } = req.query;
+  const { year = today.getFullYear() , month = today.getMonth() + 1 } = req.query;
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = lastDayOfMonth(startDate)
 
-  const data = await prisma.employee_work_log.groupBy({
-    by: ["date"],
+  const getWorkLogs = prisma.employee_work_log.groupBy({
+    by: ["date", "rateType"],
     where: {
       employee: { hotelId },
-      checkInDate: { gte: startDate, lte: endDate },
+      // checkInDate: { gte: startDate, lte: endDate },
+      month,
+      year
     },
     _sum: { totalSeconds: true, salaryToday: true },
   });
 
+  const getMonthlyRateTypes = getMonthlyRateTypeWithChanges(year, month, hotelId)
+
+  const [logs, positions] = await Promise.all([getWorkLogs, getMonthlyRateTypes])
+
+  type Data = {
+    date: Date,
+    totalHours: Prisma.Decimal,
+    totalCost: Prisma.Decimal
+  }
+  console.log('-----------------------------')
+  console.debug(positions)
+
+  const monthlyPositionsDailyRate = positions.reduce((acc, pos) => {
+    const { rate, rateType } = pos.rateChanges.length ? pos.rateChanges[0] : pos
+    if (rateType === 'monthly') {
+      return new Prisma.Decimal(rate).dividedBy(endDate.getDate()).plus(acc)
+    }
+    return acc
+  }, new Prisma.Decimal(0))
+
+  const logsMap = logs.reduce((acc, log) => {
+    const { date, rateType, _sum } = log
+    const key = date.toISOString().split('T')[0]
+    let { salaryToday, totalSeconds } = _sum
+    const data = acc.get(key)
+
+    if (data) {
+      data.totalCost = rateType === 'hourly' ? data.totalCost.plus(salaryToday ?? 0) : data.totalCost
+      data.totalHours = new Prisma.Decimal(totalSeconds ?? 0).dividedBy(3600).plus(data.totalHours)
+      acc.set(key, data)
+      return acc
+    }
+
+    if (rateType === 'monthly') {
+      salaryToday = monthlyPositionsDailyRate
+    } else {
+      salaryToday = salaryToday ? salaryToday.plus(monthlyPositionsDailyRate) : monthlyPositionsDailyRate
+    }
+    
+    return acc.set(key, {
+      date: log.date,
+      totalHours: new Prisma.Decimal(totalSeconds ?? 0).dividedBy(3600),
+      totalCost: salaryToday ?? new Prisma.Decimal(0)
+    })
+  }, new Map<string, Data>())
+
+  let dt = new Date(startDate);
+  const dates = [dt];
+
+  // create array of dates up to end date
+  while (dt < endDate) {
+    dt = addDays(dt, 1);
+    dates.push(dt);
+  }
+
+  const data: Data[] = []
+
   resp(
     res,
-    data.map((v) => ({
-      date: v.date,
-      totalHours: +((v._sum.totalSeconds ?? 0) / 3600).toFixed(2),
-      totalCost: +(v._sum.salaryToday ?? 0),
-    }))
+    dates.map((date) => {
+      const key = format(date, 'yyyy-MM-dd')
+      const data = logsMap.get(key)
+
+      return {
+        date: `${key}T00:00:00.000Z`,
+        totalHours: data?.totalHours.toDecimalPlaces(5).toNumber() ?? 0,
+        totalCost: data?.totalCost.toDecimalPlaces(5).toNumber() ?? monthlyPositionsDailyRate.toDecimalPlaces(5).toNumber(),
+      }
+    })
   );
 };
 
