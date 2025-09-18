@@ -64,7 +64,7 @@ export const getHousekeepingRecordGroupByMonthYearHotel = async (startDate: Date
         WHERE e.hotelId = dhr.hotelId
           AND ewl.year = dhr.year
           AND ewl.month = dhr.month
-          AND ewl.rateType = 'hourly'
+          AND ewl.rateType != 'monthly'
       ) AS totalHourlySalary
     FROM ${db}.daily_housekeeping_record as dhr
     LEFT JOIN ${db}.hotel as h
