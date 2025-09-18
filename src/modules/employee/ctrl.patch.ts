@@ -643,36 +643,37 @@ export const employeeMidnightCheckoutController = async (req: Request, res: Resp
   const yesterdayEnd = endOfYesterday()
 
   const result = await checkoutMidnightQuery(yesterdayStart, yesterdayEnd)
-  const positions = await prisma.position.findMany({
-    where: { workLogs: { none: { checkInDate: { gte: yesterdayStart, lte: yesterdayEnd } } } },
-    include: { employee: { select: { firstName: true, middleName: true, lastName: true } } }
-  })
+  // const positions = await prisma.position.findMany({
+  //   where: { workLogs: { none: { checkInDate: { gte: yesterdayStart, lte: yesterdayEnd } } } },
+  //   include: { employee: { select: { firstName: true, middleName: true, lastName: true } } }
+  // })
 
-  const created = await prisma.employee_work_log.createMany({
-    data: positions.map((pos) => {
-      const hourlyRate = getHourlyRate(pos.rateType as RateType, pos.rate, yesterdayStart)
-      const salaryToday = pos.rateType === 'monthly' ? hourlyRate.times(8.4).toDecimalPlaces(2) : 0
+  // const created = await prisma.employee_work_log.createMany({
+  //   data: positions.map((pos) => {
+  //     const hourlyRate = getHourlyRate(pos.rateType as RateType, pos.rate, yesterdayStart)
+  //     const salaryToday = pos.rateType === 'monthly' ? hourlyRate.times(8.4).toDecimalPlaces(2) : 0
 
-      return {
-        date: new Date(Date.UTC(yesterdayStart.getFullYear(), yesterdayStart.getMonth(), yesterdayStart.getDate())),
-        employeeId: pos.employeeId,
-        positionId: pos.id,
-        employeeFirstName: pos.employee.firstName,
-        employeeMiddleName: pos.employee.middleName,
-        employeeLastName: pos.employee.lastName,
-        role: pos.role,
-        rate: pos.rate,
-        rateType: pos.rateType,
-        hourlyRate,
-        salaryToday,
-        status: 'inactive',
-        year: yesterdayStart.getFullYear(),
-        month: yesterdayStart.getMonth() + 1
-      }
-    })
-  })
+  //     return {
+  //       date: new Date(Date.UTC(yesterdayStart.getFullYear(), yesterdayStart.getMonth(), yesterdayStart.getDate())),
+  //       employeeId: pos.employeeId,
+  //       positionId: pos.id,
+  //       employeeFirstName: pos.employee.firstName,
+  //       employeeMiddleName: pos.employee.middleName,
+  //       employeeLastName: pos.employee.lastName,
+  //       role: pos.role,
+  //       rate: pos.rate,
+  //       rateType: pos.rateType,
+  //       hourlyRate,
+  //       salaryToday,
+  //       status: 'inactive',
+  //       year: yesterdayStart.getFullYear(),
+  //       month: yesterdayStart.getMonth() + 1
+  //     }
+  //   })
+  // })
 
-  resp(res, `${result.count ?? 0} employees was checked out, ${created.count ?? 0} monthly employee logs was created as 'inactive'`)
+  resp(res, `${result.count ?? 0} employees was checked out`)
+  //  ${created.count ?? 0} monthly employee logs was created as 'inactive'`)
 }
 
 export const employeeMonthlyRateRecalculateController = async (req: Request, res: Response) => {
