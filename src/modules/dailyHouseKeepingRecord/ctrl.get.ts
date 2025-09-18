@@ -55,6 +55,7 @@ export const dailyHousekeepingRecordGetController = async (
         },
         where: {
           date: record.date,
+          rateType: { not: 'monthly'},
           employee: {
             hotelId: record.hotelId,
           },
