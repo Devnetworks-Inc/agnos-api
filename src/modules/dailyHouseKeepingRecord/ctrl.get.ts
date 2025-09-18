@@ -9,12 +9,11 @@ import {
   DailyHousekeepingRecordTimesheetMonthlyRequest,
   HousekeepingRecordGetMonthlyRequest,
 } from "./schema";
-import { subMonths, format, addDays, lastDayOfMonth, endOfMonth } from "date-fns";
-import { getHousekeepingRecordGroupByMonthYearHotel, HousekeepingRecordGroupByMonthlyYear } from "./services";
-import { getEmployeesWorkLogGroupByMonthYearHotel, getMonthlyRateTypeWithChanges } from "../employee/services";
+import { subMonths, format, addDays, lastDayOfMonth } from "date-fns";
+import { getHousekeepingRecordGroupByMonthYearHotel } from "./services";
+import { getMonthlyRateTypeWithChanges } from "../employee/services";
 import { Prisma } from "@prisma/client";
 import { LATE_SHIFT_START_HOUR } from "src/utils/constants";
-import { getMonthlyDailyRate } from "src/utils/helper";
 
 export const dailyHousekeepingRecordGetController = async (
   req: DailyHousekeepingRecordGetRequest,
@@ -305,127 +304,105 @@ export const dailyHousekeepingRecordTimesheetMonthlyController = async (
   return resp(res, { ATR, ACR, RPE });
 };
 
-export const houseKeepingRecordGetDailyKPIController = async (
-  req: DailyHousekeepingRecordGetRequest,
-  res: Response
-) => {
-  const { role, currentHotelId } = req.auth!;
-  let hotelId = currentHotelId ?? undefined;
+export const houseKeepingRecordGetDailyKPIController = async (req: DailyHousekeepingRecordGetRequest, res: Response) => {
+  const { role, currentHotelId } = req.auth!
+  let hotelId = currentHotelId ?? undefined
 
-  if (role !== "agnos_admin") {
+  if (role !== 'agnos_admin') {
     if (!currentHotelId) {
-      return resp(res, "Unauthorized", 401);
+      return resp(res, 'Unauthorized', 401)
     }
   } else {
-    hotelId = req.query.hotelId;
+    hotelId = req.query.hotelId
   }
 
-  const today = new Date();
+  const today = new Date()
 
-  let { startDate, endDate } = req.query;
+  let { startDate, endDate } = req.query
 
-  const sDate = startDate
-    ? new Date(startDate)
-    : new Date(format(today, "yyyy-MM-dd"));
-  const eDate = endDate
-    ? new Date(endDate)
-    : new Date(format(today, "yyyy-MM-dd"));
+  const sDate = startDate ? new Date(startDate) : new Date(format(today, 'yyyy-MM-dd'))
+  const eDate = endDate ? new Date(endDate) : new Date(format(today, 'yyyy-MM-dd'))
 
   const [workLogs, records] = await prisma.$transaction([
     prisma.employee_work_log.groupBy({
-      by: ["date", "checkInDate", "employeeId"],
+      by: ['date', 'checkInDate', 'employeeId'],
       _sum: { totalSeconds: true, salaryToday: true },
       where: {
-        role: { in: ["hotel_manager", "hsk_staff"] },
-        date: { gte: sDate, lte: eDate },
+        role: { in: ['hotel_manager', 'hsk_staff'] },
+        date: { gte: sDate, lte: eDate }
       },
-      orderBy: { date: "asc" },
+      orderBy: { date: 'asc' }
     }),
     prisma.daily_housekeeping_record.groupBy({
-      by: ["date"],
-      _sum: { totalCleanedRooms: true },
+      by: ['date'],
+      _sum: { totalCleanedRooms: true }, 
       where: {
         date: { gte: sDate, lte: eDate },
-        hotelId,
+        hotelId
       },
-      orderBy: { date: "asc" },
-    }),
-  ]);
+      orderBy: { date: 'asc' }
+    })
+  ])
 
   const workLogsMapByDate = workLogs.reduce(
     (acc, val) => {
       // employeeIdSet.add(val.employeeId)
-      const dateValue = val.date.valueOf();
-      const log = acc.get(dateValue);
+      const dateValue = val.date.valueOf()
+      const log = acc.get(dateValue)
 
       if (log) {
-        if (
-          val.checkInDate &&
-          val.checkInDate.getHours() < LATE_SHIFT_START_HOUR
-        ) {
-          log.totalSeconds = log.totalSeconds + (val._sum?.totalSeconds ?? 0);
+        if (val.checkInDate && val.checkInDate.getHours() < LATE_SHIFT_START_HOUR ) {
+          log.totalSeconds = log.totalSeconds + (val._sum?.totalSeconds ?? 0)
         }
-        log.cost = log.cost.plus(val._sum?.salaryToday ?? 0);
-        val.employeeId && log.employeeIdSet.add(val.employeeId);
-        return acc.set(dateValue, log);
+        log.cost = log.cost.plus(val._sum?.salaryToday ?? 0)
+        val.employeeId && log.employeeIdSet.add(val.employeeId)
+        return acc.set(dateValue, log)
       }
 
       return acc.set(dateValue, {
-        totalSeconds:
-          val.checkInDate && val.checkInDate.getHours() < LATE_SHIFT_START_HOUR
-            ? val._sum?.totalSeconds ?? 0
-            : 0,
+        totalSeconds: (val.checkInDate && val.checkInDate.getHours() < LATE_SHIFT_START_HOUR) ? (val._sum?.totalSeconds ?? 0) : 0,
         cost: val._sum?.salaryToday ?? new Prisma.Decimal(0),
-        employeeIdSet: new Set(val.employeeId ? [val.employeeId] : []),
-      });
+        employeeIdSet: new Set(val.employeeId ? [val.employeeId] : [])
+      })
     },
-    new Map<
-      number,
-      {
-        totalSeconds: number;
-        cost: Prisma.Decimal;
-        employeeIdSet: Set<number>;
-      }
-    >()
-  );
+    new Map<number, {
+      totalSeconds: number,
+      cost: Prisma.Decimal,
+      employeeIdSet: Set<number>,
+    }>()
+  )
 
   const recordsMapByDate = records.reduce(
     (acc, val) => acc.set(val.date.valueOf(), val),
-    new Map<number, (typeof records)[0]>()
-  );
+    new Map<number, typeof records[0]>()
+  )
 
-  let dt = sDate;
-  const dates = [dt];
+  let dt = sDate
+  const dates = [dt]
 
   // create array of dates up to end date
   while (dt < eDate) {
-    dt = addDays(dt, 1);
-    dates.push(dt);
+    dt = addDays(dt, 1)
+    dates.push(dt)
   }
 
-  const response = dates.map((date) => {
-    const [year, month, day] = date.toISOString().split("T")[0].split("-");
-    const dateValue = date.valueOf();
-    const workLog = workLogsMapByDate.get(dateValue);
-    const record = recordsMapByDate.get(dateValue);
+  const response = dates.map(date => {
+    const [year, month, day] = date.toISOString().split('T')[0].split('-')
+    const dateValue = date.valueOf()
+    const workLog = workLogsMapByDate.get(dateValue)
+    const record = recordsMapByDate.get(dateValue)
+  
+    let hours = new Prisma.Decimal(workLog?.totalSeconds ?? 0).dividedBy(3600)
+    let cost = workLog?.cost ?? new Prisma.Decimal(0)
+    let noOfEmployees = workLog?.employeeIdSet.size ?? 0
+    const totalCleanedRooms = record?._sum?.totalCleanedRooms ?? 0
 
-    let hours = new Prisma.Decimal(workLog?.totalSeconds ?? 0).dividedBy(3600);
-    let cost = workLog?.cost ?? new Prisma.Decimal(0);
-    let noOfEmployees = workLog?.employeeIdSet.size ?? 0;
-    const totalCleanedRooms = record?._sum?.totalCleanedRooms ?? 0;
+    const ATR = totalCleanedRooms ? hours.dividedBy(totalCleanedRooms).times(60).toNumber() : 0
+    const ACR = totalCleanedRooms ? (cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2)).toNumber() : 0
+    const RPE = totalCleanedRooms ? +(noOfEmployees / totalCleanedRooms).toFixed(2) : 0
+    
+    return { ATR, ACR, RPE, year: +year, month: +month, day: +day }
+  })
 
-    const ATR = totalCleanedRooms
-      ? hours.dividedBy(totalCleanedRooms).times(60).toNumber()
-      : 0;
-    const ACR = totalCleanedRooms
-      ? cost.dividedBy(totalCleanedRooms).toDecimalPlaces(2).toNumber()
-      : 0;
-    const RPE = totalCleanedRooms
-      ? +(noOfEmployees / totalCleanedRooms).toFixed(2)
-      : 0;
-
-    return { ATR, ACR, RPE, year: +year, month: +month, day: +day };
-  });
-
-  resp(res, response);
-};
+  resp(res, response)
+}
